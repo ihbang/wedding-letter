@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="I &amp; Y">
+  <g fill="none" stroke="#9A8670">
+    <circle cx="60" cy="60" r="56" stroke-width="1" vector-effect="non-scaling-stroke"/>
+    <circle cx="60" cy="60" r="52" stroke-width="0.5" vector-effect="non-scaling-stroke"/>
+  </g>
+  <g fill="#9A8670" font-family="'Cormorant Garamond', 'Times New Roman', serif" font-weight="300" text-anchor="middle">
+    <text x="37" y="72" font-size="36">I</text>
+    <text x="60" y="70" font-size="22" font-style="italic">&amp;</text>
+    <text x="84" y="72" font-size="36">Y</text>
+  </g>
+</svg>

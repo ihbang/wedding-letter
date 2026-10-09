@@ -1,139 +1,171 @@
 ---
 couple:
-  groom: "김민준"
-  bride: "박서연"
+  groom: "방인혁"
+  bride: "손유민"
+  groom_en: "Inhyeok"          # 기본값: 로마자 표기 사용자 미확인
+  bride_en: "Yumin"            # 기본값: 로마자 표기 사용자 미확인
 ceremony:
-  date: "2026-10-17 14:00"
-  day_of_week: "토요일"
-  venue: "그랜드 인터컨티넨탈 서울 파르나스 5층 그랜드볼룸"
-  venue_short: "그랜드 인터컨티넨탈 서울 파르나스"
-  hall: "5층 그랜드볼룸"
-  address: "서울특별시 강남구 테헤란로 521"
-  formality: "호텔 정통 예식 (격식)"
+  date: "2027-01-03 15:00"
+  day_of_week: "일요일"
+  time_ko: "오후 3시"
+  venue: "더컨벤션 송파문정"
+  hall: "13층 아모르홀"
+  address: "서울 송파구 송파대로 155 NH송파농협 13층"
+  formality: "컨벤션 웨딩홀 예식 (격식 있는 일반 예식)"
 parents:
-  groom_father: "김재현"
-  groom_mother: "이수진"
-  bride_father: "박정훈"
-  bride_mother: "최은영"
-  groom_birth_order: "장남"
-  bride_birth_order: "장녀"
-gallery:
-  count: 5
-  composition: "커플 스냅 4장 + 풍경 1장"
-  status: "placeholder (frontend는 images/gallery-01.jpg ~ gallery-05.jpg 경로로 처리)"
+  groom_father: "방주경"
+  groom_mother: "주진숙"
+  bride_father: "손홍희"
+  bride_mother: "김연주"
+  groom_birth_order: "아들"    # 사용자 지정: 장남/장녀 등 서열 표기 금지
+  bride_birth_order: "딸"
 mood_keywords:
-  - "modern romantic"
-  - "soft botanical"
-  - "refined warmth"
+  - "클래식"
+  - "미니멀"
+  - "차분한"
 palette:
-  primary: "#C9A2A2"        # dusty rose - 메인 강조 (이름, 날짜, 핵심 카피)
-  secondary: "#A8B59C"      # soft sage - 보조 (디바이더, 보조 텍스트, 식물 모티프)
-  accent: "#8B5A5A"         # deep rosewood - 액션(버튼, 링크, 호버)
-  background: "#FBF7F3"     # warm ivory - 페이지 베이스
-  surface: "#F2EAE2"        # light cream - 카드/섹션 분리
-  text: "#3A2E2A"           # warm charcoal - 본문
-  muted: "#8E7D75"          # warm taupe - 캡션/보조 텍스트
+  primary: "#9A8670"       # warm taupe: 베이지 수트 그림자 톤. 영문 디스플레이·디바이더·장식 전용 (bg 대비 3.21, 본문 금지)
+  secondary: "#DDD3C5"     # linen: 1px 라인, 보더, 비활성 상태
+  accent: "#5A4C3E"        # deep walnut: 버튼·링크·강조 (bg 대비 7.61, 흰 글자 on accent 8.27)
+  background: "#F8F5F0"    # warm paper white: 화이트 스튜디오 사진 가장자리와 이어지는 바탕
+  surface: "#EFEAE2"       # soft greige: 카드·정보 박스 면 분리
+  text: "#2B2723"          # ink black: 블랙 수트·드레스와 같은 계열 (bg 대비 13.63)
+  muted: "#6B6156"         # warm gray: 캡션·보조 정보 (bg 5.57 / surface 5.05)
 typography:
-  korean_serif: "Nanum Myeongjo"          # 인사말, 본문 (Google Fonts)
-  korean_sans: "Pretendard"               # 시간/주소/계좌번호 등 정보성 텍스트 (CDN)
-  english_serif: "Cormorant Garamond"     # 신랑신부 영문명, 영문 날짜, 섹션 헤딩 (Google Fonts)
-  english_script: "Allura"                # "&" "Save the Date" 등 부드러운 강조 (Google Fonts)
+  korean_serif: "Noto Serif KR"          # 인사말·이름·본문 (Google Fonts, 300/400/500)
+  korean_sans: "Pretendard"              # 일시·주소·계좌·버튼 등 정보성 텍스트 (jsDelivr CDN)
+  english_serif: "Cormorant Garamond"    # 영문 이름·날짜·섹션 라벨 (Google Fonts, 300/400 + italic)
+  english_script: "사용 안 함"           # 미니멀 원칙: '&'는 Cormorant Garamond italic으로 처리
 imagery_direction: |
-  수채화 스타일 보태니컬 일러스트 + 미니멀 라인 디테일.
-  더스티 로즈와 세이지 그린 톤의 부드러운 watercolor florals(장미, 유칼립투스, 작은 들꽃)를 메인 모티프로 사용.
-  히어로는 신랑신부 사진이 들어갈 자리이지만 placeholder 상태이므로,
-  대체 비주얼로 "ivory 배경 + 중앙 상단에 dusty rose 장미 한 송이 + 양옆 sage 유칼립투스 가지" 워터컬러 일러스트.
-  섹션 디바이더는 가는 라인의 sage 식물 라인아트 또는 작은 rose 봉오리 spot illustration.
-  과한 채도/그림자 금지, 종이에 번지는 듯한 자연스러운 텍스처 유지.
-  AI 일러스트지만 인쇄물 청첩장의 우아함을 모바일에 그대로 옮긴 느낌.
+  실제 웨딩 촬영 사진이 주인공이다. 페이지의 시각 인상은 사진 + 여백 + 가는 세리프 타이포로만 만든다.
+  사진은 보정·필터·색 오버레이를 추가하지 않고 원본 톤 그대로 쓴다(히어로 텍스트 가독성용 그라디언트만 허용).
+  AI 생성 자산(gpt-image2)은 장식 보조로 최소화한다:
+    ① 섹션 디바이더 1종: 가는 단선(hairline) 끝에 작은 잎 한 쌍 또는 점 하나가 놓인 미니멀 라인 모티프,
+       단색 #9A8670, 투명 배경 PNG(또는 SVG로 대체 가능하면 SVG 우선)
+    ② 모노그램 마크 1종(선택): "I & Y" 이니셜을 가는 세리프 라인으로 감싼 원형/아치 엠블럼, 단색 #9A8670, 투명 배경
+  수채화·꽃 일러스트·인물 일러스트·풍경 일러스트는 생성하지 않는다. 사진과 경쟁하는 채색 장식 금지.
+  og 썸네일은 AI 생성 대신 실제 사진(jo--8670) 크롭을 1순위로 한다(아래 '사진 운용' 참고).
+photos:
+  source_dir: "images/photos/"
+  hero: "jo--8400.jpg"       # 세로 1067x1600. 화이트 스튜디오, 베일을 걷는 전신. 상단 약 30%가 빈 벽이라 타이포 오버레이 자리
+  og_image:
+    source: "jo--8670.jpg"   # 세로 1067x1600. 두 사람 얼굴이 크게 보이는 상반신
+    crop: "가로 1067 전체 x 세로 560 (y≈330~890, 티아라~턱선 포함) → 1200x630으로 리사이즈, images/og-thumbnail.jpg"
+    fallback: "jo--8753.jpg 가로 컷을 1.91:1로 중앙 크롭"
+  gallery_order:              # 총 15장. 히어로(jo--8400)는 갤러리에서 제외. 같은 컷 컬러/흑백 중복 없음
+    - "jo--8670.jpg"              # 1  세로  밝은 스튜디오, 안고 바라보는 상반신
+    - "jo--9213.jpg"              # 2  세로  밝은 스튜디오, 컨페티 전신
+    - "jo--8753.jpg"              # 3  가로  창가 꽃장식, 나란히 앉은 컷
+    - "op1789048062-01c.jpg"      # 4  가로  창가에 앉은 신부 단독
+    - "jo--9271.jpg"              # 5  가로  꽃장식 문 앞 마주 선 컷
+    - "op1789048062-05c.jpg"      # 6  세로  화이트 서랍장 앞, 반지 끼워주는 컷
+    - "jo--9055.jpg"              # 7  세로  꽃·전구 벽, 꽃다발 들고 볼 맞댄 컷
+    - "op1789048062-02c.jpg"      # 8  세로  꽃·전구 벽, 무릎 꿇고 꽃 건네는 컷
+    - "jo--9115-mono.jpg"         # 9  세로  꽃·전구 벽, 이마 맞댄 컷 (흑백: 녹색·전구 채도 연속 완화)
+    - "op1789048062-04c.jpg"      # 10 세로  전구 벽, 손잡고 마주 선 컷
+    - "jo--9716.jpg"              # 11 세로  블랙 의상, 앉아서 볼 맞댄 컷
+    - "op1789048062-07c.jpg"      # 12 세로  커튼 창가, 블랙 의상 전신
+    - "jo--9534-mono.jpg"         # 13 가로  커튼 창가 역광 (흑백)
+    - "op1789048062-09c.jpg"      # 14 세로  반지 낀 손 보여주는 컷
+    - "op1789048062-11c.jpg"      # 15 세로  화이트 셔츠, 하트 풍선 피켓 (마지막 경쾌한 마무리)
+  excluded:
+    - "jo--8400*: 히어로 사용"
+    - "op1789048062-08c: jo--9534와 구도 유사"
+    - "op1789048062-03c: 꽃·전구 벽 컷이 이미 4장"
+    - "op1789048062-06c: 블랙 배경·버블, 클래식/차분 톤과 대비 과함"
+    - "op1789048062-10c, -12c: 단독/캐주얼 컷 수 조절"
+    - "나머지 -mono 파일: 같은 컷의 컬러본 사용"
+audio:
+  bgm: "audio/bgm.mp3"       # 기존 파일 재사용 (MP3 192kbps, 약 2분 50초). 자동재생 금지, 사용자 탭으로 재생
 layout_mood: |
-  모바일 우선 풀스크린 단일 페이지, 넉넉한 화이트 스페이스(섹션 간 80~120px),
-  가운데 정렬 기본, 텍스트는 1.7~1.9 행간으로 호흡 길게.
-  히어로는 100vh 풀스크린 — 상단 영문명(Cormorant) + 중앙 보태니컬 일러스트 + 하단 한글 이름(Nanum Myeongjo) + "We're getting married" 스크립트(Allura).
-  섹션마다 가는 1px sage 라인 디바이더 + 작은 식물 spot illustration로 분절.
-  카드/박스 코너는 부드럽게 12~16px radius, 그림자 대신 surface 컬러로 면 분리.
-  계좌·주소·RSVP 등 정보 박스는 ivory 위 cream surface로 살짝 구분.
-  이미지는 4:5 또는 3:4 세로 비율 우선, 갤러리는 가로 스와이프 + 핀치 줌 lightbox.
+  모바일 우선 단일 페이지, 넉넉한 여백(섹션 간 96~128px), 가운데 정렬, 본문 행간 1.8.
+  색 면은 background/surface 두 단계만. 그림자·그라디언트 박스·둥근 알약 버튼 지양, 모서리 2~4px의 단정한 사각형.
+  히어로: 100svh 풀스크린 jo--8400. 상단 빈 벽 영역에 Cormorant Garamond로 "Inhyeok & Yumin"(& italic),
+  그 아래 "2027. 01. 03. SUN 3PM". 하단에 한글 "방인혁 · 손유민"과 "더컨벤션 송파문정 13층 아모르홀".
+  텍스트 색은 text(#2B2723). 사진 상단이 밝으므로 어두운 글자를 쓰고, 필요 시 상단에 background→투명 그라디언트만 얹는다.
+  섹션 라벨은 영문 대문자(letter-spacing 0.2em) Cormorant 라벨 + 한글 세리프 제목의 2단 구성.
+  갤러리: 3열 정사각 크롭 그리드(첫 9장 노출 + "더보기"), 탭 시 원본 비율 lightbox에서 좌우 스와이프·핀치 줌.
 motion_mood_hint: |
-  "조용히 피어나는" 무드 — 빠르고 화려한 모션 금지, 모든 트랜지션 ease-out 600~900ms.
-  배경 애니메이션: 옅은 dusty rose 꽃잎 파티클이 아주 천천히 떨어지는 Canvas 효과 (밀도 낮게, 8~12개, opacity 0.15~0.35),
-  또는 sage/rose 그라디언트 메시가 매우 느리게 흐르는 CSS 애니메이션.
-  스크롤 인터랙션: IntersectionObserver로 섹션 진입 시 fade-in + translateY(20px → 0) 부드럽게.
-  이미지: 갤러리 진입 시 살짝 scale(1.02 → 1.0) blur(4px → 0) 워터컬러처럼 번지는 reveal.
-  마이크로: 계좌 복사 버튼 탭 시 sage 체크 마크 fade in + 햅틱(가능 시), 카운트다운 숫자는 부드러운 flip.
-  음악 토글 아이콘은 floating action 우상단, 재생 시 작은 ripple.
-  prefers-reduced-motion: reduce 환경에서는 파티클·메시 애니메이션 모두 OFF, fade-in만 즉시 표시(0ms transition).
+  "정적이고 느린" 클래식 무드. 화면을 떠다니는 파티클·꽃잎·반딧불이 등 상시 배경 애니메이션은 쓰지 않는다.
+  섹션 진입 fade-in + translateY(16px→0), 700~900ms ease-out 하나로 통일.
+  히어로 사진은 로드 시 scale(1.04→1.0) 2.4s의 아주 느린 settle 1회만.
+  마이크로: 계좌 복사 시 버튼 라벨이 "복사되었습니다"로 바뀌는 텍스트 전환, 음악 토글은 우상단 작은 원형 아이콘.
+  prefers-reduced-motion: reduce에서는 모든 transform 제거, 즉시 표시.
 sections_order:
-  - hero                # 풀스크린 + 신랑신부명 + 예식일
-  - greeting            # 인사말
-  - couple-intro        # 신랑신부 소개 + 부모 함자
-  - calendar            # 캘린더 + D-day 카운트다운
-  - gallery             # 갤러리 (5장 스와이프 + lightbox 핀치줌)
-  - venue               # 오시는 길 (지도 + 주소 + 교통편)
-  - account             # 마음 전하실 곳 (양가 계좌, 복사 버튼)
-  - rsvp                # 참석 의사 전달
-  - guestbook           # 방명록
-  - share               # 카카오톡 공유 + 링크 복사
+  - hero
+  - greeting
+  - couple-intro
+  - calendar
+  - gallery
+  - venue
+  - account
+  - guestbook   # rsvp 제거 (2026-10-09 사용자 요청)
+  - share
 defaults_applied:
-  - "신랑신부 이름 (사용자 미입력 → 합리적 기본값)"
-  - "양가 부모 함자 (사용자 미입력 → 기본값)"
-  - "예식일/장소 (사용자 미입력 → 기본값)"
-  - "갤러리 사진 5장 placeholder 처리"
-  - "분위기 키워드: modern romantic / soft botanical / refined warmth (트렌드 기반 큐레이션)"
-  - "컬러 팔레트: Sage × Dusty Rose 융합 커스텀 5색 + surface/muted 보조 2색"
-  - "폰트: Nanum Myeongjo + Cormorant Garamond + Allura(스크립트) + Pretendard(보조)"
+  - "영문 이름 표기 Inhyeok / Yumin (사용자 미확인)"
+  - "컬러 팔레트: 사진 톤 기반 커스텀 'Warm Paper & Ink' 7색"
+  - "폰트: Noto Serif KR + Pretendard + Cormorant Garamond, 스크립트 폰트 미사용"
+  - "섹션 순서: 표준 10섹션"
+  - "갤러리 15장 선정·순서 (컨셉 디렉터 큐레이션)"
+  - "og 썸네일: jo--8670 크롭"
+  - "계좌번호: placeholder (사용자 지정)"
+  - "교통편(지하철·버스·주차) 정보: 사용자 미제공, copy-writer가 확인 필요 표시와 함께 작성"
 ---
 
-# 컨셉 디렉션 노트 — "조용히 피어나는 가을의 약속"
+# 컨셉 디렉션 노트: "Warm Paper & Ink"
 
 ## 톤앤매너
 
-2026년 10월의 늦가을 토요일, 서울 강남 호텔 정통 예식의 격식을 유지하면서도 신랑신부의 따뜻한 인간미를 잃지 않는 **modern romantic + soft botanical**. 화려한 고채도 대신 더스티 로즈의 부드러운 분홍과 세이지 그린의 차분한 녹음을 페어링해, "꽉 찬 화려함"이 아닌 "여백 속에 피어나는 우아함"을 추구한다. 호텔 청첩장 특유의 무거움을 피하기 위해 영문 세리프와 스크립트를 절제해서 사용하고, 한글은 Nanum Myeongjo의 단정한 균형으로 어른 세대도 편안하게 읽을 수 있도록 한다.
+1월 첫 일요일 오후, 컨벤션 웨딩홀에서 올리는 격식 있는 예식이다. 키워드 **클래식 · 미니멀 · 차분한**에 맞춰, 따뜻한 종이색 바탕 위에 잉크색 세리프 글자와 실제 사진만 놓는 인쇄물 청첩장의 절제를 목표로 한다. 장식으로 분위기를 만들지 않고 여백과 글자 간격으로 품위를 만든다. 겨울 예식이지만 차가운 회색 대신 베이지 수트와 아이보리 드레스에서 가져온 따뜻한 중성색을 쓴다.
 
 ## 핵심 비주얼 컨셉
 
-- **컬러 키 무드**: ivory 배경(#FBF7F3) 위에 dusty rose(#C9A2A2)와 sage(#A8B59C)가 1:1로 균형을 이루고, 핵심 강조에는 deep rosewood(#8B5A5A)를 점처럼 사용. 인쇄물 청첩장을 모바일로 옮긴 듯한 종이 질감.
-- **타이포 키 무드**: 한글 Nanum Myeongjo의 또박또박한 격식 + 영문 Cormorant Garamond의 가는 우아함 + Allura 스크립트로 "&" "Save the Date" 같은 한 단어만 손글씨처럼 강조. 세 폰트가 위계를 명확히 한다.
-- **이미지 키 무드**: 워터컬러 보태니컬 일러스트 + 라인아트 디바이더. 사진(placeholder)이 빠지는 자리는 일러스트가 자연스럽게 메운다.
-- **모션 키 무드**: "조용히 피어나는" — 천천히 떨어지는 옅은 꽃잎, 부드럽게 페이드되는 섹션, 워터컬러처럼 번지는 이미지 reveal.
+- **컬러**: 바탕 #F8F5F0(warm paper white)은 화이트 스튜디오 사진의 벽색과 이어지도록 골랐다. 본문 #2B2723(ink black)은 블랙 수트·드레스 컷과 같은 계열이라, 블랙 의상 사진이 페이지에서 튀지 않는다. 강조는 #5A4C3E(deep walnut) 한 가지만 쓴다. #9A8670(taupe)은 대비가 3.21이라 영문 대형 디스플레이·라인·장식에만 쓰고 본문에는 쓰지 않는다.
+- **사진 톤 3가지와의 조화**: ① 밝은 화이트 스튜디오 컷은 바탕색과 경계 없이 이어진다. ② 블랙 의상 컷은 ink 텍스트와 짝을 이룬다. ③ 녹색·전구 벽 컷은 채도가 가장 높아서 갤러리 중반에 모으고, 그중 1장(jo--9115)은 흑백본을 써서 채도 연속을 끊는다. 페이지 UI에는 녹색·금색을 쓰지 않는다.
+- **타이포**: Noto Serif KR(300/400)의 단정한 획 + Cormorant Garamond의 가는 영문. 스크립트 폰트는 쓰지 않는다. '&'와 날짜 일부만 Cormorant italic으로 변화를 준다.
+- **이미지**: 사진이 전부다. AI 자산은 hairline 디바이더와 선택적 모노그램, 두 가지뿐이다.
+
+## 사진 운용
+
+- **히어로 jo--8400**: 베일을 걷는 순간의 전신 컷. 배경이 균일한 웜 화이트이고 상단 약 30%가 비어 있어 영문 이름·날짜를 사진 위에 직접 올릴 수 있다. 모바일 세로 화면에서 `object-fit: cover; object-position: center 70%` 기준으로 두 사람이 잘리지 않게 한다.
+- **og 썸네일 jo--8670**: 두 얼굴이 크게 보이는 상반신 컷이라 카카오톡 미리보기에서 식별이 잘 된다. 가로 1067 x 세로 560(y≈330~890)으로 크롭 후 1200x630으로 리사이즈해 `images/og-thumbnail.jpg`로 저장한다. 사진 크롭은 image-artist가 담당하며, gpt-image2로 og를 만들지 않는다.
+- **갤러리 15장 흐름**: 밝은 스튜디오(1~2) → 창가·꽃장식 문(3~6) → 꽃·전구 벽(7~10) → 블랙 의상(11~14) → 화이트 셔츠 경쾌한 마무리(15). 가로 컷 4장(3, 4, 5, 13)은 그리드에서 정사각 중앙 크롭, lightbox에서 원본 비율.
+- **흑백 사용 원칙**: 같은 컷의 컬러·흑백 중복 금지. 흑백은 jo--9115, jo--9534 두 컷만 흑백본으로 쓴다.
 
 ## 카피라이터에게 가이드
 
-- mood_keywords의 첫 번째 키워드 **"modern romantic"** 을 카피 톤의 중심에 둘 것. 너무 옛스러운 정중체("일가 친지를 모시고...")는 피하고, 동시에 너무 캐주얼한 반말체도 금지. **차분한 경어체 + 짧고 시적인 호흡**.
-- 호텔 정통 예식이므로 부모님 함자는 풀네임으로 정중히 표기하되 "장남 김민준 / 장녀 박서연" 호칭을 명확히.
-- 인사말은 4~6문장 내외로 짧게. "두 사람이 사랑으로 만나..." 같은 클리셰 대신 가을·약속·시작의 모티프를 한두 번 살짝 사용.
-- 영문 한 줄(예: "We're getting married" / "Save the Date 10.17.2026")을 포인트로 삽입.
-- "마음 전하실 곳" 안내문은 상투적인 부담 멘트 대신 짧고 담백하게.
+- 중심 키워드는 **클래식**. 정중한 경어체, 짧은 문장, 과장된 수식어 없이 담백하게.
+- 혼주 표기: "방주경 · 주진숙의 아들 인혁", "손홍희 · 김연주의 딸 유민". **장남/장녀 등 서열 표기 금지**, "아들", "딸"만 쓴다.
+- 일시 표기: "2027년 1월 3일 일요일 오후 3시". 영문은 "Sunday, January 3, 2027 · 3PM" 또는 "2027. 01. 03. SUN 3PM".
+- 장소 표기: "더컨벤션 송파문정 13층 아모르홀", 주소 "서울 송파구 송파대로 155 NH송파농협 13층".
+- 1월 예식이므로 새해·겨울의 이미지를 한 번 정도 은근히 써도 좋다. 계절 클리셰 나열은 피한다.
+- 교통편 정보는 사용자 미제공. 작성 시 "확인 필요" 표시를 남긴다.
+- 계좌번호는 placeholder.
 
 ## 이미지 아티스트에게 가이드
 
-- imagery_direction을 모든 이미지에 일관되게 적용 — **워터컬러 보태니컬 + dusty rose & sage 듀오톤**.
-- 컬러 팔레트의 background(#FBF7F3)를 모든 이미지의 베이스로 사용해 페이지에 자연스럽게 녹아들 것.
-- 필수 이미지: ① 히어로 워터컬러 플로럴 일러스트 (세로 4:5, 인물 placeholder 대체), ② 섹션 디바이더용 sage 라인아트 식물 (가로 narrow), ③ 갤러리 placeholder 5장 (4:5 세로, 더스티 로즈/세이지 워터컬러 추상), ④ 카운트다운/캘린더 코너 장식 spot illustration (rose 봉오리, 유칼립투스 가지).
-- gpt-image2로 생성. 모든 이미지에 동일 시드/스타일 키워드("watercolor botanical, dusty rose, sage green, ivory background, soft, paper texture, minimal line accents") 일관 적용.
+- 생성 대상은 **최소한으로**: ① hairline 디바이더(필수) ② "I & Y" 모노그램(선택). 둘 다 단색 #9A8670, 투명 배경, 채색·그라데이션·질감 없음. 프롬프트 키워드 예: "minimal hairline divider, single thin line, tiny pair of leaves at center, monoline, taupe #9A8670, transparent background, no texture".
+- **사진 처리**: images/photos/의 실제 사진은 색 보정·필터·리터칭을 하지 않는다. 할 일은 og 썸네일 크롭 1건뿐이다.
+- 히어로·갤러리용 AI 이미지는 만들지 않는다.
 
 ## 모션 디자이너에게 가이드
 
-- motion_mood_hint를 모션 명세의 베이스라인으로 사용.
-- 배경 애니메이션 1순위: **꽃잎 파티클(Canvas)** — 밀도 낮게(8~12개), dusty rose 컬러, opacity 0.15~0.35, 낙하 속도 매우 느리게(40~80초/화면). 2순위: 세이지×로즈 그라디언트 메시 슬로우 모션.
-- 인터랙션: 갤러리 가로 스와이프 + 핀치 줌 lightbox / 계좌 복사 버튼 / D-day 카운트다운 / 음악 토글 / RSVP 폼 / 카카오 공유.
-- prefers-reduced-motion 분기 필수 — 파티클·메시 OFF, fade-in 즉시 표시.
+- 상시 배경 애니메이션(파티클, 그라디언트 메시, 꽃잎) **사용하지 않음**. 사진과 여백이 주인공이므로 움직임은 스크롤 진입 fade-in 하나로 통일한다.
+- 갤러리 lightbox 스와이프·핀치 줌, 계좌 복사, 음악 토글(audio/bgm.mp3, 자동재생 금지), D-day 카운트다운은 유지하되 장식 효과 없이 기능 위주로.
+- prefers-reduced-motion 분기 필수.
 
 ## 프론트엔드 개발자에게 가이드
 
-- layout_mood의 풀스크린 히어로 + 80~120px 섹션 간격 + 가운데 정렬 + 1.7~1.9 행간을 그대로 구현.
-- sections_order 순서로 단일 index.html에 모두 포함.
-- 폰트는 Google Fonts CDN(Nanum Myeongjo, Cormorant Garamond, Allura) + Pretendard CDN.
-- 컬러 변수는 :root에 CSS 커스텀 프로퍼티로 정의(--color-primary, --color-secondary, --color-accent, --color-bg, --color-surface, --color-text, --color-muted).
-- 모바일 우선 (375px 기준), 768px 이상에서 max-width 480px 정도로 중앙 정렬 카드 형태.
-- 모션은 motion-designer 명세를 그대로 구현하되 prefers-reduced-motion 분기 필수.
+- CSS 변수: `--color-primary/#9A8670`, `--color-secondary/#DDD3C5`, `--color-accent/#5A4C3E`, `--color-bg/#F8F5F0`, `--color-surface/#EFEAE2`, `--color-text/#2B2723`, `--color-muted/#6B6156`.
+- primary(#9A8670)는 24px 이상 영문 디스플레이 또는 비텍스트 장식에만. 작은 글자는 text/muted/accent만.
+- 사진 경로는 `images/photos/` 원본 그대로 참조. 갤러리 그리드 썸네일은 `loading="lazy"`.
+- 모바일 375px 기준, 768px 이상은 max-width 480px 중앙 정렬.
 
-## QA 체크포인트 (invitation-qa 참고)
+## QA 체크포인트
 
-- 신랑신부/부모 함자 오타 없는지
-- 예식일/장소/주소 일치성
-- 모바일 375px ~ 데스크톱 1440px 반응형
-- prefers-reduced-motion 분기 동작
-- 갤러리 5장 모두 로드, lightbox 핀치줌 동작
-- 계좌 복사·카카오 공유·RSVP 폼 동작
-- 컬러 대비 WCAG AA(텍스트 #3A2E2A on #FBF7F3 → 충분)
+- 서열 표기에 "장남/장녀/차남/차녀"가 없는지
+- 예식일 2027-01-03 = 일요일 표기 일치(캘린더 하이라이트 포함)
+- 갤러리 15장 순서·파일명이 위 목록과 일치, 같은 컷 컬러/흑백 중복 없음, 히어로 컷이 갤러리에 없음
+- og:image가 jo--8670 크롭본을 가리키는지
+- BGM이 audio/bgm.mp3를 쓰고 자동재생하지 않는지
+- 텍스트 대비: muted #6B6156 on surface 5.05 이상, primary는 본문에 쓰이지 않는지

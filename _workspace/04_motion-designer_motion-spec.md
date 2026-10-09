@@ -1,525 +1,408 @@
 ---
-motion_mood: "botanical-soft × romantic-lush hybrid"  # 컨셉 시트의 modern-romantic + soft-botanical 융합
-density: "medium"                                       # 사용자 요청 기본값. 꽃잎 24개로 컨셉(8-12개)보다 살짝 풍성하지만 opacity를 낮춰 시각적 밀도는 유지
+motion_mood: "calm-minimal"
+density: "minimal"
+background_animation: "none"                # 컨셉 시트 결정: 상시 배경 애니메이션(파티클·꽃잎·메시·반딧불이) 사용 안 함
 performance_budget:
-  particles_max: 24                                     # 동시 활성 꽃잎 상한 (배경 1순위)
-  particles_min_reduced: 0                              # prefers-reduced-motion 시 0개
+  particles_max: 0
+  infinite_loops_max: 1                     # 음악 재생 중 이퀄라이저 3바만 허용. 그 외 무한 루프 없음
+  concurrent_transitions_max: 4             # 동시에 진행되는 reveal 트랜지션 상한 (섹션 1개 분량)
+  animated_props: ["transform", "opacity"]
+  forbidden_props: ["width", "height", "top", "left", "margin", "padding", "filter", "box-shadow", "background-position"]
   fps_target: 60
-  fps_min: 50                                           # 5초 측정 후 미달 시 count 50%로 감소
-  cpu_budget: "≤2% (idle 모바일 기준)"
-  reduced_motion_strategy: "static-only (canvas/mesh OFF, fade-in 즉시 표시)"
-  paint_safe_props: ["transform", "opacity", "filter (정적만)"]
-  forbidden_props: ["width", "height", "top", "left", "margin", "padding (animated)"]
+  reduced_motion_strategy: "static-only"    # transform 전부 제거, 즉시 표시. 사용자가 직접 조작하는 제스처(스와이프·핀치)만 유지
 concept_alignment:
-  - "modern romantic → 부드러운 ease-out + 600~900ms 트랜지션"
-  - "soft botanical → 꽃잎 파티클 dusty rose, opacity 0.18~0.32"
-  - "refined warmth → blur reveal로 워터컬러 번짐 효과"
-  - "조용히 피어나는 → 빠른 스내피 모션 금지, stagger 80~120ms 차분"
+  - "클래식·미니멀·차분한 → 움직임은 스크롤 진입 fade-in(opacity + translateY 16px→0, 800ms ease-out) 하나로 통일"
+  - "사진이 주인공 → 히어로 사진 settle(scale 1.04→1.0, 2.4s) 1회 외에 사진 위 효과 없음. blur·색 오버레이·ken-burns 루프 금지"
+  - "기능 위주 인터랙션 → lightbox 스와이프·핀치 줌, 계좌 복사 라벨 전환, 음악 토글. 카운트업·펄스·ripple·토스트 없음"
 ---
 
-# Motion Specification — "조용히 피어나는 가을의 약속"
+# Motion Specification: "Warm Paper & Ink"
 
-> **Frontend-developer 가이드**: 본 명세의 모든 수치는 그대로 구현 대상. CSS 변수 토큰(섹션 7)을 먼저 :root에 정의하고, 각 모션은 해당 토큰을 참조해 일관성 유지. 모든 무한 루프 모션은 `@media (prefers-reduced-motion: reduce)` 분기 필수.
+> **frontend-developer에게**: 수치는 그대로 구현 대상이다. 5장의 CSS 토큰을 먼저 `:root`에 정의하고 모든 모션이 토큰을 참조하게 한다. 각 항목의 `reduced-motion` 줄은 `@media (prefers-reduced-motion: reduce)`와 JS `matchMedia` 분기 양쪽에서 구현한다.
+
+### 모션 무드 결정 근거
+
+- 스킬 매핑표 기준으로 첫 키워드 "클래식"은 `elegant-classic`(SVG stroke-draw + 마스킹 텍스트 리빌)이다. 그러나 컨셉 시트 `motion_mood_hint`가 "상시 배경 애니메이션 없음, 섹션 진입 fade-in 하나로 통일"을 명시하므로, 움직임의 양과 종류는 `calm-minimal`을 따른다.
+- `calm-minimal`의 대표 배경인 그라디언트 메시도 쓰지 않는다. 바탕은 `--color-bg #F8F5F0` 단색이다.
+- 마스킹 텍스트 리빌, split char, stroke-draw, stagger 6단계 이상, scale-in, blur reveal은 쓰지 않는다.
 
 ---
 
 ## 1. 애니메이션 배경
 
-본 청첩장은 **두 종류의 배경 모션을 레이어링**한다 (꽃잎 파티클 + 그라디언트 메시). 두 레이어가 동시에 동작해도 GPU compositor 내에서 처리되어 모바일 60fps를 안전하게 유지한다.
-
-### 1-A. 꽃잎 파티클 (Canvas 2D, 1순위)
+**사용하지 않는다.** 컨셉 시트 "모션 디자이너에게 가이드"의 결정을 따른다.
 
 | 항목 | 값 |
 |------|-----|
-| 트리거 | `DOMContentLoaded` → 무한 루프 (단, viewport 외 일시정지) |
-| 구현 방식 | `<canvas>` fixed 전체 화면, Canvas 2D, `requestAnimationFrame` |
-| z-index | 0 (콘텐츠 뒤, body bg 위) |
-| pointer-events | `none` |
-| devicePixelRatio | 적용 (DPR 2 기기에서 sharp 렌더) |
+| Canvas / 파티클 | 없음. `<canvas>` 요소를 만들지 않는다 |
+| 그라디언트 메시·패럴랙스 | 없음 |
+| 페이지 바탕 | `body { background: var(--color-bg); }` 단색 |
+| 히어로 텍스트 가독성 그라디언트 | 정적. `linear-gradient(to bottom, rgba(248,245,240,0.55) 0%, rgba(248,245,240,0) 38%)`를 히어로 사진 위 `::before`로 얹는다. 애니메이션 없음 |
+| reduced-motion | 해당 없음 (정적이므로 동일) |
 
-**파라미터:**
+---
 
-| 파라미터 | 값 | 비고 |
-|---------|-----|------|
-| count | **24** | 사용자 요청 기본(medium). 컨셉 시트의 8~12개보다 살짝 풍성하나 opacity를 낮춰 시각 밀도 유지 |
-| color | dusty rose `#C9A2A2` (70%) + sage `#A8B59C` (30%) | 랜덤 가중 추출 |
-| shape | 작은 ellipse (꽃잎 형태) — `ctx.ellipse(0, 0, size*0.4, size, 0, 0, 2π)` | 가벼운 드로잉 |
-| size_range | `[8, 16]` px | uniform random |
-| opacity_range | `[0.18, 0.32]` | 컨셉 시트(0.15~0.35) 준수 — 매우 은은 |
-| 낙하 duration | `[14000, 22000]` ms (14~22초) | 컨셉 시트의 "40~80초" 대비 빠르게 했지만 매우 천천히로 인식되는 범위 (실제 픽셀 속도 ≈ 40px/sec) |
-| 수평 드리프트 | `sin` wave, amplitude `[20, 40]` px, period 4초 | 자연스러운 좌우 흔들림 |
-| 회전 | 초기 random `[0, 2π]`, 회전속도 `[-0.015, 0.015]` rad/frame | 매우 천천히 회전 |
-| 시작 y | 첫 프레임 `random(-50, viewport_height)` (서서히 등장 인상) | 페이지 진입 시 화면 가득 안 채움 |
-| 재생성 | y > viewport_height + 30 시 `reset()` (y = -30, x = random) | 풀 단방향 무한 루프 |
+## 2. 스크롤 시퀀스
 
-**성능:**
-- 24 파티클 × 60fps × Canvas 단순 ellipse 드로잉 = 모바일 ≤1.5% CPU 측정값
-- viewport 외 시 `IntersectionObserver`로 RAF 중단 (canvas 자체를 observe하면 항상 viewport 내이므로, 대신 `document.visibilityState === 'hidden'` 시 일시정지)
-- 5초 후 fps 측정 (`(frames / elapsed * 1000)`) → 50fps 미만 시 count를 12개로 감소
+### 2-0. 공통 reveal 규칙 (모든 섹션)
 
-**prefers-reduced-motion 대체:**
-- Canvas 자체 미생성 (`return` early)
-- 대신 hero 섹션 좌상단/우하단에 **정적 SVG 꽃잎 4개** 배치 (각각 dusty rose 2개, sage 2개, opacity 0.4, 회전 fixed)
-- 위치: `top: 8%, left: 6%`, `top: 12%, right: 8%`, `bottom: 18%, left: 10%`, `bottom: 22%, right: 12%`
-
-**구현 스니펫 (참고용):**
-```js
-class Petal {
-  constructor(W, H, init) { this.reset(W, H, init); }
-  reset(W, H, init) {
-    this.x = Math.random() * W;
-    this.y = init ? Math.random() * H : -30;
-    this.size = 8 + Math.random() * 8;
-    this.rot = Math.random() * Math.PI * 2;
-    this.rotSpeed = (Math.random() - 0.5) * 0.03;
-    this.dur = 14000 + Math.random() * 8000;
-    this.start = performance.now() - (init ? Math.random() * this.dur : 0);
-    this.swayAmp = 20 + Math.random() * 20;
-    this.swayPhase = Math.random() * Math.PI * 2;
-    this.opacity = 0.18 + Math.random() * 0.14;
-    this.color = Math.random() < 0.7 ? '#C9A2A2' : '#A8B59C';
-  }
-  step(now, W, H) {
-    const t = (now - this.start) / this.dur;
-    if (t > 1) { this.reset(W, H, false); return; }
-    this.y = -30 + (H + 60) * t;
-    this.baseX = this.x; // (init 시 한번만 기록)
-    this.x += Math.sin(now / 1000 + this.swayPhase) * 0.3;
-    this.rot += this.rotSpeed;
-  }
-  draw(ctx) {
-    ctx.save();
-    ctx.globalAlpha = this.opacity;
-    ctx.translate(this.x, this.y);
-    ctx.rotate(this.rot);
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, this.size * 0.4, this.size, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-}
-```
-
-### 1-B. 그라디언트 메시 (CSS, 2순위, 매우 은은)
+**효과는 하나다**: `opacity 0→1` + `translateY(16px→0)`, `var(--dur-reveal)` 800ms, `var(--ease-out)`.
 
 | 항목 | 값 |
 |------|-----|
-| 트리거 | 페이지 진입 → 무한 루프 |
-| 구현 방식 | `body::before` pseudo, 4개 `radial-gradient` 레이어, `background-position` 애니메이션 |
-| z-index | -1 (body bg 위, 모든 콘텐츠 뒤) |
-| pointer-events | `none` |
-
-**파라미터:**
-
-```css
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 60% 50% at 20% 30%, rgba(201, 162, 162, 0.18), transparent 70%),
-    radial-gradient(ellipse 50% 60% at 80% 70%, rgba(168, 181, 156, 0.15), transparent 70%),
-    radial-gradient(ellipse 70% 40% at 50% 90%, rgba(139, 90, 90, 0.08), transparent 70%),
-    radial-gradient(ellipse 40% 50% at 70% 10%, rgba(201, 162, 162, 0.10), transparent 70%);
-  background-size: 200% 200%;
-  animation: meshDrift 60s ease-in-out infinite alternate;
-  will-change: background-position;
-}
-@keyframes meshDrift {
-  0%   { background-position: 0% 0%, 100% 100%, 50% 100%, 100% 0%; }
-  50%  { background-position: 30% 20%, 70% 80%, 60% 70%, 80% 20%; }
-  100% { background-position: 60% 40%, 40% 60%, 80% 50%, 60% 40%; }
-}
-```
-
-**성능:**
-- CSS 그라디언트는 GPU compositor 처리, CPU 영향 거의 없음
-- `will-change: background-position`은 페이지 전체에서 1회만 사용
-
-**prefers-reduced-motion 대체:**
-- `animation: none` (정적 첫 프레임 고정)
-- 그라디언트는 유지 (시각적 깊이감 제공)
+| 트리거 | `IntersectionObserver`, `threshold: 0.15`, `rootMargin: "0px 0px -10% 0px"` |
+| 반복 | 1회. 진입 후 `unobserve`. 위로 다시 스크롤해도 숨기지 않는다 |
+| 단위 | 섹션당 최대 3개 그룹: ① 섹션 라벨(영문) + 한글 제목 + 디바이더 ② 본문 ③ 버튼·부가 정보 |
+| stagger | 그룹 간 `var(--stagger)` 120ms. `transition-delay: calc(var(--i) * var(--stagger))`, `--i`는 0~2 |
+| 클래스 | 대상 요소 `.reveal`, 진입 시 `.is-visible` 부여 |
+| will-change | 지정하지 않는다 (transform/opacity 단발 트랜지션이라 불필요) |
 
 ```css
+.js .reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity var(--dur-reveal) var(--ease-out),
+    transform var(--dur-reveal) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * var(--stagger));
+}
+.js .reveal.is-visible { opacity: 1; transform: none; }
+
 @media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
+  .js .reveal { opacity: 1; transform: none; transition: none; }
 }
 ```
 
----
+**안전장치 (Must)**:
+- 숨김 상태는 `<html>`에 `js` 클래스가 있을 때만 적용한다. `<head>` 첫 인라인 스크립트에서 `document.documentElement.classList.add('js')`. JS가 꺼져 있거나 스크립트 오류가 나도 콘텐츠는 보인다.
+- `IntersectionObserver` 미지원 브라우저에서는 모든 `.reveal`에 즉시 `.is-visible`를 붙인다.
+- 로드 시점에 이미 화면 안에 있는 요소는 observer 첫 콜백에서 바로 보이게 된다(별도 처리 불필요).
 
-## 2. 스크롤 시퀀스 (섹션별 진입 애니메이션)
+### 2-1. Hero (페이지 로드, 스크롤 트리거 아님)
 
-**공통 패턴**: `IntersectionObserver`로 섹션이 viewport 진입(threshold 0.15) 시 `.is-visible` 클래스 부여 → CSS transition으로 fade-up.
+| Step | 요소 | 시작 | Duration | Easing | 효과 |
+|------|------|------|----------|--------|------|
+| 1 | 히어로 사진 `jo--8400.jpg` | 이미지 `decode()` 완료 직후 | 2400ms (`--dur-settle`) | `--ease-settle` | `transform: scale(1.04) → scale(1)` 1회. opacity는 처음부터 1 |
+| 2 | 상단 텍스트 블록 ("Inhyeok & Yumin", "2027. 01. 03. SUN 3PM") | step 1 시작 + 400ms | 800ms | `--ease-out` | 공통 reveal과 동일 (opacity + translateY 16px→0) |
+| 3 | 하단 텍스트 블록 ("방인혁 · 손유민", 예식장) | step 1 시작 + 700ms | 800ms | `--ease-out` | 공통 reveal과 동일 |
 
-```css
-.reveal { opacity: 0; transform: translateY(20px); transition: opacity var(--dur-slow) var(--ease-standard), transform var(--dur-slow) var(--ease-standard); }
-.reveal.is-visible { opacity: 1; transform: translateY(0); }
-```
+- 사진 settle은 `<img>`에 직접 적용하고 부모에 `overflow: hidden`을 둔다. `will-change: transform`은 settle 시작 시 부여하고 `transitionend`에서 제거한다.
+- `decode()`가 1500ms 안에 끝나지 않으면 settle 없이 사진을 정적으로 두고 텍스트만 reveal한다(늦게 뜬 사진이 줌아웃되며 들어오는 어색함 방지).
+- 히어로 높이는 `100svh`(미지원 시 `100vh`). 주소창 변화로 높이가 바뀌어도 애니메이션과 무관하다.
+- **reduced-motion**: settle 없음(scale 1 고정), 텍스트 두 블록 즉시 표시.
 
-`reveal-stagger-N` 자식들은 `transition-delay: calc(var(--stagger-i, 0) * 0.1s)` 적용.
+### 2-2. Greeting
 
-### 2-1. Hero 진입 (페이지 로드)
+- 공통 reveal. 그룹 ① 라벨·제목 ② 인사말 본문 전체(단락 단위로 쪼개지 않는다) ③ 혼주 표기.
+- **reduced-motion**: 즉시 표시.
 
-| Step | Element | Delay | Duration | Easing | Effect |
-|------|---------|-------|----------|--------|--------|
-| 1 | 영문 eyebrow ("We're getting married") | 200ms | 800ms | ease-out | opacity 0→1 + translateY(-12px → 0) |
-| 2 | 보태니컬 일러스트 | 400ms | 1200ms | ease-out | opacity 0→1 + scale(1.03 → 1.0) + filter blur(6px → 0) |
-| 3 | 신랑 이름 | 900ms | 700ms | ease-out | opacity 0→1 + translateY(20px → 0) |
-| 4 | "&" 스크립트 | 1100ms | 700ms | ease-out | opacity 0→1 + scale(0.92 → 1.0) |
-| 5 | 신부 이름 | 1300ms | 700ms | ease-out | opacity 0→1 + translateY(20px → 0) |
-| 6 | 예식일 | 1700ms | 700ms | ease-out | opacity 0→1 |
-| 7 | 스크롤 인디케이터 (이중 화살표 bounce) | 2300ms | infinite | ease-in-out | translateY(0 ↔ 6px) loop 1.6s, scroll 시 fadeOut 400ms |
+### 2-3. Couple-intro
 
-**prefers-reduced-motion 대체:**
-- 모든 step 동시 표시 (delay/duration 0), opacity 1, transform none
-- 스크롤 인디케이터: bounce 정지, 정적 화살표 표시
+- 공통 reveal. 그룹 ① 라벨·제목 ② 신랑·신부 블록 두 개를 **하나의 그룹**으로 동시에(좌우 슬라이드인 없음) ③ 연락하기 버튼 등 부가 요소.
+- **reduced-motion**: 즉시 표시.
 
-### 2-2. Greeting 섹션
+### 2-4. Calendar + D-day
 
-- 트리거: 섹션 진입 (threshold 0.2)
-- 효과: **masked text reveal** — 단락별 자식 요소에 `overflow: hidden` 부모 + 자식 `translateY(100%) → 0`, opacity 0 → 1
-- duration: 900ms
-- stagger: 단락 간 150ms (총 3단락 가정)
-- easing: `var(--ease-emphasized)` — `cubic-bezier(0.2, 0, 0, 1)`
+- 공통 reveal. 그룹 ① 라벨·제목 ② 2027년 1월 달력 그리드 ③ D-day 문구.
+- 예식일(1월 3일 일요일) 셀 강조는 **정적**이다: 지름 36px 원, 배경 `--color-accent`, 글자 `#FFFFFF`(대비 8.27). 펄스·scale·glow 없음.
+- D-day 숫자는 카운트업 없이 최종 값을 바로 렌더한다(3-5 참조).
+- **reduced-motion**: 즉시 표시.
 
-**prefers-reduced-motion**: 즉시 표시, transform 없음
+### 2-5. Gallery
 
-### 2-3. Couple-intro 섹션 (신랑신부 + 부모 함자)
+- 공통 reveal. 그룹 ① 라벨·제목 ② 3열 그리드 전체를 **한 덩어리로**(9칸 개별 stagger 금지) ③ "더보기" 버튼.
+- 썸네일 개별 로딩 표시는 3-1 참조.
+- **reduced-motion**: 즉시 표시.
 
-- 트리거: 섹션 진입 (threshold 0.25)
-- 효과: 좌(신랑) → 우(신부) 양쪽에서 슬라이드인
-  - 신랑 카드: `translateX(-24px) → 0`, opacity 0→1, 700ms
-  - 신부 카드: `translateX(24px) → 0`, opacity 0→1, 700ms, delay 150ms
-  - 부모 함자: opacity 0→1, 600ms, delay 350ms
-- easing: ease-out
+### 2-6. Venue / Account / RSVP / Guestbook / Share
 
-**prefers-reduced-motion**: opacity 0→1만 (300ms)
-
-### 2-4. Calendar 섹션
-
-- 트리거: 섹션 진입 (threshold 0.3)
-- 효과:
-  - 캘린더 그리드: opacity 0→1, scale(0.97→1.0), 700ms
-  - 예식일 셀: 캘린더 등장 후 500ms 뒤 **부드러운 펄스** (scale 1 → 1.08 → 1, 1.6s, 3회 반복 후 정지)
-  - 펄스 색상 변화: dusty rose 배경의 alpha 0.4 → 0.7 → 0.4 동기화
-  - **D-day 카운트업**: 0 → 실제 D-day까지 1400ms, ease-out cubic, 펄스와 동시 시작
-
-**구현 (D-day 카운트업):**
-```js
-function countUp(el, target, dur = 1400) {
-  const start = performance.now();
-  const tick = (now) => {
-    const t = Math.min(1, (now - start) / dur);
-    const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
-    el.textContent = Math.round(target * eased);
-    if (t < 1) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
-}
-```
-
-**prefers-reduced-motion**:
-- 카운트업 → 즉시 최종 값 표시
-- 펄스 → 정적 강조 (배경색 고정)
-
-### 2-5. Gallery 섹션
-
-- 트리거: 섹션 진입 (threshold 0.2)
-- 효과:
-  - 첫 슬라이드: opacity 0→1 + scale(1.03 → 1.0) + **filter blur(4px → 0)**, 1100ms (워터컬러 번짐 효과 — 컨셉 시트 motion_mood_hint 직접 인용)
-  - 인디케이터 dots: opacity 0→1, 500ms, delay 600ms
-- easing: ease-out
-
-**prefers-reduced-motion**: blur 제거, 즉시 opacity 1
-
-### 2-6. Venue / Account / RSVP / Guestbook / Share 섹션 (공통)
-
-- 트리거: 섹션 진입 (threshold 0.2)
-- 효과: 헤더 → 본문 stagger fade-up
-  - 섹션 제목: opacity 0→1 + translateY(16px → 0), 700ms
-  - 본문 자식들: stagger 100ms, 동일 트랜지션
-- easing: ease-out
-
-**prefers-reduced-motion**: opacity 0→1만 (300ms), transform 없음
+- 공통 reveal, 그룹 구성은 2-0 규칙(최대 3그룹) 그대로.
+- **reduced-motion**: 즉시 표시.
 
 ---
 
-## 3. 인터랙티브 요소 인벤토리
+## 3. 인터랙티브 요소
 
-### 🟥 Must (필수 — 출시 차단 항목)
+### 3-1. 갤러리 그리드 + 사진 로딩 성능 (Must)
 
-#### 3-1. D-day 카운트다운/카운트업
-- **위치**: calendar 섹션
-- **트리거**: 섹션 viewport 진입 시 1회
-- **동작**:
-  - 페이지 로드 시 `(예식일 - 오늘)` 일수 계산
-  - 0 → 계산값까지 1400ms ease-out cubic 카운트업
-  - 카운트업 종료 후 D-day 셀 펄스 (위 2-4 참조)
-- **시각**: 숫자 폰트는 Cormorant Garamond, 색상 deep rosewood `#8B5A5A`
-- **접근성**: `aria-live="polite"`로 마운트, 카운트업 종료 시 최종 값만 스크린리더 읽기
-- **reduced-motion**: 즉시 최종 값 표시, 펄스 없음
+**구성**: 15장, 3열 정사각 크롭 그리드. 처음 9장 노출, "더보기" 탭 시 10~15번 6장 추가. 순서·파일명은 컨셉 시트 `photos.gallery_order` 그대로.
 
-#### 3-2. 갤러리 스와이프 (터치)
-- **위치**: gallery 섹션
-- **라이브러리**: 없음 (vanilla touch event + CSS transform)
-- **동작**:
-  - 좌우 스와이프 (threshold 50px, 또는 속도 0.3px/ms 이상)
-  - 슬라이드 컨테이너: `transform: translateX(-N * 100%)`, transition 400ms ease-out
-  - 인디케이터 dot: 활성 dot은 width 24px / 비활성 8px (transition 300ms)
-  - 자동 슬라이드: 5000ms 간격, 사용자 인터랙션 시 일시정지 (10초 후 재개)
-  - 마지막 슬라이드에서 next 시 첫 슬라이드로 wrap (or 끝에서 멈춤 — UX 결정: **wrap 방식 채택**)
-- **시각 피드백**: 스와이프 중 손가락 따라 실시간 transform (drag), 떼면 snap
-- **햅틱**: 슬라이드 전환 완료 시 `navigator.vibrate(8)` (지원 시)
-- **접근성**:
-  - 좌우 화살표 버튼 (시각적으로 보임, 키보드 ←/→ 지원)
-  - `role="region"` + `aria-label="갤러리"` + `aria-roledescription="carousel"`
-  - 각 슬라이드 `aria-label="N / 5"` (예: "사진 3 / 5")
-- **reduced-motion**: 자동 슬라이드 OFF, 사용자 스와이프만 동작
+**로딩 명세**:
 
-#### 3-3. 계좌번호 복사 + 토스트
-- **위치**: account 섹션 각 항목 (양가 부모 4명 + 신랑 + 신부 = 6개)
-- **동작**:
-  - 버튼 클릭 → `navigator.clipboard.writeText(계좌번호)`
-  - 클립보드 복사 성공 → 토스트 페이드인 (200ms) + 1500ms 후 페이드아웃 (300ms)
-  - 토스트 메시지: "계좌번호가 복사되었습니다"
-  - 버튼 아이콘: 복사 아이콘 → **sage 체크마크** swap (400ms 동안), 1000ms 후 원복
-- **시각**: 토스트는 화면 하단 중앙 fixed, surface bg `#F2EAE2` + text `#3A2E2A`, border-radius 12px, padding 12px 20px
-- **햅틱**: `navigator.vibrate(15)` (지원 시)
-- **접근성**: 토스트 `role="status"` + `aria-live="polite"`, 버튼 `aria-label="계좌번호 복사"`
-- **fallback**: clipboard API 실패 시 (HTTPS 아님 등) `document.execCommand('copy')` 폴리필 시도, 그래도 실패 시 토스트 "복사에 실패했습니다. 직접 선택해주세요"
+| 항목 | 값 |
+|------|-----|
+| 히어로 `jo--8400.jpg` (68KB) | `loading="eager"`, `fetchpriority="high"`, `decoding="async"`, `<head>`에 `<link rel="preload" as="image" href="images/photos/jo--8400.jpg" fetchpriority="high">` |
+| 그리드 1~9번 | `loading="lazy"`, `decoding="async"`, `width`/`height` 속성에 원본 크기 명시(아래 표). 셀은 `aspect-ratio: 1 / 1; object-fit: cover`로 CLS 0 |
+| 그리드 10~15번 | 같은 속성 + 부모 `<li hidden>`. `display:none`인 lazy 이미지는 요청되지 않으므로 "더보기" 전까지 네트워크 0 |
+| 셀 placeholder | 셀 배경 `--color-surface #EFEAE2`. 이미지가 `load`되기 전에는 이 면만 보인다 |
+| 썸네일 등장 | `img.complete`가 아니면 `opacity: 0`에서 시작, `load` 이벤트에 `opacity 1` (`--dur-base` 300ms, `--ease-out`). 이미 캐시된 이미지는 즉시 1 |
+| 썸네일 파일 | 현재는 원본(긴 변 1600px)을 그대로 쓴다. 3열 셀은 375px 기준 약 120 CSS px라 과대하지만, 이 환경에 리사이즈 도구(ImageMagick·PIL·vips)가 없다. 썸네일 생성은 6장 Should 항목 |
+| 용량 참고 | 갤러리 15장 합계 약 2.6MB, 첫 9장 약 1.9MB, 10~15장 약 0.7MB. 가장 큰 파일 `op1789048062-02c.jpg` 432KB(8번) |
 
-#### 3-4. 부드러운 스크롤 (Smooth Scroll)
-- **구현**: CSS `html { scroll-behavior: smooth; }` (모든 앵커 링크에 적용)
-- **prefers-reduced-motion**: `scroll-behavior: auto` (즉시 점프)
-- **참고**: hash anchor 없으면 비활성. 향후 목차/네비 추가 시 활용
+원본 크기 (`width`/`height` 속성 및 lightbox 비율 계산용):
+
+| 번호 | 파일 | 크기 |
+|------|------|------|
+| 1, 2, 6~12, 14, 15 | jo--8670, jo--9213, op-05c, jo--9055, op-02c, jo--9115-mono, op-04c, jo--9716, op-07c, op-09c, op-11c | 1067x1600 |
+| 3 | jo--8753 | 1600x1194 |
+| 4, 5, 13 | op-01c, jo--9271, jo--9534-mono | 1600x1067 |
+
+**"더보기" 동작**:
+- 탭 → 10~15번 `<li>`의 `hidden` 제거. 높이 애니메이션 없음(layout 속성 금지). 새로 보인 6칸은 위 "썸네일 등장" 규칙으로만 페이드된다.
+- 버튼은 펼친 뒤 사라진다(접기 없음). 키보드 사용자를 위해 포커스를 10번 칸의 버튼으로 옮긴다.
+- **reduced-motion**: 썸네일 페이드 없이 즉시 표시.
+
+**그리드 셀 접근성**: 각 셀은 `<button type="button" aria-label="사진 N / 15 크게 보기">` 안에 `<img alt="">`. 사진 설명은 버튼 `aria-label`이 맡는다(copy-writer가 사진별 설명을 주면 그 문구로 교체).
+
+### 3-2. 갤러리 Lightbox: 스와이프 + 핀치 줌 (Must)
+
+**라이브러리 없음.** Pointer Events 하나로 터치·마우스·펜을 함께 처리한다(iOS Safari 13+ 지원).
+
+**열기/닫기**
+
+| 항목 | 값 |
+|------|-----|
+| 열기 | 그리드 셀 탭 → `<dialog>` 또는 `role="dialog" aria-modal="true" aria-label="사진 크게 보기"` 컨테이너 표시. 배경 `rgba(43,39,35,0.94)` (text 색 기반) |
+| 열기 모션 | 오버레이 `opacity 0→1`, 250ms `--ease-out`. scale·blur 없음 |
+| 닫기 수단 | 우상단 닫기 버튼(44x44), `Esc`, 사진 밖 빈 영역 탭, **scale 1일 때** 아래로 끌어내리기 |
+| 아래로 끌어 닫기 | 세로 이동량이 가로보다 크고 80px 이상이면 닫기. 끄는 동안 사진은 손가락을 따라 `translateY`, 오버레이 opacity는 `1 - dy/400`(최저 0.4). 80px 미만에서 놓으면 250ms에 원위치 |
+| 닫기 모션 | 오버레이 `opacity 1→0`, 200ms `--ease-in` |
+| 스크롤 잠금 | 열린 동안 `document.documentElement.style.overflow = 'hidden'`. 닫을 때 원복 |
+| 포커스 | 열면 닫기 버튼에 포커스, Tab은 lightbox 안에서 순환(닫기·이전·다음). 닫으면 열었던 그리드 셀로 포커스 복귀 |
+| 위치 표시 | 하단 중앙 "3 / 15" (Cormorant Garamond, `#F8F5F0`), `aria-live="polite"` |
+| 다른 UI | 음악 토글은 lightbox 아래에 깔린다(z-index: lightbox 100 > 음악 토글 50) |
+
+**스와이프 (scale === 1일 때만)**
+
+| 항목 | 값 |
+|------|-----|
+| 구조 | 가로 트랙에 15개 슬라이드. 트랙 `transform: translate3d(calc(-100% * index + dragX px), 0, 0)` |
+| 드래그 | 손가락을 1:1로 따라간다(트랜지션 없음) |
+| 전환 판정 | `|dx| ≥ 50px` 또는 속도 `≥ 0.3px/ms`. 가로 이동이 세로보다 클 때만 가로 스와이프로 인식 |
+| 스냅 | 350ms `--ease-standard` |
+| 양 끝 | 순환하지 않는다. 1번에서 오른쪽, 15번에서 왼쪽으로 끌면 이동량의 0.3배만 따라오고(저항) 놓으면 제자리로 스냅 |
+| 버튼 | 좌우 이전/다음 버튼(44x44, 반투명 `rgba(248,245,240,0.12)` 면 + 1px `rgba(248,245,240,0.4)` 테두리, 모서리 2px). 양 끝에서는 해당 버튼 `disabled` |
+| 키보드 | `←` / `→` 이동, `Esc` 닫기 |
+| 자동 재생 | 없음 |
+| 슬라이드 전환 시 | 떠나는 슬라이드의 줌 상태를 scale 1로 초기화 |
+| 햅틱 | 없음 (차분한 무드, iOS 미지원으로 경험 불일치) |
+
+**핀치 줌**
+
+| 항목 | 값 |
+|------|-----|
+| 대상 | 현재 슬라이드의 `<img>`. 슬라이드 영역에 `touch-action: none` (페이지 확대·스크롤 대신 직접 처리) |
+| 범위 | min 1, max 3 |
+| 중심 | 두 손가락 중점 기준. `transform: translate(tx, ty) scale(s)`, `transform-origin: 0 0`로 두고 중점이 고정되도록 tx/ty 보정 |
+| 더블탭 | 300ms 안에 두 번 탭(이동 10px 이하) → scale 1이면 탭 지점 기준 2배, 1보다 크면 1로. 전환 250ms `--ease-standard` |
+| 팬 | scale > 1일 때 한 손가락 드래그로 이동. 사진 가장자리가 화면 안쪽으로 들어오지 않게 clamp |
+| scale < 1 | 손가락을 놓으면 250ms에 1로 복귀 |
+| scale > 1인 동안 | 스와이프·아래로 끌어 닫기 비활성 |
+| 키보드 | `+` / `-`로 1.5배씩(선택 구현, Should) |
+| viewport meta | `user-scalable=no`·`maximum-scale=1` **금지**(접근성). lightbox 밖 페이지 확대는 그대로 허용 |
+
+**lightbox 이미지 로딩 (Must)**
+
+- 슬라이드 15개는 처음에 `<img data-src="..." width height>`만 두고 `src`를 비운다.
+- 열 때 현재 번호 ±1 슬라이드에만 `src`를 채운다. 이동할 때마다 새 ±1을 채운다. 한 번 채운 `src`는 유지한다.
+- 그리드와 같은 파일이므로 이미 본 사진은 캐시에서 즉시 뜬다.
+- 아직 안 받은 사진은 `width`/`height` 비율로 자리를 잡은 `--color-text` 면 위에, `load` 후 `opacity 0→1` 300ms로 나타난다. 스피너는 쓰지 않는다.
+- 사진 표시 크기: `max-width: 100vw; max-height: 100svh; object-fit: contain`. 원본 비율 그대로(가로 컷 4장 포함).
+
+**reduced-motion**:
+- 열기·닫기 페이드, 스냅, 더블탭 줌 전환, 원위치 복귀 모두 0ms(즉시).
+- 손가락을 따라가는 드래그·핀치 자체는 사용자가 직접 조작하는 것이므로 유지한다.
+
+### 3-3. 계좌번호 복사 (Must)
+
+**토스트 없이 버튼 라벨 전환으로 피드백한다** (컨셉 시트 지시).
+
+| 항목 | 값 |
+|------|-----|
+| 위치 | account 섹션 각 계좌 행 오른쪽 |
+| 버튼 | 텍스트 버튼 "복사", Pretendard 14px, 글자 `--color-accent`, 1px `--color-secondary` 테두리, 모서리 2px, 최소 높이 44px |
+| 동작 | `navigator.clipboard.writeText(계좌번호에서 하이픈 포함 원문)` |
+| 성공 | 라벨 "복사" → **"복사되었습니다"**, 2000ms 유지 후 "복사"로 복귀 |
+| 라벨 전환 모션 | 이전 라벨 `opacity 1→0` 120ms → 텍스트 교체 → `opacity 0→1` 120ms (`--dur-fast`) |
+| 레이아웃 고정 | 버튼에 "복사되었습니다" 길이 기준 `min-width`를 줘서 라벨이 바뀌어도 행 너비가 변하지 않게 한다(CLS 방지) |
+| 연타 | 2000ms 안에 다시 누르면 다시 복사하고 타이머만 재시작 |
+| 실패 폴백 | clipboard API 실패(비 HTTPS, 권한 거부) → 숨긴 `<textarea>` + `document.execCommand('copy')` 재시도. 그래도 실패하면 라벨 "복사하지 못했습니다" 2000ms + 계좌번호 텍스트를 `Selection`으로 선택해 사용자가 길게 눌러 복사하게 한다 |
+| 햅틱 | 성공 시 `navigator.vibrate?.(10)`. iOS Safari는 미지원이므로 조용히 무시된다 |
+| 접근성 | 버튼 `aria-label="신랑 아버지 방주경 계좌번호 복사"`처럼 대상 명시. 페이지에 시각적으로 숨긴 `role="status" aria-live="polite"` 영역 1개를 두고 "계좌번호가 복사되었습니다"를 넣는다 |
+| 계좌 묶음 접기 | copy-writer·frontend가 신랑측/신부측 접기를 쓰는 경우 `<details>/<summary>`로 구현하고 **높이 애니메이션은 하지 않는다**. 펼친 내용은 `opacity 0→1` 300ms만 |
+| reduced-motion | 라벨 즉시 교체(페이드 없음), 펼침 페이드 없음 |
+
+같은 패턴(라벨 → "복사되었습니다")을 venue 섹션 **주소 복사**와 share 섹션 **링크 복사**에도 그대로 쓴다.
+
+### 3-4. 음악 토글 (Must, 자동재생 없음)
+
+| 항목 | 값 |
+|------|-----|
+| 음원 | `<audio id="bgm" src="audio/bgm.mp3" loop preload="none">` (4.0MB, 192kbps, 약 2분 50초). `preload="none"`으로 사용자가 켜기 전에는 내려받지 않는다 |
+| 자동재생 | **하지 않는다.** 로드 시 `play()`를 호출하지 않는다. 첫 스크롤·첫 탭 같은 "아무 인터랙션"으로 시작하는 것도 하지 않는다. 오직 토글 버튼으로만 켠다 |
+| 위치 | `position: fixed; top: max(16px, env(safe-area-inset-top)); right: 16px; z-index: 50`. 페이지 전체에서 우상단에 고정 |
+| 크기 | 시각 원 40px, 터치 영역 44x44px |
+| 모양 | 원형(컨셉 시트가 지정한 유일한 원형 요소). 배경 `rgba(248,245,240,0.88)`, 1px `--color-secondary` 테두리, 아이콘 `--color-accent`. 그림자·backdrop-filter 없음 |
+| 꺼짐 아이콘 | 음표(인라인 SVG, stroke 1.5px) |
+| 켜짐 아이콘 | 이퀄라이저 3바(폭 2px, 간격 3px, 최대 높이 12px). 각 바 `transform: scaleY(0.35 ↔ 1)`, `transform-origin: bottom`, 1200ms `ease-in-out` `infinite alternate`, 바별 `animation-delay` 0 / -400ms / -800ms. 주기 1.2s라 점멸 기준(3Hz) 한참 아래 |
+| 아이콘 전환 | 두 아이콘 겹쳐 두고 `opacity` 크로스페이드 200ms |
+| 로딩 상태 | 탭 후 `playing` 이벤트 전까지 버튼 `aria-busy="true"`, 아이콘 opacity 0.5. 회전 스피너 없음 |
+| 볼륨 페이드 | 켤 때 `audio.volume` 0 → 0.6을 1500ms 동안 rAF로 올림. 끌 때 현재 값 → 0을 400ms 후 `pause()`. **iOS Safari는 `volume`이 읽기 전용이라 페이드 없이 즉시 재생·정지된다.** 기능상 문제 없으므로 Web Audio로 우회하지 않는다 |
+| 백그라운드 | `visibilitychange`로 탭이 숨겨지면 일시정지, 다시 보이면 "숨기기 직전에 재생 중이었던 경우에만" 재개 |
+| 재생 실패 | `play()` Promise가 reject되면 꺼짐 상태로 되돌리고 `aria-pressed="false"`. 오류 문구는 띄우지 않는다 |
+| 접근성 | `<button type="button" aria-pressed="false" aria-label="배경음악">`. `aria-pressed`로 상태 전달(라벨 문구는 고정). Enter/Space 동작은 `<button>` 기본. 포커스 링 2px `--color-accent`, offset 2px |
+| reduced-motion | 이퀄라이저 애니메이션 없음. 켜짐 상태는 높이가 다른 정적 3바(scaleY 0.5 / 1 / 0.7)로 표시해 꺼짐(음표)과 구분된다. 크로스페이드·볼륨 페이드는 유지해도 된다(볼륨은 시각 모션이 아님) |
+
+### 3-5. D-day 표시 (Should)
+
+**카운트업·펄스·실시간 초 단위 카운트다운 없음.** 숫자를 정적으로 보여준다.
+
+| 항목 | 값 |
+|------|-----|
+| 계산 기준 | 한국 시간(UTC+9) 날짜 기준 일수 차. `const now = new Date(Date.now() + 9*3600e3); const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()); const days = (Date.UTC(2027,0,3) - today) / 864e5;` |
+| 표기 | `days > 0`: "D-86" + "결혼식까지 86일 남았습니다" 형태(문구는 copy-writer 기준) / `days === 0`: "D-DAY" / `days < 0`: D-day 줄 숨김(달력은 유지) |
+| 갱신 | 로드 시 1회 + `visibilitychange`로 다시 보일 때 1회. 타이머 없음 |
+| 서체 | 숫자 Cormorant Garamond 28px, `--color-primary`(24px 이상 디스플레이 허용 범위) |
+| 확인용 | 2026-10-09 기준 D-86 |
+| reduced-motion | 해당 없음(원래 정적). 섹션 reveal만 2-0 규칙대로 즉시 표시 |
+
+### 3-6. 카카오톡 공유 / 링크 복사 (Should)
+
+| 항목 | 값 |
+|------|-----|
+| 카카오톡 공유 | Kakao JS SDK `Kakao.Share.sendDefault`(feed). 앱 키가 placeholder이거나 SDK 로드 실패 시 버튼을 "링크 복사" 동작으로 폴백 |
+| 링크 복사 | 3-3과 같은 라벨 전환 패턴 |
+| 모션 | 4장 버튼 공통 active 상태만 |
+
+### 3-7. 길찾기 버튼 (Should)
+
+- 카카오맵·네이버 지도·티맵 외부 링크. 모션은 4장 버튼 공통 active 상태만.
+- 지도 임베드(iframe/정적 지도)가 들어가면 `loading="lazy"`.
+
+### 3-8. 히어로 스크롤 안내선 (Nice-to-have)
+
+| 항목 | 값 |
+|------|-----|
+| 모양 | 히어로 하단 중앙, 1px x 32px 세로선(`--color-primary`) + 위에 "SCROLL" (Cormorant 11px, letter-spacing 0.2em, `--color-text`) |
+| 모션 | **bounce 루프 없음.** 히어로 텍스트 step 3 이후 함께 나타나고, `scrollY > 24`가 되면 `opacity → 0` 400ms. 이후 다시 나타나지 않는다 |
+| reduced-motion | 즉시 표시, 스크롤 시 즉시 숨김 |
 
 ---
 
-### 🟨 Should (권장 — UX 향상)
+## 4. 트랜지션 & 디테일
 
-#### 3-5. 갤러리 핀치 줌 Lightbox
-- **위치**: 갤러리 슬라이드 클릭 시 모달 오픈
-- **동작**:
-  - 클릭 → fixed 풀스크린 lightbox 페이드인 (250ms), 배경 `rgba(58, 46, 42, 0.92)`
-  - 이미지: 화면 중앙, max 90vw / 90vh
-  - **핀치 줌**: `gesturestart/gesturechange` (iOS) + `touchmove` 2-finger distance 계산 (Android)
-    - max scale 3.0, min scale 1.0
-    - 줌 중심: 두 손가락 중점 (`transform-origin` 동적)
-  - **더블탭 토글**: 1회 더블탭 → scale 2.5, 다시 더블탭 → scale 1.0 (300ms transition)
-  - **팬**: scale > 1 시 단일 손가락 드래그로 이동
-  - **닫기**: 우상단 ✕ 버튼 / 배경 클릭 / ESC 키 / 위→아래 swipe (100px)
-- **포커스 트랩**: lightbox 오픈 시 ✕ 버튼에 포커스, Tab 순환 lightbox 내부로 제한
-- **스크롤 잠금**: `body { overflow: hidden }` (모달 동안)
-- **접근성**:
-  - `role="dialog"` + `aria-modal="true"` + `aria-label="사진 확대"`
-  - 키보드: ESC 닫기, ←/→ 슬라이드 이동, +/- 줌 (선택)
-- **reduced-motion**: 페이드 250ms → 0ms, 줌 transition 0ms (즉시)
+| 요소 | 상태 | 변화 | Duration | Easing | reduced-motion |
+|------|------|------|----------|--------|----------------|
+| 모든 버튼 | `:active` | `transform: scale(0.98)` + 배경 `--color-surface` | 120ms | `--ease-standard` | scale 없음, 배경색만 즉시 |
+| 모든 버튼·링크 | `:hover` (pointer: fine일 때만) | 텍스트·테두리 `--color-accent`로 | 200ms | `--ease-standard` | 즉시 |
+| 모든 포커스 가능 요소 | `:focus-visible` | `outline: 2px solid var(--color-accent); outline-offset: 2px` | 0 | — | 동일 |
+| 텍스트 링크 | `:hover` | 밑줄 표시 (`text-decoration-color` transparent → accent) | 200ms | `--ease-standard` | 즉시 |
+| 히어로 사진 | 로드 | scale 1.04 → 1, 1회 | 2400ms | `--ease-settle` | 없음 |
+| 섹션 디바이더 | 진입 | 소속 그룹 ①과 함께 공통 reveal. 별도 scaleX·stroke-draw 없음 | 800ms | `--ease-out` | 즉시 |
+| 그리드 썸네일 | 이미지 load | opacity 0 → 1 | 300ms | `--ease-out` | 즉시 |
+| lightbox | 열기 / 닫기 | 오버레이 opacity | 250ms / 200ms | `--ease-out` / `--ease-in` | 즉시 |
+| 복사 버튼 라벨 | 성공·복귀 | 라벨 opacity 크로스 | 120ms + 120ms | `--ease-standard` | 즉시 교체 |
+| 음악 아이콘 | 토글 | 음표 ↔ 이퀄라이저 opacity | 200ms | `--ease-standard` | 크로스페이드 유지 가능, 이퀄라이저는 정적 |
 
-#### 3-6. 음악 토글 (BGM)
-- **위치**: hero 우상단 floating action (sticky, top: 16px, right: 16px, z-index: 50)
-- **음원**: `<audio src="" loop preload="metadata">` — 사용자가 별도 추가 (royalty-free placeholder 권장)
-- **동작**:
-  - 자동재생: 시도하되 브라우저 차단 시 사용자 클릭 대기 (`audio.play().catch(...)`)
-  - 클릭 토글: 재생 ↔ 일시정지
-  - 재생 시 페이드인 (volume 0 → 0.4, 1500ms ease-out)
-  - 일시정지 시 페이드아웃 (volume → 0, 600ms) 후 pause
-- **아이콘**: SVG 음표
-  - 일시정지 상태: 음표 단독 (sage 색)
-  - 재생 상태: 음표 + 작은 이퀄라이저 3바 (각 막대 scaleY 0.3 ↔ 1.0, 400ms loop, stagger 100ms)
-  - 클릭 시 ripple: 원형 scale 0 → 2.5, opacity 0.4 → 0, 600ms (rosewood 색)
-- **사이즈**: 44x44px (터치 타겟 최소 보장)
-- **배경**: ivory `#FBF7F3` 80% alpha, backdrop-filter blur(8px), border-radius 50%
-- **접근성**:
-  - `aria-label="배경음악 재생/일시정지"` (상태에 따라 갱신)
-  - `aria-pressed="true|false"`
-  - 키보드 Enter/Space 동작
-- **reduced-motion**: 이퀄라이저 정적 (3바 모두 scaleY 0.7 고정), ripple 없음
-
-#### 3-7. 카카오톡 공유 버튼
-- **위치**: share 섹션
-- **동작**:
-  - Kakao SDK (`Kakao.Share.sendDefault`) 가능 시 SDK 사용 — feed 템플릿 (제목, 설명, 썸네일, 버튼)
-  - SDK 미사용 시 fallback: 현재 URL `navigator.clipboard.writeText` + 토스트 "링크가 복사되었습니다"
-- **시각**: 버튼 hover/active 시 scale 0.96, 150ms
-- **햅틱**: 클릭 시 `navigator.vibrate(15)`
-- **접근성**: `aria-label="카카오톡으로 공유하기"`
-
-#### 3-8. 햅틱 피드백 (전역)
-- **대상**: 모든 주요 버튼 (계좌 복사, 카카오 공유, 갤러리 슬라이드, 음악 토글, lightbox 열기/닫기)
-- **구현**: `navigator.vibrate(N)` 지원 체크 후 호출
-  - 가벼운 탭: 8ms (슬라이드 전환)
-  - 표준 탭: 15ms (복사, 공유)
-  - 중요 액션: 25ms (lightbox 열기, RSVP 제출)
-- **fallback**: 미지원 기기에서는 silently 무시 (기능 동작에 영향 없음)
+**쓰지 않는 것 (QA 확인용)**: 꽃잎·파티클·메시·반딧불이, ken-burns 루프, 패럴랙스, blur reveal, 마스킹 텍스트 리빌, split char, 카운트업, 달력 펄스, 클릭 ripple, 토스트, 갤러리 자동 슬라이드, hover lift + 그림자, `scroll-behavior: smooth`(페이지 내 앵커 내비게이션이 없음).
 
 ---
 
-### 🟩 Nice-to-have (선택 — 시간 여유 시)
-
-#### 3-9. 스크롤 리빌 (IntersectionObserver fade-up)
-- **이미 섹션 2에서 명세** — 모든 섹션 공통 적용
-- **고급 옵션**: 스크롤 방향 감지하여 위→아래 스크롤 시에만 reveal, 다시 위로 스크롤 시 유지
-
-#### 3-10. 모서리 장식 패럴랙스
-- **위치**: 각 섹션의 spot illustration (rose 봉오리, 유칼립투스 가지)
-- **동작**: scroll 위치에 따라 `transform: translateY(scrollY * 0.15)` (매우 약한 패럴랙스)
-- **구현**: scroll listener `passive: true`, throttle 16ms (rAF 기반)
-- **reduced-motion**: factor 0 (정적 위치 고정)
-
-#### 3-11. Hero 일러스트 ken-burns slow zoom
-- **동작**: hero 보태니컬 일러스트가 18초에 걸쳐 scale 1.0 → 1.04 → 1.0 (ease-in-out, infinite alternate)
-- **reduced-motion**: 정적 (animation: none)
-
----
-
-## 4. 마이크로 인터랙션 & 트랜지션 디테일
-
-| 요소 | 상태 | 변화 | Duration | Easing |
-|------|------|------|----------|--------|
-| 모든 버튼 | hover (데스크톱) | scale 1.0 → 1.02, opacity 1 → 0.92 | 200ms | ease-standard |
-| 모든 버튼 | active (탭) | scale 1.0 → 0.96 | 150ms | ease-standard |
-| 모든 버튼 | focus-visible | outline 2px solid accent + offset 3px | 0ms | — |
-| 링크 (텍스트) | hover | color 변화 (text → accent), underline 등장 | 200ms | ease-standard |
-| 카드 (account, venue) | hover | translateY 0 → -2px, shadow 미세 강화 | 250ms | ease-standard |
-| 토스트 | enter | opacity 0→1 + translateY(20px → 0) | 200ms | ease-out |
-| 토스트 | exit | opacity 1→0 | 300ms | ease-in |
-| 디바이더 라인 | scroll 진입 시 | scaleX 0 → 1 (origin: center) | 1000ms | ease-out |
-| 입력 필드 (RSVP, 방명록) | focus | border-color muted → accent, 미세 글로우 | 200ms | ease-standard |
-| 모달 (lightbox) | enter | opacity 0→1 (배경) + scale(0.96 → 1.0) (내용) | 250ms | ease-out |
-| 모달 (lightbox) | exit | opacity 1→0 + scale(1.0 → 0.98) | 200ms | ease-in |
-| 체크마크 swap (계좌 복사 후) | swap | 복사 아이콘 opacity 1→0 + 체크 opacity 0→1, scale 0.8 → 1.0 | 400ms | ease-out |
-
----
-
-## 5. CSS 변수 토큰 (frontend-developer가 :root에 그대로 추가)
+## 5. CSS 변수 / 토큰
 
 ```css
 :root {
   /* Easing */
-  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);     /* 강조 진입 (텍스트 reveal, 마스크) */
-  --ease-standard:   cubic-bezier(0.4, 0, 0.2, 1);   /* 기본 (버튼, 카드) */
-  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);     /* 감속 (페이지 진입) */
-  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);     /* 가속 (페이지 exit) */
-  --ease-out-cubic:  cubic-bezier(0.33, 1, 0.68, 1); /* 카운트업 */
+  --ease-out:      cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 섹션 reveal, 이미지 등장 */
+  --ease-settle:   cubic-bezier(0.22, 1, 0.36, 1);       /* 히어로 사진 settle: 초반에 거의 다 줄고 끝이 길게 멈춤 */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);         /* 버튼, 스냅, 줌 전환 */
+  --ease-in:       cubic-bezier(0.4, 0, 1, 1);           /* lightbox 닫기 */
 
   /* Duration */
-  --dur-fast:   0.15s;   /* 마이크로 (active, focus) */
-  --dur-base:   0.3s;    /* 기본 (hover, 토스트) */
-  --dur-mid:    0.6s;    /* 페이드인 */
-  --dur-slow:   0.9s;    /* 섹션 reveal */
-  --dur-xslow:  1.4s;    /* 카운트업, 갤러리 첫 슬라이드 blur reveal */
+  --dur-fast:   120ms;   /* 버튼 active, 복사 라벨 전환 */
+  --dur-base:   300ms;   /* 썸네일 등장, 펼침 */
+  --dur-modal:  250ms;   /* lightbox 열기, 더블탭 줌, 원위치 복귀 */
+  --dur-snap:   350ms;   /* lightbox 스와이프 스냅 */
+  --dur-reveal: 800ms;   /* 섹션 진입 */
+  --dur-settle: 2400ms;  /* 히어로 사진 */
+  --dur-eq:     1200ms;  /* 이퀄라이저 바 반주기 */
 
-  /* Background loops */
-  --dur-bg-mesh:    60s;
-  --dur-bg-petal:   18s; /* 평균값 (실제는 14~22s 랜덤) */
-  --dur-pulse:      1.6s;
-  --dur-eq-bar:     0.4s;
-  --dur-ken-burns:  18s;
-
-  /* Stagger */
-  --stagger-base:   0.1s;
-  --stagger-large:  0.15s;
+  /* Distance & stagger */
+  --reveal-distance: 16px;
+  --stagger: 120ms;
 }
 
-/* prefers-reduced-motion 글로벌 강등 */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-modal: 0ms;
+    --dur-snap: 0ms;
+    --dur-reveal: 0ms;
+    --dur-settle: 0ms;
+    --reveal-distance: 0px;
+    --stagger: 0ms;
   }
+  .hero__photo { transform: none !important; }
+  .eq-bar { animation: none !important; }
 }
 ```
 
----
+**JS 쪽 분기**: `const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');` 를 한 번 만들고, JS가 직접 계산하는 duration(lightbox 스냅·더블탭 줌·히어로 settle 시작 여부)은 `reducedMotion.matches`일 때 0으로 둔다. `reducedMotion.addEventListener('change', ...)`로 런타임 전환도 반영한다.
 
-## 6. 구현 우선순위 매트릭스
-
-| 우선순위 | 항목 | 출시 차단 여부 |
-|---------|------|--------------|
-| **Must** | 1-A 꽃잎 파티클 (Canvas) | ✅ |
-| **Must** | 1-B 그라디언트 메시 | ✅ |
-| **Must** | 2-1~2-6 모든 섹션 스크롤 reveal | ✅ |
-| **Must** | 3-1 D-day 카운트업 | ✅ |
-| **Must** | 3-2 갤러리 스와이프 | ✅ |
-| **Must** | 3-3 계좌 복사 + 토스트 | ✅ |
-| **Must** | 3-4 부드러운 스크롤 | ✅ |
-| **Must** | 5. CSS 변수 토큰 정의 | ✅ |
-| **Must** | prefers-reduced-motion 글로벌 분기 | ✅ |
-| Should | 3-5 lightbox 핀치 줌 | ❌ |
-| Should | 3-6 음악 토글 | ❌ |
-| Should | 3-7 카카오 공유 | ❌ |
-| Should | 3-8 햅틱 피드백 | ❌ |
-| Should | 2-2 masked text reveal (greeting) | ❌ |
-| Nice | 3-10 모서리 장식 패럴랙스 | ❌ |
-| Nice | 3-11 hero ken-burns | ❌ |
+**토큰 사용 규칙**: 전역 `* { transition-duration: 0.01ms !important }` 같은 일괄 덮어쓰기는 쓰지 않는다. 위 토큰 0ms 재정의 + 개별 규칙으로 처리해야 QA가 항목별로 대체안을 확인할 수 있다.
 
 ---
 
-## 7. 성능 가이드 (frontend-developer 준수 사항)
+## 6. 구현 우선순위
 
-### 7-1. RAF 일시정지
-- 꽃잎 파티클: `document.visibilityState === 'hidden'` 시 RAF 중단, `visible` 복귀 시 재개
-- 갤러리 자동 슬라이드: viewport 외 시 setInterval clear
-
-### 7-2. will-change 사용 가이드
-- **사용**: 꽃잎 canvas (transform), 그라디언트 메시 body::before (background-position), lightbox 모달 전환 직전
-- **금지**: 모든 reveal 요소에 일괄 적용 → 메모리 폭발. 트랜지션 종료 시 제거
-
-### 7-3. CSS contain
-```css
-.section { contain: layout style; }      /* 각 섹션 격리 */
-.gallery-slide { contain: paint; }       /* 슬라이드 paint 격리 */
-.lightbox { contain: strict; }            /* 모달 완전 격리 */
-```
-
-### 7-4. 이미지 lazy-load
-- hero 일러스트: `loading="eager"` (LCP 핵심)
-- 갤러리 5장: 첫 장 `loading="eager"`, 2~5장 `loading="lazy"`
-- spot illustration (디바이더): `loading="lazy"`
-
-### 7-5. 폰트 로드 최적화
-- Google Fonts: `<link rel="preconnect" href="https://fonts.googleapis.com">`
-- `font-display: swap` (FOIT 방지)
-- 한글 폰트 (Nanum Myeongjo): 서브셋 (KR) 명시
-
-### 7-6. 측정 기준
-- Lighthouse Mobile Performance ≥ 85
-- LCP ≤ 2.5s, CLS ≤ 0.1, INP ≤ 200ms
-- 실 측정: iOS Safari (iPhone 12 시뮬), Android Chrome (Pixel 5 시뮬)
+| 우선순위 | 항목 |
+|---------|------|
+| **Must** | 2-0 공통 reveal (no-JS·IO 미지원 안전장치 포함) |
+| **Must** | 2-1 히어로 사진 settle + 텍스트 reveal |
+| **Must** | 3-1 갤러리 그리드 + 로딩 성능(lazy, `width`/`height`, 10~15번 지연, 히어로 preload) + 더보기 |
+| **Must** | 3-2 lightbox 스와이프 + 핀치 줌 + 더블탭 + ±1 이미지 로딩 + 포커스 트랩 |
+| **Must** | 3-3 계좌 복사 라벨 전환 + 폴백 (주소·링크 복사 공용) |
+| **Must** | 3-4 음악 토글 (`audio/bgm.mp3`, `preload="none"`, 자동재생 없음) |
+| **Must** | 5 토큰 + prefers-reduced-motion CSS·JS 분기 |
+| Should | 3-5 D-day 정적 표시 |
+| Should | 3-6 카카오 공유 / 링크 복사, 3-7 길찾기 버튼 |
+| Should | 그리드용 썸네일 생성: `images/photos/thumb/` 에 긴 변 600px, JPEG q78 15장 → 그리드는 thumb, lightbox는 원본. 첫 9장 약 1.9MB → 약 0.4MB 예상. 리사이즈 도구가 없으면 원본 유지(현재 상태로도 동작) |
+| Nice-to-have | 3-8 스크롤 안내선, lightbox `+`/`-` 키 줌 |
 
 ---
 
-## 8. 접근성 체크리스트
+## 7. 성능 메모
 
-- [ ] 모든 무한 루프 모션 (1-A, 1-B, 펄스, ken-burns, 이퀄라이저, 스크롤 인디케이터 bounce, 패럴랙스)이 `prefers-reduced-motion: reduce`에서 정적 대체
-- [ ] 갤러리 자동 슬라이드 사용자 인터랙션 시 일시정지 (재생 시간 ≤ 5s 충족, WCAG 2.2.2)
-- [ ] 음악 토글 명확한 시각 표시 + 키보드(Enter/Space) 접근
-- [ ] 빠른 점멸 없음 (이퀄라이저 0.4s = 2.5Hz < 3Hz, 광과민성 안전)
-- [ ] 모든 인터랙티브 버튼 `aria-label` (계좌 복사 6개, 음악 토글, 카카오 공유, 갤러리 nav, 모달 닫기 등)
-- [ ] 토스트 `role="status"` + `aria-live="polite"`
-- [ ] D-day 카운트업 `aria-live="polite"` (단, 매 프레임 갱신 금지 — 종료 시 1회만)
-- [ ] Lightbox 포커스 트랩 + ESC 닫기 + 첫 포커스 닫기 버튼
-- [ ] 갤러리 키보드 ←/→ 네비게이션
-- [ ] 컬러 대비 (이미 컨셉 시트에서 검증): text `#3A2E2A` on bg `#FBF7F3` ≥ 13:1 (WCAG AAA)
-- [ ] 토스트 컬러 대비 검증: text `#3A2E2A` on surface `#F2EAE2` ≥ 11:1 (AAA)
+- 동시 무한 루프는 음악 재생 중 이퀄라이저 3바(transform만) 하나뿐이다. 그 외 모든 모션은 단발이다.
+- scroll 이벤트 리스너는 3-8 스크롤 안내선 1개뿐이며 `{ passive: true }` + 숨긴 뒤 즉시 `removeEventListener`. reveal은 전부 IntersectionObserver.
+- lightbox 드래그 중에만 트랙에 `will-change: transform`, `pointerup`에서 제거.
+- `filter`, `box-shadow`, `backdrop-filter` 애니메이션 없음.
+- 목표: Lighthouse Mobile Performance ≥ 90, LCP ≤ 2.5s(히어로 68KB preload), CLS ≤ 0.05, INP ≤ 200ms.
 
 ---
 
-## 9. 자산 협의 사항 (image-artist에게 전달 필요)
+## 8. 자산 협의 (image-artist)
 
-- **꽃잎 파티클**: 컨셉 시트의 워터컬러 일러스트와 시각적 일관성을 위해 별도 SVG 꽃잎 자산이 있으면 좋음. 단, **본 명세는 Canvas ellipse 단순 도형을 기본으로** 하므로 자산 없어도 구현 가능. 자산이 제공되면 `Image()` + `ctx.drawImage` 방식으로 업그레이드 가능.
-- **prefers-reduced-motion 정적 SVG 꽃잎 4개**: 각 약 60x60px, dusty rose 2종 + sage 2종, 회전 변형 미리 적용된 4개 PNG 또는 인라인 SVG 권장.
-- **음악 토글 아이콘**: SVG 인라인 처리 (외부 자산 불필요), frontend가 직접 path 작성.
-- **계좌 복사 아이콘 + 체크마크**: SVG 인라인.
+- **파티클·꽃잎 자산 불필요.** 배경 애니메이션이 없다.
+- 디바이더는 정적으로 쓰므로 stroke-draw용 path 구조가 필요 없다. PNG든 SVG든 무방하다.
+- 아이콘(음표, 이퀄라이저, 닫기, 이전/다음)은 frontend가 인라인 SVG로 작성한다. 별도 자산 불필요.
+- og 썸네일 크롭을 할 때 리사이즈 도구를 확보한다면, 같은 도구로 6장 Should의 그리드 썸네일 15장(긴 변 600px)도 함께 만들어 주면 좋다. 사진 보정·필터는 하지 않는다(컨셉 시트 원칙).
 
 ---
+
+## 9. 접근성 체크리스트 (QA용)
+
+- [ ] `prefers-reduced-motion: reduce`에서 히어로 settle·reveal·썸네일 페이드·lightbox 전환·라벨 페이드가 모두 즉시 처리되고, 이퀄라이저는 정적 3바로 바뀐다
+- [ ] JS 비활성 상태에서도 모든 섹션 콘텐츠가 보인다 (`.js` 클래스 게이트)
+- [ ] BGM이 로드·스크롤·첫 탭으로 자동 시작되지 않고, 토글 버튼으로만 시작된다. 켜기 전 `bgm.mp3` 요청이 없다(`preload="none"`)
+- [ ] 음악 토글 `aria-pressed` 상태가 실제 재생 상태와 일치, 키보드 Enter/Space 동작
+- [ ] 3Hz 이상 점멸 없음 (이퀄라이저 주기 1.2s)
+- [ ] lightbox: `aria-modal`, 포커스 트랩, Esc 닫기, 닫은 뒤 포커스 복귀, `←`/`→` 이동, "N / 15" 위치 안내
+- [ ] viewport meta에 `user-scalable=no`·`maximum-scale=1` 없음
+- [ ] 복사 성공·실패가 `role="status"` 영역으로 낭독된다
+- [ ] 모든 아이콘 버튼 `aria-label`, 터치 영역 44x44 이상
 
 ## 10. 한 줄 정리
 
-> **모든 모션은 "조용히 피어나는" 모티프에 충실하게 — 600~900ms 차분한 ease-out, 꽃잎 24개 매우 은은(opacity 0.18~0.32), 갤러리는 워터컬러처럼 blur-reveal, 그리고 prefers-reduced-motion 시 파티클·메시 OFF + 즉시 fade-in으로 강등.**
+움직임은 섹션 진입 fade-in(800ms, 16px)과 히어로 사진 settle 1회뿐이고, 인터랙션은 lightbox 스와이프·핀치 줌, 복사 라벨 전환, 토글로만 켜지는 BGM이며, prefers-reduced-motion에서는 transform이 모두 빠지고 즉시 표시된다.

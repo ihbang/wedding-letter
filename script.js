@@ -1,668 +1,824 @@
-/* =========================================================
-   Wedding Invitation — script.js
-   김민준 ♡ 박서연 (2026.10.17)
-   Vanilla JS only. Implements motion-spec.md Must/Should items.
-   ========================================================= */
-(function () {
+(() => {
   'use strict';
 
-  // ---------------------------------------------------------
-  // PLACEHOLDERS — 실제 운영 시 아래 값을 채워주세요.
-  // ---------------------------------------------------------
-  const KAKAO_JS_KEY     = ''; // placeholder: 카카오 JavaScript 키 (https://developers.kakao.com/)
-  const RSVP_FORM_URL    = ''; // placeholder: Tally / Google Form / FormSubmit URL
-  const GUESTBOOK_URL    = ''; // placeholder: 외부 방명록 폼 URL
-  const SHARE_TITLE      = '김민준 ♡ 박서연 결혼합니다';
-  const SHARE_DESC       = '2026년 10월 17일 토요일 오후 2시\n그랜드 인터컨티넨탈 서울 그랜드볼룸';
-  const SHARE_IMAGE      = location.origin + location.pathname.replace(/\/[^/]*$/, '/') + 'images/og-thumbnail.png';
-  const TARGET_DATE_STR  = '2026-10-17';
-  const TARGET_HOUR      = 14;
+  // Values still shaped like [[TODO:...]] are treated as "not configured".
+  const CONFIG = {
+    kakaoJsKey: '[[TODO:KAKAO_JS_KEY]]',
+    siteUrl: '[[TODO:SITE_URL]]',
+    kakaoSdkUrl: 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js',
+  };
 
-  // ---------------------------------------------------------
-  // HELPERS
-  // ---------------------------------------------------------
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const isReduced     = () => reducedMotion.matches;
-  const $  = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-  const haptic = (n) => { try { navigator.vibrate && navigator.vibrate(n); } catch (e) {} };
+  const HERO_DECODE_TIMEOUT = 1500;
+  const HERO_TOP_DELAY = 400;
+  const HERO_BOTTOM_DELAY = 700;
+  const COPY_LABEL_HOLD = 2000;
+  const BGM_VOLUME = 0.6;
+  const BGM_FADE_IN = 1500;
+  const BGM_FADE_OUT = 400;
 
-  // ---------------------------------------------------------
-  // 1. HERO entrance step-in
-  // ---------------------------------------------------------
-  function setupHero() {
-    const hero = $('.hero');
-    if (!hero) return;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => hero.classList.add('is-loaded'));
-    });
+  const root = document.documentElement;
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const isPlaceholder = (value) => !value || value.startsWith('[[TODO:');
+  const delay = (ms) => (reducedMotion.matches ? 0 : ms);
+
+  // Reads a duration token from :root so CSS and JS share one value.
+  const token = (name) =>
+    reducedMotion.matches ? 0 : parseFloat(getComputedStyle(root).getPropertyValue(name)) || 0;
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  const statusRegion = document.getElementById('copy-status');
+  function announce(message) {
+    statusRegion.textContent = '';
+    setTimeout(() => { statusRegion.textContent = message; }, 50);
   }
 
-  // ---------------------------------------------------------
-  // 2. IntersectionObserver fade reveal
-  // ---------------------------------------------------------
-  function setupReveal() {
-    const targets = $$('.reveal');
-    if (!targets.length) return;
-    if (isReduced()) {
-      targets.forEach(el => el.classList.add('is-visible'));
+  function shareUrl() {
+    if (!isPlaceholder(CONFIG.siteUrl)) return CONFIG.siteUrl.replace(/\/?$/, '/');
+    return location.href.split('#')[0];
+  }
+
+  /* ---------- Hero settle + text reveal (spec 2-1, 3-8) ---------- */
+
+  function initHero() {
+    const photo = document.querySelector('.hero__photo');
+    const [topBlock, bottomBlock] = document.querySelectorAll('.hero-reveal');
+    const scrollHint = document.querySelector('.hero__scroll');
+    let started = false;
+
+    function start(withSettle) {
+      if (started) return;
+      started = true;
+      if (withSettle && !reducedMotion.matches) {
+        photo.style.willChange = 'transform';
+        photo.addEventListener('transitionend', () => { photo.style.willChange = ''; }, { once: true });
+        photo.classList.add('is-settling');
+      } else {
+        photo.classList.add('is-static');
+      }
+      setTimeout(() => topBlock.classList.add('is-visible'), delay(HERO_TOP_DELAY));
+      setTimeout(() => {
+        bottomBlock.classList.add('is-visible');
+        scrollHint.classList.add('is-visible');
+      }, delay(HERO_BOTTOM_DELAY));
+    }
+
+    if (reducedMotion.matches) {
+      start(false);
+    } else {
+      // A photo that decodes late would visibly zoom out on arrival; show it static instead.
+      const fallback = setTimeout(() => start(false), HERO_DECODE_TIMEOUT);
+      const decoded = typeof photo.decode === 'function' ? photo.decode() : Promise.resolve();
+      decoded.then(
+        () => { clearTimeout(fallback); start(true); },
+        () => { clearTimeout(fallback); start(false); },
+      );
+      reducedMotion.addEventListener('change', () => {
+        if (reducedMotion.matches) start(false);
+      });
+    }
+
+    function hideHintOnScroll() {
+      if (window.scrollY <= 24) return;
+      scrollHint.classList.add('is-hidden');
+      window.removeEventListener('scroll', hideHintOnScroll);
+    }
+    window.addEventListener('scroll', hideHintOnScroll, { passive: true });
+  }
+
+  /* ---------- Section reveal (spec 2-0) ---------- */
+
+  function initReveal() {
+    const sections = document.querySelectorAll('.section');
+    const show = (section) =>
+      section.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-visible'));
+
+    if (!('IntersectionObserver' in window)) {
+      sections.forEach(show);
       return;
     }
-    const io = new IntersectionObserver((entries, obs) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('is-visible');
-          obs.unobserve(e.target);
-        }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        show(entry.target);
+        observer.unobserve(entry.target);
       });
-    }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
-    targets.forEach(el => io.observe(el));
-
-    // 갤러리 첫 슬라이드 blur reveal
-    const firstSlide = $('.gallery-slide:first-child');
-    if (firstSlide) firstSlide.classList.add('first-reveal');
+    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+    sections.forEach((section) => observer.observe(section));
   }
 
-  // ---------------------------------------------------------
-  // 3. Petals background canvas (motion §1-A)
-  // ---------------------------------------------------------
-  function setupPetals() {
-    if (isReduced()) return;
-    const canvas = $('.bg-petals');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  /* ---------- D-day (spec 3-5) ---------- */
 
-    let W = 0, H = 0;
-    let petals = [];
-    let count = 24;
-    let running = true;
-    let frameCount = 0;
-    let measureStart = 0;
-    let rafId = null;
+  function initDday() {
+    const box = document.getElementById('dday');
+    const count = document.getElementById('dday-count');
+    const message = document.getElementById('dday-message');
+    const [year, month, day] = box.dataset.weddingDate.split('-').map(Number);
+    const weddingUtc = Date.UTC(year, month - 1, day);
 
-    function resize() {
-      W = window.innerWidth;
-      H = window.innerHeight;
-      canvas.width  = W * dpr;
-      canvas.height = H * dpr;
-      canvas.style.width  = W + 'px';
-      canvas.style.height = H + 'px';
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    function render() {
+      const kstNow = new Date(Date.now() + 9 * 3600e3);
+      const todayUtc = Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate());
+      const days = Math.round((weddingUtc - todayUtc) / 864e5);
+
+      count.hidden = days < 0;
+      if (days > 0) {
+        count.textContent = `D-${days}`;
+        message.textContent = `인혁 · 유민의 결혼식이 ${days}일 남았습니다.`;
+      } else if (days === 0) {
+        count.textContent = 'D-DAY';
+        message.textContent = '오늘, 인혁 · 유민이 부부가 됩니다.';
+      } else {
+        message.textContent = '인혁 · 유민의 결혼식에 함께해 주셔서 감사합니다.';
+      }
+      box.hidden = false;
     }
 
-    class Petal {
-      constructor(init) { this.reset(init); }
-      reset(init) {
-        this.x = Math.random() * W;
-        this.y = init ? Math.random() * H : -30;
-        this.size = 8 + Math.random() * 8;             // 8 ~ 16
-        this.rot = Math.random() * Math.PI * 2;
-        this.rotSpeed = (Math.random() - 0.5) * 0.03;
-        this.dur = 14000 + Math.random() * 8000;       // 14~22s
-        this.start = performance.now() - (init ? Math.random() * this.dur : 0);
-        this.swayAmp = 20 + Math.random() * 20;
-        this.swayPhase = Math.random() * Math.PI * 2;
-        this.opacity = 0.18 + Math.random() * 0.14;    // 0.18 ~ 0.32
-        this.color = Math.random() < 0.7 ? '#C9A2A2' : '#A8B59C';
-        this.baseX = this.x;
-      }
-      step(now) {
-        const t = (now - this.start) / this.dur;
-        if (t > 1) { this.reset(false); return; }
-        this.y = -30 + (H + 60) * t;
-        this.x = this.baseX + Math.sin(now / 1000 + this.swayPhase) * this.swayAmp;
-        this.rot += this.rotSpeed;
-      }
-      draw() {
-        ctx.save();
-        ctx.globalAlpha = this.opacity;
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.rot);
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, this.size * 0.4, this.size, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-
-    function spawn() {
-      petals = Array.from({ length: count }, () => new Petal(true));
-    }
-
-    function loop(now) {
-      if (running) {
-        ctx.clearRect(0, 0, W, H);
-        for (let i = 0; i < petals.length; i++) {
-          petals[i].step(now);
-          petals[i].draw();
-        }
-        // 5초 후 fps 측정 → 50fps 미만 시 count 절반
-        frameCount++;
-        if (!measureStart) measureStart = now;
-        if (now - measureStart > 5000 && frameCount > 0) {
-          const fps = (frameCount / (now - measureStart)) * 1000;
-          if (fps < 50 && count > 12) {
-            count = 12;
-            spawn();
-          }
-          measureStart = 0;
-          frameCount = 0;
-        }
-      }
-      rafId = requestAnimationFrame(loop);
-    }
-
-    resize();
-    spawn();
-    rafId = requestAnimationFrame(loop);
-    window.addEventListener('resize', resize, { passive: true });
-
-    // 페이지가 가려지면 일시정지 (배터리/CPU 절약)
+    render();
     document.addEventListener('visibilitychange', () => {
-      running = document.visibilityState !== 'hidden';
+      if (document.visibilityState === 'visible') render();
     });
   }
 
-  // ---------------------------------------------------------
-  // 4. Calendar render + D-day count-up (motion §3-1)
-  // ---------------------------------------------------------
-  function setupCalendar() {
-    const tbl = $('.cal');
-    if (!tbl) return;
-    const target = new Date(TARGET_DATE_STR + 'T00:00:00');
-    const y = target.getFullYear();
-    const m = target.getMonth();
-    const first = new Date(y, m, 1).getDay();
-    const last  = new Date(y, m + 1, 0).getDate();
-    const tbody = tbl.querySelector('tbody');
+  /* ---------- Copy buttons (spec 3-3) ---------- */
 
-    let html = '<tr>';
-    for (let i = 0; i < first; i++) html += '<td></td>';
-    for (let d = 1; d <= last; d++) {
-      const dow = (first + d - 1) % 7;
-      const cls = [];
-      if (d === target.getDate()) cls.push('today');
-      if (dow === 0) cls.push('sun');
-      if (dow === 6) cls.push('sat');
-      html += `<td${cls.length ? ` class="${cls.join(' ')}"` : ''}><span>${d}</span></td>`;
-      if ((first + d) % 7 === 0 && d !== last) html += '</tr><tr>';
-    }
-    html += '</tr>';
-    tbody.innerHTML = html;
-
-    // D-day 계산: 자정 → 자정 기준으로 정수 일수만 비교 (시각 무관)
-    const ddayNum = $('#dday-num');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const targetDay = new Date(y, m, target.getDate(), 0, 0, 0);
-    const diff = Math.round((targetDay - today) / (1000 * 60 * 60 * 24));
-    const ddayLabel = $('.dday-label');
-    const ddayBlock = $('.dday');
-
-    if (diff > 0) {
-      ddayNum.dataset.target = String(diff);
-      ddayNum.textContent = isReduced() ? String(diff) : '0';
-    } else if (diff === 0) {
-      ddayBlock.innerHTML = '<span class="script" style="font-size:24px;color:var(--color-primary)">오늘</span><br><span style="font-size:14px;color:var(--color-muted)">저희 두 사람의 약속이 시작됩니다</span>';
-      if (ddayLabel) ddayLabel.style.display = 'none';
-    } else {
-      ddayNum.dataset.target = String(-diff);
-      ddayNum.textContent = isReduced() ? String(-diff) : '0';
-      if (ddayLabel) ddayLabel.textContent = `함께 걸어가는 날 +`;
-      ddayBlock.firstChild.textContent = 'D + ';
-    }
-
-    // count-up 애니메이션
-    if (!isReduced() && diff !== 0) {
-      const onIntersect = (entries, obs) => {
-        entries.forEach(e => {
-          if (!e.isIntersecting) return;
-          countUp(ddayNum, parseInt(ddayNum.dataset.target, 10), 1400);
-          obs.disconnect();
-        });
-      };
-      new IntersectionObserver(onIntersect, { threshold: 0.4 })
-        .observe($('#calendar'));
-    }
-  }
-
-  function countUp(el, target, dur) {
-    const start = performance.now();
-    function tick(now) {
-      const t = clamp((now - start) / dur, 0, 1);
-      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
-      el.textContent = Math.round(target * eased);
-      if (t < 1) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  }
-
-  // ---------------------------------------------------------
-  // 5. Gallery: swipe + nav + dots + auto-play (motion §3-2)
-  // ---------------------------------------------------------
-  let galleryAPI = null;
-  function setupGallery() {
-    const stage = $('.gallery-stage');
-    const track = $('#gallery-track');
-    if (!stage || !track) return;
-    const slides = $$('.gallery-slide', track);
-    const dots   = $$('#gallery-dots li');
-    const prev   = $('.gallery-prev');
-    const next   = $('.gallery-next');
-    const N = slides.length;
-    let idx = 0;
-    let auto = null;
-    let dragX = 0;
-    let dragStartX = 0;
-    let dragging = false;
-    let inViewport = false;
-    let userPaused = false;
-
-    function show(i, withTransition = true) {
-      idx = ((i % N) + N) % N;
-      track.style.transition = withTransition ? '' : 'none';
-      track.style.transform = `translateX(-${idx * 100}%)`;
-      dots.forEach((d, k) => d.classList.toggle('active', k === idx));
-      slides.forEach((s, k) => {
-        s.setAttribute('aria-hidden', k === idx ? 'false' : 'true');
-      });
-    }
-    function startAuto() {
-      if (isReduced() || userPaused || !inViewport) return;
-      stopAuto();
-      auto = setInterval(() => show(idx + 1), 5000);
-    }
-    function stopAuto() {
-      if (auto) { clearInterval(auto); auto = null; }
-    }
-    function pauseUser(durationMs = 10000) {
-      userPaused = true;
-      stopAuto();
-      clearTimeout(pauseUser._t);
-      pauseUser._t = setTimeout(() => { userPaused = false; startAuto(); }, durationMs);
-    }
-
-    // Touch events
-    track.addEventListener('touchstart', (e) => {
-      if (e.touches.length !== 1) return;
-      dragging = true;
-      dragStartX = e.touches[0].clientX;
-      dragX = 0;
-      track.style.transition = 'none';
-    }, { passive: true });
-
-    track.addEventListener('touchmove', (e) => {
-      if (!dragging) return;
-      dragX = e.touches[0].clientX - dragStartX;
-      const w = stage.clientWidth || 1;
-      track.style.transform = `translateX(calc(-${idx * 100}% + ${dragX}px))`;
-    }, { passive: true });
-
-    track.addEventListener('touchend', () => {
-      if (!dragging) return;
-      dragging = false;
-      track.style.transition = '';
-      const threshold = 50;
-      if (dragX > threshold) { show(idx - 1); haptic(8); }
-      else if (dragX < -threshold) { show(idx + 1); haptic(8); }
-      else { show(idx); }
-      pauseUser(10000);
-    });
-
-    // Click navigation
-    prev?.addEventListener('click', () => { show(idx - 1); haptic(8); pauseUser(10000); });
-    next?.addEventListener('click', () => { show(idx + 1); haptic(8); pauseUser(10000); });
-
-    // Click slide → lightbox
-    slides.forEach((slide, i) => {
-      const img = $('img', slide);
-      img?.addEventListener('click', () => {
-        if (Math.abs(dragX) > 5) return; // 스와이프 후 클릭 무시
-        openLightbox(i);
-      });
-    });
-
-    // Keyboard
-    stage.tabIndex = 0;
-    stage.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft')  { show(idx - 1); haptic(8); pauseUser(10000); }
-      if (e.key === 'ArrowRight') { show(idx + 1); haptic(8); pauseUser(10000); }
-    });
-
-    // Auto-play viewport gating
-    new IntersectionObserver(([entry]) => {
-      inViewport = entry.isIntersecting;
-      if (inViewport) startAuto(); else stopAuto();
-    }, { threshold: 0.4 }).observe(stage);
-
-    show(0);
-    galleryAPI = { show, count: N };
-  }
-
-  // ---------------------------------------------------------
-  // 6. Lightbox + pinch zoom + double-tap (motion §3-5)
-  // ---------------------------------------------------------
-  let lightboxAPI = null;
-  function setupLightbox() {
-    const lb = $('#lightbox');
-    const img = $('#lightbox-img');
-    const close = $('#lightbox-close');
-    if (!lb || !img || !close) return;
-
-    const slides = $$('.gallery-slide img');
-    let scale = 1;
-    let originX = 0, originY = 0;
-    let lastDist = 0;
-    let lastTap = 0;
-    let panStart = null;
-    let prevFocus = null;
-    let currentIdx = 0;
-
-    function setTransform() {
-      img.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
-    }
-    function reset() {
-      scale = 1; originX = 0; originY = 0;
-      img.style.transform = '';
-    }
-
-    function open(i) {
-      currentIdx = i;
-      img.src = slides[i].src;
-      img.alt = slides[i].alt || '';
-      lb.hidden = false;
-      requestAnimationFrame(() => lb.classList.add('is-open'));
-      document.body.style.overflow = 'hidden';
-      prevFocus = document.activeElement;
-      close.focus();
-      haptic(15);
-    }
-    function closeFn() {
-      lb.classList.remove('is-open');
-      setTimeout(() => {
-        lb.hidden = true;
-        reset();
-        document.body.style.overflow = '';
-        if (prevFocus && prevFocus.focus) prevFocus.focus();
-      }, isReduced() ? 0 : 220);
-    }
-
-    close.addEventListener('click', closeFn);
-    lb.addEventListener('click', (e) => { if (e.target === lb) closeFn(); });
-    document.addEventListener('keydown', (e) => {
-      if (lb.hidden) return;
-      if (e.key === 'Escape') closeFn();
-      if (e.key === 'ArrowLeft' && galleryAPI) {
-        currentIdx = (currentIdx - 1 + galleryAPI.count) % galleryAPI.count;
-        img.src = slides[currentIdx].src; reset();
-        galleryAPI.show(currentIdx);
-      }
-      if (e.key === 'ArrowRight' && galleryAPI) {
-        currentIdx = (currentIdx + 1) % galleryAPI.count;
-        img.src = slides[currentIdx].src; reset();
-        galleryAPI.show(currentIdx);
-      }
-    });
-
-    // Pinch / double-tap zoom
-    img.addEventListener('touchstart', (e) => {
-      lb.classList.add('is-zooming');
-      if (e.touches.length === 2) {
-        const [a, b] = e.touches;
-        lastDist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
-      } else if (e.touches.length === 1) {
-        const now = Date.now();
-        if (now - lastTap < 300) {
-          scale = scale > 1.05 ? 1 : 2.4;
-          originX = 0; originY = 0;
-          lb.classList.remove('is-zooming'); // smooth transition
-          setTransform();
-          haptic(10);
-        } else {
-          if (scale > 1) {
-            panStart = { x: e.touches[0].clientX - originX, y: e.touches[0].clientY - originY };
-          }
-        }
-        lastTap = now;
-      }
-    }, { passive: true });
-
-    img.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 2) {
-        const [a, b] = e.touches;
-        const d = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
-        if (lastDist > 0) {
-          scale = clamp(scale * (d / lastDist), 1, 3);
-          setTransform();
-        }
-        lastDist = d;
-      } else if (e.touches.length === 1 && panStart && scale > 1) {
-        originX = e.touches[0].clientX - panStart.x;
-        originY = e.touches[0].clientY - panStart.y;
-        setTransform();
-      }
-    }, { passive: true });
-
-    img.addEventListener('touchend', (e) => {
-      if (e.touches.length === 0) {
-        lastDist = 0;
-        panStart = null;
-        if (scale < 1.05) reset();
-        lb.classList.remove('is-zooming');
-      }
-    });
-
-    lightboxAPI = { open };
-    window.openLightbox = open; // 갤러리에서 호출
-  }
-
-  // local helper bridge
-  function openLightbox(i) {
-    if (lightboxAPI) lightboxAPI.open(i);
-  }
-
-  // ---------------------------------------------------------
-  // 7. Copy account number + toast (motion §3-3)
-  // ---------------------------------------------------------
-  function setupCopy() {
-    $$('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const txt = btn.dataset.copy || '';
-        let ok = false;
-        try {
-          await navigator.clipboard.writeText(txt);
-          ok = true;
-        } catch (e) {
-          try {
-            const ta = document.createElement('textarea');
-            ta.value = txt;
-            ta.setAttribute('readonly', '');
-            ta.style.position = 'fixed';
-            ta.style.left = '-9999px';
-            document.body.appendChild(ta);
-            ta.select();
-            ok = document.execCommand('copy');
-            document.body.removeChild(ta);
-          } catch (e2) { ok = false; }
-        }
-        if (ok) {
-          btn.classList.add('is-copied');
-          haptic(15);
-          showToast('계좌번호가 복사되었습니다');
-          setTimeout(() => btn.classList.remove('is-copied'), 1400);
-        } else {
-          showToast('복사에 실패했습니다. 직접 선택해주세요');
-        }
-      });
-    });
-  }
-
-  // ---------------------------------------------------------
-  // 8. Toast
-  // ---------------------------------------------------------
-  let toastTimer = null;
-  function showToast(msg) {
-    const t = $('#toast');
-    if (!t) return;
-    t.textContent = msg;
-    t.hidden = false;
-    requestAnimationFrame(() => t.classList.add('is-visible'));
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      t.classList.remove('is-visible');
-      setTimeout(() => { t.hidden = true; }, 320);
-    }, 1700);
-  }
-
-  // ---------------------------------------------------------
-  // 9. Music toggle (motion §3-6)
-  // ---------------------------------------------------------
-  function setupMusic() {
-    const btn = $('#music-toggle');
-    const audio = $('#bgm');
-    if (!btn || !audio) return;
-    audio.volume = 0;
-
-    function fadeVolume(target, dur) {
-      const start = audio.volume;
-      const t0 = performance.now();
-      function tick(now) {
-        const t = clamp((now - t0) / dur, 0, 1);
-        audio.volume = start + (target - start) * t;
-        if (t < 1) requestAnimationFrame(tick);
-        else if (target === 0) audio.pause();
-      }
-      requestAnimationFrame(tick);
-    }
-
-    btn.addEventListener('click', async () => {
-      btn.classList.remove('is-rippling');
-      void btn.offsetWidth;
-      btn.classList.add('is-rippling');
-      haptic(10);
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
       try {
-        if (audio.paused) {
-          await audio.play();
-          btn.setAttribute('aria-pressed', 'true');
-          fadeVolume(0.4, 1500);
-        } else {
-          fadeVolume(0, 600);
-          btn.setAttribute('aria-pressed', 'false');
-        }
-      } catch (e) {
-        showToast('음원 파일을 찾을 수 없어요. (audio/bgm.mp3)');
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+        document.body.append(textarea);
+        textarea.select();
+        const copied = document.execCommand('copy');
+        textarea.remove();
+        return copied;
+      } catch {
+        return false;
       }
+    }
+  }
+
+  function initCopyButtons() {
+    document.querySelectorAll('.copy-btn').forEach((button) => {
+      const labels = button.querySelectorAll('.copy-btn__label');
+      const setLabel = (state) =>
+        labels.forEach((label) => label.classList.toggle('is-active', label.dataset.state === state));
+      let resetTimer = 0;
+
+      button.addEventListener('click', async () => {
+        const target = button.dataset.copyTarget && document.querySelector(button.dataset.copyTarget);
+        const text = button.hasAttribute('data-copy-url') ? shareUrl() : target.textContent.trim();
+        const copied = await copyText(text);
+
+        setLabel(copied ? 'done' : 'fail');
+        if (copied) {
+          announce(button.dataset.status);
+          navigator.vibrate?.(10);
+        } else {
+          announce('복사하지 못했습니다');
+          if (target) window.getSelection()?.selectAllChildren(target);
+        }
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => setLabel('idle'), COPY_LABEL_HOLD);
+      });
     });
   }
 
-  // ---------------------------------------------------------
-  // 10. Share (Kakao / link copy) (motion §3-7)
-  // ---------------------------------------------------------
-  function setupShare() {
-    const btnLink  = $('#share-link');
-    const btnKakao = $('#share-kakao');
+  /* ---------- Music toggle (spec 3-4) ---------- */
 
-    btnLink?.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(location.href);
-        haptic(15);
-        showToast('청첩장 링크가 복사되었습니다');
-      } catch (e) {
-        showToast('복사에 실패했습니다');
-      }
-    });
+  function initMusic() {
+    const button = document.getElementById('music-toggle');
+    const audio = document.getElementById('bgm');
+    // iOS Safari ignores writes to volume, so fades are skipped there.
+    const canFadeVolume = (() => {
+      const probe = document.createElement('audio');
+      probe.volume = 0.5;
+      return probe.volume === 0.5;
+    })();
+    let fadeFrame = 0;
+    let resumeWhenVisible = false;
 
-    btnKakao?.addEventListener('click', () => {
-      haptic(15);
-      // Kakao SDK 사용 가능 시
-      if (window.Kakao && KAKAO_JS_KEY) {
-        try {
-          if (!window.Kakao.isInitialized()) window.Kakao.init(KAKAO_JS_KEY);
-          window.Kakao.Share.sendDefault({
-            objectType: 'feed',
-            content: {
-              title: SHARE_TITLE,
-              description: SHARE_DESC,
-              imageUrl: SHARE_IMAGE,
-              link: { mobileWebUrl: location.href, webUrl: location.href }
-            },
-            buttons: [
-              { title: '청첩장 보기', link: { mobileWebUrl: location.href, webUrl: location.href } }
-            ]
-          });
-          return;
-        } catch (e) { /* fallthrough */ }
-      }
-      // Web Share API 폴백
-      if (navigator.share) {
-        navigator.share({ title: SHARE_TITLE, text: SHARE_DESC, url: location.href }).catch(() => {});
+    function fadeVolume(to, duration, onDone) {
+      cancelAnimationFrame(fadeFrame);
+      if (!canFadeVolume || duration === 0) {
+        if (canFadeVolume) audio.volume = to;
+        onDone?.();
         return;
       }
-      // 최종 폴백: 링크 복사
-      navigator.clipboard?.writeText(location.href);
-      showToast('청첩장 링크가 복사되었습니다');
+      const from = audio.volume;
+      const startTime = performance.now();
+      const step = (now) => {
+        const progress = Math.min(1, (now - startTime) / duration);
+        audio.volume = from + (to - from) * progress;
+        if (progress < 1) fadeFrame = requestAnimationFrame(step);
+        else onDone?.();
+      };
+      fadeFrame = requestAnimationFrame(step);
+    }
+
+    function showOff() {
+      button.setAttribute('aria-pressed', 'false');
+      button.removeAttribute('aria-busy');
+      button.classList.remove('is-playing');
+    }
+
+    async function turnOn() {
+      button.setAttribute('aria-pressed', 'true');
+      button.setAttribute('aria-busy', 'true');
+      if (audio.paused && canFadeVolume) audio.volume = 0;
+      try {
+        await audio.play();
+        fadeVolume(BGM_VOLUME, BGM_FADE_IN);
+      } catch {
+        showOff();
+      }
+    }
+
+    function turnOff() {
+      showOff();
+      fadeVolume(0, BGM_FADE_OUT, () => audio.pause());
+    }
+
+    button.addEventListener('click', () => {
+      if (button.getAttribute('aria-pressed') === 'true') turnOff();
+      else turnOn();
+    });
+
+    audio.addEventListener('playing', () => {
+      button.removeAttribute('aria-busy');
+      if (button.getAttribute('aria-pressed') === 'true') button.classList.add('is-playing');
+    });
+    audio.addEventListener('pause', () => button.classList.remove('is-playing'));
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        if (!audio.paused && button.getAttribute('aria-pressed') === 'true') {
+          resumeWhenVisible = true;
+          cancelAnimationFrame(fadeFrame);
+          audio.pause();
+        }
+      } else if (resumeWhenVisible) {
+        resumeWhenVisible = false;
+        audio.play().catch(showOff);
+      }
     });
   }
 
-  // ---------------------------------------------------------
-  // 11. RSVP / Guestbook placeholder URL handling
-  // ---------------------------------------------------------
-  function setupExternalLinks() {
-    const rsvp = $('#rsvp-link');
-    const gb   = $('#guestbook-link');
-    if (rsvp) {
-      if (RSVP_FORM_URL) {
-        rsvp.href = RSVP_FORM_URL;
-        rsvp.removeAttribute('data-placeholder-url');
-      } else {
-        rsvp.addEventListener('click', (e) => {
-          e.preventDefault();
-          showToast('참석 의사 폼은 준비 중입니다');
-        });
+  /* ---------- Lightbox: swipe, pinch zoom, double-tap (spec 3-2) ---------- */
+
+  function createLightbox(items) {
+    const dialog = document.getElementById('lightbox');
+    const stage = document.getElementById('lightbox-stage');
+    const track = document.getElementById('lightbox-track');
+    const closeButton = document.getElementById('lightbox-close');
+    const prevButton = document.getElementById('lightbox-prev');
+    const nextButton = document.getElementById('lightbox-next');
+    const counter = document.getElementById('lightbox-counter');
+    const total = items.length;
+
+    const SWIPE_DISTANCE = 50;
+    const SWIPE_VELOCITY = 0.3;
+    const DISMISS_DISTANCE = 80;
+    const DISMISS_FADE_RANGE = 400;
+    const DISMISS_MIN_OPACITY = 0.4;
+    const EDGE_RESISTANCE = 0.3;
+    const AXIS_LOCK_DISTANCE = 8;
+    const TAP_MAX_MOVE = 10;
+    const TAP_MAX_TIME = 300;
+    const DOUBLE_TAP_GAP = 300;
+    const MIN_SCALE = 1;
+    const MAX_SCALE = 3;
+    const PINCH_UNDERSHOOT = 0.8;
+    const DOUBLE_TAP_SCALE = 2;
+    const KEY_ZOOM_STEP = 1.5;
+
+    const slides = items.map((item) => {
+      const slide = document.createElement('div');
+      slide.className = 'lightbox__slide';
+      const img = document.createElement('img');
+      img.dataset.src = item.dataset.full;
+      img.width = Number(item.dataset.fullW);
+      img.height = Number(item.dataset.fullH);
+      img.alt = item.dataset.desc;
+      img.decoding = 'async';
+      img.draggable = false;
+      img.addEventListener('load', () => img.classList.add('is-loaded'));
+      slide.append(img);
+      track.append(slide);
+      return { slide, img };
+    });
+
+    let index = 0;
+    let isOpen = false;
+    let opener = null;
+    let zoom = { scale: 1, x: 0, y: 0 };
+    const pointers = new Map();
+    let gesture = null;
+    let lastTap = { time: 0, x: 0, y: 0 };
+
+    const currentImg = () => slides[index].img;
+    const stageWidth = () => stage.clientWidth;
+
+    function setTrack(offset, duration) {
+      track.style.transition = duration ? `transform ${duration}ms var(--ease-standard)` : 'none';
+      track.style.transform = `translate3d(${-index * stageWidth() + offset}px, 0, 0)`;
+    }
+
+    function applyZoom(duration) {
+      const img = currentImg();
+      img.style.transition = duration
+        ? `transform ${duration}ms var(--ease-standard), opacity var(--dur-base) var(--ease-out)`
+        : 'opacity var(--dur-base) var(--ease-out)';
+      const identity = zoom.scale === 1 && zoom.x === 0 && zoom.y === 0;
+      img.style.transform = identity ? '' : `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.scale})`;
+    }
+
+    function resetZoom(slideIndex) {
+      const { img } = slides[slideIndex];
+      img.style.transition = '';
+      img.style.transform = '';
+      if (slideIndex === index) zoom = { scale: 1, x: 0, y: 0 };
+    }
+
+    // Layout box of the image before its transform, in stage coordinates.
+    function baseRect() {
+      const img = currentImg();
+      return { left: img.offsetLeft, top: img.offsetTop, width: img.offsetWidth, height: img.offsetHeight };
+    }
+
+    function clampPan() {
+      const base = baseRect();
+      const fit = (offset, start, size, viewport) => {
+        const scaled = size * zoom.scale;
+        if (scaled <= viewport) return (viewport - scaled) / 2 - start;
+        return clamp(offset, viewport - start - scaled, -start);
+      };
+      zoom.x = fit(zoom.x, base.left, base.width, stage.clientWidth);
+      zoom.y = fit(zoom.y, base.top, base.height, stage.clientHeight);
+    }
+
+    // Changes scale while keeping the stage point (px, py) fixed on screen.
+    function zoomAround(scale, px, py, duration) {
+      const base = baseRect();
+      const imageX = (px - base.left - zoom.x) / zoom.scale;
+      const imageY = (py - base.top - zoom.y) / zoom.scale;
+      zoom.scale = scale;
+      zoom.x = px - base.left - scale * imageX;
+      zoom.y = py - base.top - scale * imageY;
+      if (scale === MIN_SCALE) zoom = { scale: 1, x: 0, y: 0 };
+      else clampPan();
+      applyZoom(duration);
+    }
+
+    function loadAround(center) {
+      for (let i = center - 1; i <= center + 1; i += 1) {
+        const slide = slides[i];
+        if (slide && !slide.img.getAttribute('src')) slide.img.src = slide.img.dataset.src;
       }
     }
-    if (gb) {
-      if (GUESTBOOK_URL) {
-        gb.href = GUESTBOOK_URL;
-        gb.removeAttribute('data-placeholder-url');
-      } else {
-        gb.addEventListener('click', (e) => {
-          e.preventDefault();
-          showToast('방명록은 준비 중입니다');
-        });
+
+    function updateControls() {
+      counter.textContent = `${index + 1} / ${total}`;
+      prevButton.disabled = index === 0;
+      nextButton.disabled = index === total - 1;
+      if (document.activeElement?.disabled) {
+        (prevButton.disabled ? nextButton : prevButton).focus();
       }
     }
-  }
 
-  // ---------------------------------------------------------
-  // INIT
-  // ---------------------------------------------------------
-  function init() {
-    setupHero();
-    setupReveal();
-    setupPetals();
-    setupCalendar();
-    setupGallery();
-    setupLightbox();
-    setupCopy();
-    setupMusic();
-    setupShare();
-    setupExternalLinks();
-
-    // reduced-motion 변경 시 단순 reload (모션 일관성 보장)
-    if (reducedMotion.addEventListener) {
-      reducedMotion.addEventListener('change', () => location.reload());
-    } else if (reducedMotion.addListener) {
-      reducedMotion.addListener(() => location.reload());
+    function go(targetIndex, animate = true) {
+      if (targetIndex < 0 || targetIndex >= total) {
+        setTrack(0, animate ? token('--dur-snap') : 0);
+        return;
+      }
+      if (targetIndex !== index) resetZoom(index);
+      index = targetIndex;
+      zoom = { scale: 1, x: 0, y: 0 };
+      loadAround(index);
+      setTrack(0, animate ? token('--dur-snap') : 0);
+      updateControls();
     }
+
+    function open(startIndex, openerElement) {
+      opener = openerElement;
+      isOpen = true;
+      dialog.hidden = false;
+      dialog.classList.remove('is-closing');
+      dialog.style.removeProperty('--backdrop-opacity');
+      root.style.overflow = 'hidden';
+      resetZoom(index);
+      index = startIndex;
+      go(startIndex, false);
+      void dialog.offsetWidth;
+      dialog.classList.add('is-open');
+      closeButton.focus({ preventScroll: true });
+      document.addEventListener('keydown', onKeydown);
+    }
+
+    function close() {
+      if (!isOpen) return;
+      isOpen = false;
+      pointers.clear();
+      gesture = null;
+      document.removeEventListener('keydown', onKeydown);
+      dialog.classList.remove('is-open', 'is-dragging');
+      dialog.classList.add('is-closing');
+      setTimeout(() => {
+        dialog.hidden = true;
+        dialog.classList.remove('is-closing');
+        slides[index].slide.style.transition = '';
+        slides[index].slide.style.transform = '';
+        resetZoom(index);
+        root.style.overflow = '';
+        opener?.focus({ preventScroll: true });
+      }, token('--dur-short'));
+    }
+
+    function onKeydown(event) {
+      switch (event.key) {
+        case 'Escape':
+          event.preventDefault();
+          close();
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          go(index - 1);
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          go(index + 1);
+          break;
+        case '+':
+        case '=':
+          zoomAround(clamp(zoom.scale * KEY_ZOOM_STEP, MIN_SCALE, MAX_SCALE),
+            stage.clientWidth / 2, stage.clientHeight / 2, token('--dur-modal'));
+          break;
+        case '-':
+          zoomAround(clamp(zoom.scale / KEY_ZOOM_STEP, MIN_SCALE, MAX_SCALE),
+            stage.clientWidth / 2, stage.clientHeight / 2, token('--dur-modal'));
+          break;
+        case 'Tab': {
+          const focusables = [closeButton, prevButton, nextButton].filter((el) => !el.disabled);
+          const current = focusables.indexOf(document.activeElement);
+          const step = event.shiftKey ? -1 : 1;
+          const next = current === -1 ? 0 : (current + step + focusables.length) % focusables.length;
+          event.preventDefault();
+          focusables[next].focus();
+          break;
+        }
+        default:
+          break;
+      }
+    }
+
+    /* Pointer gestures */
+
+    function stagePoint(event) {
+      const rect = stage.getBoundingClientRect();
+      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    }
+
+    function twoPointers() {
+      const [a, b] = [...pointers.values()];
+      return {
+        distance: Math.hypot(b.x - a.x, b.y - a.y),
+        mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
+      };
+    }
+
+    function settleSlideOffset() {
+      const duration = token('--dur-modal');
+      const { slide } = slides[index];
+      slide.style.transition = duration ? `transform ${duration}ms var(--ease-standard)` : '';
+      slide.style.transform = '';
+      dialog.classList.remove('is-dragging');
+      dialog.style.removeProperty('--backdrop-opacity');
+      track.style.willChange = '';
+    }
+
+    function beginSingle(point) {
+      const now = performance.now();
+      gesture = {
+        type: zoom.scale > 1 ? 'pan' : 'pending',
+        start: point,
+        last: point,
+        startTime: now,
+        samples: [{ x: point.x, time: now }],
+        origin: { ...zoom },
+        moved: false,
+      };
+    }
+
+    function beginPinch() {
+      if (gesture && (gesture.type === 'swipe' || gesture.type === 'dismiss')) {
+        setTrack(0, 0);
+        settleSlideOffset();
+      }
+      const { distance, mid } = twoPointers();
+      const base = baseRect();
+      gesture = {
+        type: 'pinch',
+        startDistance: distance || 1,
+        // Image-space point under the initial midpoint stays under the fingers.
+        anchor: {
+          x: (mid.x - base.left - zoom.x) / zoom.scale,
+          y: (mid.y - base.top - zoom.y) / zoom.scale,
+        },
+        origin: { ...zoom },
+        base,
+      };
+    }
+
+    function onPointerDown(event) {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      stage.setPointerCapture(event.pointerId);
+      const point = stagePoint(event);
+      pointers.set(event.pointerId, point);
+      if (pointers.size === 1) beginSingle(point);
+      else if (pointers.size === 2) beginPinch();
+    }
+
+    function onPointerMove(event) {
+      if (!pointers.has(event.pointerId) || !gesture) return;
+      const point = stagePoint(event);
+      pointers.set(event.pointerId, point);
+
+      if (gesture.type === 'pinch') {
+        if (pointers.size < 2) return;
+        const { distance, mid } = twoPointers();
+        const scale = clamp(gesture.origin.scale * (distance / gesture.startDistance), PINCH_UNDERSHOOT, MAX_SCALE);
+        zoom.scale = scale;
+        zoom.x = mid.x - gesture.base.left - scale * gesture.anchor.x;
+        zoom.y = mid.y - gesture.base.top - scale * gesture.anchor.y;
+        applyZoom(0);
+        return;
+      }
+
+      const dx = point.x - gesture.start.x;
+      const dy = point.y - gesture.start.y;
+      gesture.last = point;
+      if (Math.hypot(dx, dy) > TAP_MAX_MOVE) gesture.moved = true;
+      const now = performance.now();
+      gesture.samples.push({ x: point.x, time: now });
+      while (gesture.samples.length > 2 && now - gesture.samples[0].time > 100) gesture.samples.shift();
+
+      if (gesture.type === 'pan') {
+        zoom.x = gesture.origin.x + dx;
+        zoom.y = gesture.origin.y + dy;
+        clampPan();
+        applyZoom(0);
+        return;
+      }
+
+      if (gesture.type === 'pending') {
+        if (Math.hypot(dx, dy) < AXIS_LOCK_DISTANCE) return;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          gesture.type = 'swipe';
+          track.style.willChange = 'transform';
+        } else if (dy > 0) {
+          gesture.type = 'dismiss';
+          dialog.classList.add('is-dragging');
+          slides[index].slide.style.transition = 'none';
+        } else {
+          gesture.type = 'none';
+        }
+      }
+
+      if (gesture.type === 'swipe') {
+        const atEdge = (index === 0 && dx > 0) || (index === total - 1 && dx < 0);
+        setTrack(atEdge ? dx * EDGE_RESISTANCE : dx, 0);
+      } else if (gesture.type === 'dismiss') {
+        const pull = Math.max(0, dy);
+        slides[index].slide.style.transform = `translate3d(0, ${pull}px, 0)`;
+        dialog.style.setProperty('--backdrop-opacity',
+          String(Math.max(DISMISS_MIN_OPACITY, 1 - pull / DISMISS_FADE_RANGE)));
+      }
+    }
+
+    function finishZoom() {
+      if (zoom.scale < MIN_SCALE + 0.01) {
+        zoom = { scale: 1, x: 0, y: 0 };
+      } else {
+        clampPan();
+      }
+      applyZoom(token('--dur-modal'));
+    }
+
+    function handleTap(point, onImage) {
+      const now = performance.now();
+      const isDoubleTap = now - lastTap.time < DOUBLE_TAP_GAP
+        && Math.hypot(point.x - lastTap.x, point.y - lastTap.y) < 40;
+
+      if (onImage && isDoubleTap) {
+        lastTap = { time: 0, x: 0, y: 0 };
+        const targetScale = zoom.scale > 1 ? MIN_SCALE : DOUBLE_TAP_SCALE;
+        zoomAround(targetScale, point.x, point.y, token('--dur-modal'));
+        return;
+      }
+      lastTap = { time: now, x: point.x, y: point.y };
+      if (!onImage) close();
+    }
+
+    function pointIsOnImage(event) {
+      const rect = currentImg().getBoundingClientRect();
+      return event.clientX >= rect.left && event.clientX <= rect.right
+        && event.clientY >= rect.top && event.clientY <= rect.bottom;
+    }
+
+    function onPointerUp(event) {
+      if (!pointers.has(event.pointerId)) return;
+      pointers.delete(event.pointerId);
+      if (!gesture) return;
+
+      if (gesture.type === 'pinch') {
+        if (pointers.size === 1) {
+          if (zoom.scale <= MIN_SCALE) {
+            finishZoom();
+            gesture = null;
+          } else {
+            const [remaining] = pointers.values();
+            beginSingle(remaining);
+            gesture.moved = true;
+          }
+        } else if (pointers.size === 0) {
+          finishZoom();
+          gesture = null;
+        }
+        return;
+      }
+      if (pointers.size > 0) return;
+
+      const finished = gesture;
+      gesture = null;
+      const dx = finished.last.x - finished.start.x;
+      const dy = finished.last.y - finished.start.y;
+
+      if (event.type === 'pointercancel') {
+        if (finished.type === 'swipe') { setTrack(0, token('--dur-snap')); track.style.willChange = ''; }
+        if (finished.type === 'dismiss') settleSlideOffset();
+        return;
+      }
+
+      const elapsed = performance.now() - finished.startTime;
+      if (!finished.moved && elapsed < TAP_MAX_TIME) {
+        handleTap(finished.start, pointIsOnImage(event));
+        return;
+      }
+
+      if (finished.type === 'swipe') {
+        track.style.willChange = '';
+        const first = finished.samples[0];
+        const lastSample = finished.samples[finished.samples.length - 1];
+        const velocity = (lastSample.x - first.x) / Math.max(1, lastSample.time - first.time);
+        const passed = Math.abs(dx) >= SWIPE_DISTANCE || Math.abs(velocity) >= SWIPE_VELOCITY;
+        if (passed && dx !== 0) go(index + (dx < 0 ? 1 : -1));
+        else setTrack(0, token('--dur-snap'));
+      } else if (finished.type === 'dismiss') {
+        if (dy >= DISMISS_DISTANCE) close();
+        else settleSlideOffset();
+      }
+    }
+
+    stage.addEventListener('pointerdown', onPointerDown);
+    stage.addEventListener('pointermove', onPointerMove);
+    stage.addEventListener('pointerup', onPointerUp);
+    stage.addEventListener('pointercancel', onPointerUp);
+    stage.addEventListener('dragstart', (event) => event.preventDefault());
+
+    closeButton.addEventListener('click', close);
+    prevButton.addEventListener('click', () => go(index - 1));
+    nextButton.addEventListener('click', () => go(index + 1));
+
+    window.addEventListener('resize', () => {
+      if (!isOpen) return;
+      resetZoom(index);
+      setTrack(0, 0);
+    });
+
+    return { open };
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  /* ---------- Gallery grid + "more" (spec 3-1) ---------- */
+
+  function initGallery() {
+    const grid = document.getElementById('gallery-grid');
+    const moreButton = document.getElementById('gallery-more');
+    const items = [...grid.querySelectorAll('.gallery__item')];
+    const lightbox = createLightbox(items);
+
+    items.forEach((item, i) => {
+      const img = item.querySelector('img');
+      const markLoaded = () => img.classList.add('is-loaded');
+      if (img.complete && img.naturalWidth) markLoaded();
+      else {
+        img.addEventListener('load', markLoaded, { once: true });
+        img.addEventListener('error', markLoaded, { once: true });
+      }
+      item.addEventListener('click', () => lightbox.open(i, item));
+    });
+
+    moreButton.addEventListener('click', () => {
+      grid.classList.add('is-expanded');
+      moreButton.hidden = true;
+      grid.querySelector('.gallery__extra .gallery__item')?.focus();
+    });
   }
+
+  /* ---------- Kakao share (spec 3-6) ---------- */
+
+  function initShare() {
+    const kakaoButton = document.getElementById('share-kakao');
+    const linkButton = document.getElementById('share-link');
+    let kakaoReady = false;
+
+    if (!isPlaceholder(CONFIG.kakaoJsKey)) {
+      const script = document.createElement('script');
+      script.src = CONFIG.kakaoSdkUrl;
+      script.crossOrigin = 'anonymous';
+      script.async = true;
+      script.onload = () => {
+        try {
+          if (!window.Kakao.isInitialized()) window.Kakao.init(CONFIG.kakaoJsKey);
+          kakaoReady = true;
+        } catch {
+          kakaoReady = false;
+        }
+      };
+      document.head.append(script);
+    }
+
+    kakaoButton.addEventListener('click', () => {
+      if (!kakaoReady) {
+        linkButton.click();
+        return;
+      }
+      const meta = (property) => document.querySelector(`meta[property="${property}"]`).content;
+      const url = shareUrl();
+      const link = { mobileWebUrl: url, webUrl: url };
+      try {
+        window.Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: meta('og:title'),
+            description: meta('og:description'),
+            imageUrl: new URL('images/og-thumbnail.jpg', url).href,
+            imageWidth: 1200,
+            imageHeight: 630,
+            link,
+          },
+          buttons: [{ title: '청첩장 보기', link }],
+        });
+      } catch {
+        linkButton.click();
+      }
+    });
+  }
+
+  /* ---------- Guestbook form ---------- */
+
+  function initForms() {
+    document.querySelectorAll('form[data-async-form]').forEach((form) => {
+      const result = form.querySelector('.form__result');
+      const submit = form.querySelector('[type="submit"]');
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const endpoint = form.getAttribute('action');
+        if (isPlaceholder(endpoint)) {
+          result.textContent = '지금은 방명록을 남길 수 없습니다. 축하의 말씀은 두 사람에게 직접 전해 주세요.';
+          return;
+        }
+        submit.disabled = true;
+        result.textContent = '';
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { Accept: 'application/json' },
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          form.reset();
+          result.textContent = form.dataset.success;
+        } catch {
+          result.textContent = '전송하지 못했습니다. 잠시 후 다시 시도해 주세요.';
+        } finally {
+          submit.disabled = false;
+        }
+      });
+    });
+  }
+
+  initHero();
+  initReveal();
+  initDday();
+  initGallery();
+  initCopyButtons();
+  initMusic();
+  initShare();
+  initForms();
 })();
