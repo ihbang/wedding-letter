@@ -36,9 +36,9 @@
   --radius-cell: 4px;
 
   /* Easing (motion spec 6) */
-  --ease-out:      cubic-bezier(0.33, 1, 0.68, 1);    /* reveal, photo fade, toast in, thumb fade */
+  --ease-out:      cubic-bezier(0.33, 1, 0.68, 1);    /* reveal, photo fade, toast in, carousel image fade */
   --ease-in:       cubic-bezier(0.32, 0, 0.67, 0);    /* lightbox close, toast out */
-  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);      /* press, snap, zoom, label swap */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);      /* press, slide snap (carousel + lightbox), zoom, label swap */
   --ease-in-out:   cubic-bezier(0.37, 0, 0.63, 1);    /* breathing loops: bulbs, BGM ring, scroll cue */
   --ease-draw:     cubic-bezier(0.65, 0, 0.35, 1);    /* sprig stroke-draw, pen-like accel/decel */
 
@@ -46,8 +46,8 @@
   --dur-press:        120ms;
   --dur-fast:         200ms;
   --dur-modal:        250ms;
-  --dur-base:         300ms;
-  --dur-snap:         350ms;
+  --dur-base:         300ms;   /* carousel image load fade */
+  --dur-snap:         350ms;   /* slide change: gallery carousel + lightbox */
   --dur-zone-fade:    600ms;   /* bokeh canvas fade on zone enter/leave */
   --dur-reveal:       800ms;
   --dur-photo:        900ms;   /* hero photo fade-in */
@@ -60,7 +60,19 @@
   --reveal-distance: 12px;
   --stagger:        120ms;
   --bulb-stagger:   140ms;
+
+  /* Gallery carousel geometry (motion spec 4-1, 6) */
+  --g-gap:    8px;     /* space between slides */
+  --g-side:   24px;    /* column edge to current frame; the neighbour peeks 16px into it */
+  --g-chrome: 112px;   /* height kept free for the controls row and breathing room */
+  --g-w: min(calc(100vw - 2 * var(--g-side)), calc(var(--max-w) - 2 * var(--g-side)), calc((100vh - var(--g-chrome)) * 2 / 3));
 }
+@supports (height: 100svh) {
+  :root { --g-w: min(calc(100vw - 2 * var(--g-side)), calc(var(--max-w) - 2 * var(--g-side)), calc((100svh - var(--g-chrome)) * 2 / 3)); }
+}
+/* Non-inherited, so changing them only restyles the track, not its 15 slides */
+@property --g-i  { syntax: '<integer>'; inherits: false; initial-value: 0; }
+@property --g-dx { syntax: '<length>';  inherits: false; initial-value: 0px; }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
@@ -552,32 +564,109 @@ html.lb-open { overflow: hidden; }
 }
 .gallery .sprig { margin-bottom: 32px; }
 
-.g-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+/* Carousel (motion spec 4-1). The negative margin cancels the 16px gutter so neighbours reach the column edge. */
+.gallery .g-carousel { margin-inline: calc(-1 * var(--gutter-gallery)); }
+
+.g-viewport {
+  padding-block: 4px;                       /* room for the current slide's focus ring */
+  overflow-x: auto;                         /* no-JS fallback: native scroll-snap */
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
 }
-.g-cell {
+.g-viewport::-webkit-scrollbar { display: none; }
+.g-track {
+  display: flex;
+  gap: var(--g-gap);
+  width: max-content;
+  padding-inline: calc(50% - var(--g-w) / 2);   /* % = viewport width: centers the current slide */
+}
+.g-slide {
+  flex: 0 0 var(--g-w);
+  aspect-ratio: 2 / 3;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+.g-open {
   display: block;
   width: 100%;
-  aspect-ratio: 2 / 3;
+  height: 100%;
   padding: 0;
-  overflow: hidden;
   border: 0;
   border-radius: var(--radius-cell);
-  background: var(--color-surface);
+  overflow: hidden;                         /* on the button, so its own outline is not clipped */
+  background: var(--color-surface);         /* mat for landscape photos + loading placeholder */
   cursor: zoom-in;
   -webkit-tap-highlight-color: transparent;
-  transition: transform var(--dur-press) var(--ease-standard);
 }
-.g-cell:active { transform: scale(0.98); }
-.g-cell img {
+.g-open img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: opacity var(--dur-base) var(--ease-out);
 }
-.g-cell img.is-loading { opacity: 0; }
+.g-slide--landscape img { object-fit: contain; }
+.g-open img.is-loading { opacity: 0; }
+
+.js .g-viewport {
+  overflow: hidden;
+  overflow: clip;                           /* not scrollable, so focus can never scroll it */
+  scroll-snap-type: none;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+.js .g-track {
+  transform: translate3d(calc(var(--g-i, 0) * -1 * (var(--g-w) + var(--g-gap)) + var(--g-dx, 0px)), 0, 0);
+  transition: transform var(--dur-snap) var(--ease-standard);
+}
+.js .g-track.is-dragging { transition: none; will-change: transform; cursor: grabbing; }
+.js .g-track.is-dragging .g-open { cursor: grabbing; }
+.js .g-track.no-anim { transition: none; }
+.js .g-slide:not(.is-current) { pointer-events: none; }
+
+.g-controls { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; }
+html:not(.js) .g-controls,
+html:not(.js) .g-status { display: none; }
+.g-nav {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;                       /* focus ring follows the visible circle */
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-press) var(--ease-standard);
+}
+.g-nav::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px solid var(--color-primary);
+  border-radius: 50%;
+}
+.g-nav svg { position: relative; }          /* paint the chevron above the ::before circle */
+.g-nav:active { transform: scale(0.97); }
+.g-nav[aria-disabled="true"] { opacity: 0.3; cursor: default; }
+.g-nav[aria-disabled="true"]:active { transform: none; }
+@media (hover: hover) and (pointer: fine) {
+  .g-nav:not([aria-disabled="true"]):hover::before { background: rgb(142 85 88 / 0.06); }
+}
+.g-counter {
+  min-width: 4.5em;
+  margin: 0;
+  text-align: center;
+  font: 400 16px/1 var(--font-en-serif);
+  letter-spacing: 0.1em;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--color-muted);
+}
+.g-counter__now { color: var(--color-text); }
 
 /* ===== 6. Venue ===== */
 
@@ -1002,7 +1091,7 @@ html.lb-open { overflow: hidden; }
 
   /* Press feedback without scale */
   .btn:active,
-  .g-cell:active { transform: none; opacity: 0.85; }
+  .g-nav:not([aria-disabled="true"]):active { transform: none; opacity: 0.85; }
 
   /* Toast appears and leaves in place */
   .toast,

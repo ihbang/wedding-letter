@@ -19,6 +19,8 @@
     ZOOM_MAX: 3, DOUBLE_TAP_ZOOM: 2, DOUBLE_TAP_MS: 300, TAP_SLOP: 10,
     PINCH_MIN: 0.6, KEY_ZOOM_STEP: 1.5, VELOCITY_WINDOW: 100,
   });
+  // Gallery carousel (spec 4-1). Swipe thresholds are shared with the lightbox via LB.
+  const GAL = Object.freeze({ BEHIND: 1, AHEAD: 2, NEAR_MARGIN: '100% 0px', WHEEL_STEP: 40, WHEEL_LOCK: 450 });
 
   const root = document.documentElement;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -602,10 +604,173 @@
     document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
   }
 
-  /* ---------- Gallery thumbnails (spec 4-1) ---------- */
+  /* ---------- Gallery carousel (spec 4-1) ---------- */
 
-  function initThumbs() {
-    document.querySelectorAll('.g-cell img').forEach((img) => {
+  // Shared with the lightbox's finishSwipe: at most one slide per gesture, no wrap.
+  function swipeTarget(index, total, dx, samples) {
+    const a = samples[0];
+    const b = samples[samples.length - 1];
+    const v = b.t > a.t ? (b.x - a.x) / (b.t - a.t) : 0;
+    const flick = Math.abs(v) >= LB.SWIPE_VELOCITY && Math.sign(v) === Math.sign(dx);
+    if (Math.abs(dx) < LB.SWIPE_DIST && !flick) return index;
+    return clamp(dx < 0 ? index + 1 : index - 1, 0, total - 1);
+  }
+
+  function initCarousel() {
+    const el = document.querySelector('.g-carousel');
+    if (!el) return null;
+    const viewport = el.querySelector('.g-viewport');
+    const track = el.querySelector('.g-track');
+    const slides = [...track.querySelectorAll('.g-slide')];
+    const buttons = slides.map((s) => s.querySelector('.g-open'));
+    const imgs = slides.map((s) => s.querySelector('img'));
+    const btnPrev = el.querySelector('.g-prev');
+    const btnNext = el.querySelector('.g-next');
+    const now = el.querySelector('.g-counter__now');
+    const status = el.querySelector('.g-status');
+    const total = slides.length;
+    const hasInert = 'inert' in HTMLElement.prototype;
+    let index = 0;
+    let near = false;
+
+    // Loading window: index - 1 .. index + 2, switched to eager once the carousel is about a screen away.
+    function preload() {
+      if (!near) return;
+      const lo = Math.max(0, index - GAL.BEHIND);
+      const hi = Math.min(total - 1, index + GAL.AHEAD);
+      for (let k = lo; k <= hi; k++) if (imgs[k].loading !== 'eager') imgs[k].loading = 'eager';
+    }
+
+    function setCurrent(k, current) {
+      slides[k].inert = !current;
+      slides[k].classList.toggle('is-current', current);
+      if (current) slides[k].removeAttribute('aria-hidden');
+      else slides[k].setAttribute('aria-hidden', 'true');
+      if (!hasInert) { // iOS 15.4 and older: keep hidden slides out of the tab order
+        if (current) buttons[k].removeAttribute('tabindex');
+        else buttons[k].tabIndex = -1;
+      }
+    }
+
+    function goTo(i, { animate = true, announce = true } = {}) {
+      const next = clamp(i, 0, total - 1);
+      const changed = next !== index;
+      const moveFocus = changed && slides[index].contains(document.activeElement);
+      if (!animate) track.classList.add('no-anim');
+      index = next;
+      track.style.setProperty('--g-i', String(index));
+      track.style.setProperty('--g-dx', '0px');
+      setCurrent(index, true);                         // un-inert the new slide before focusing it
+      if (moveFocus) buttons[index].focus({ preventScroll: true });
+      slides.forEach((_, k) => { if (k !== index) setCurrent(k, false); });
+      now.textContent = String(index + 1);
+      btnPrev.setAttribute('aria-disabled', String(index === 0));
+      btnNext.setAttribute('aria-disabled', String(index === total - 1));
+      viewport.scrollLeft = 0;                         // guard for the overflow: hidden fallback
+      if (changed && announce && !moveFocus) {
+        status.textContent = `${text('lb-counter', { n: index + 1, total })}, ${imgs[index].alt}`;
+      }
+      if (!animate) { void track.offsetWidth; track.classList.remove('no-anim'); }
+      preload();
+    }
+
+    btnPrev.addEventListener('click', () => { if (index > 0) goTo(index - 1); });
+    btnNext.addEventListener('click', () => { if (index < total - 1) goTo(index + 1); });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(index - 1); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); goTo(index + 1); }
+    });
+
+    // Pointer gestures: pan-y keeps vertical page scroll with the browser.
+    let g = null;
+    let suppressClick = false;
+    viewport.addEventListener('pointerdown', (e) => {
+      if (!e.isPrimary) {                              // second finger: page pinch-zoom takes over
+        if (g?.axis === 'x') { track.classList.remove('is-dragging'); goTo(index); }
+        g = null;
+        return;
+      }
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      suppressClick = false;
+      g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, axis: null, samples: [{ t: e.timeStamp, x: e.clientX }] };
+    });
+    viewport.addEventListener('pointermove', (e) => {
+      if (!g || e.pointerId !== g.id) return;
+      const dx = e.clientX - g.x0;
+      const dy = e.clientY - g.y0;
+      if (!g.axis) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < LB.AXIS_LOCK) return;
+        g.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        if (g.axis === 'y') return;                    // the browser scrolls the page
+        viewport.setPointerCapture(e.pointerId);       // capture only once the gesture is horizontal
+        track.classList.add('is-dragging');
+      }
+      if (g.axis !== 'x') return;
+      const atEdge = (index === 0 && dx > 0) || (index === total - 1 && dx < 0);
+      g.dx = dx;
+      track.style.setProperty('--g-dx', `${atEdge ? dx * LB.EDGE_RESIST : dx}px`);
+      g.samples.push({ t: e.timeStamp, x: e.clientX });
+      while (g.samples.length > 2 && e.timeStamp - g.samples[0].t > LB.VELOCITY_WINDOW) g.samples.shift();
+    });
+    function onEnd(e) {
+      if (!g || e.pointerId !== g.id) return;
+      if (g.axis === 'x') {
+        track.classList.remove('is-dragging');
+        suppressClick = true;
+        goTo(e.type === 'pointercancel' ? index : swipeTarget(index, total, g.dx, g.samples));
+      } else if (!g.axis && e.type === 'pointerup') {
+        const r = slides[index].getBoundingClientRect();   // tap on a peeking neighbour
+        const step = e.clientX < r.left ? -1 : e.clientX > r.right ? 1 : 0;
+        if (step) {
+          suppressClick = true;    // the follow-up click would land on the new current slide and open the lightbox
+          goTo(index + step);
+        }
+      }
+      g = null;
+    }
+    viewport.addEventListener('pointerup', onEnd);
+    viewport.addEventListener('pointercancel', onEnd);
+    viewport.addEventListener('click', (e) => {
+      // detail 0 = keyboard activation: a touch swipe fires no click, so the flag may still be set.
+      if (!suppressClick || e.detail === 0) return;
+      suppressClick = false;
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+    viewport.addEventListener('dragstart', (e) => e.preventDefault());
+
+    // Trackpad horizontal swipe (Nice): one slide per 40px, then ignore input for 450ms.
+    let wheelSum = 0;
+    let wheelUntil = 0;
+    viewport.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();                              // keeps the browser's two-finger "back" gesture away
+      if (e.timeStamp < wheelUntil) return;
+      wheelSum += e.deltaX;
+      if (Math.abs(wheelSum) <= GAL.WHEEL_STEP) return;
+      goTo(index + Math.sign(wheelSum));
+      wheelSum = 0;
+      wheelUntil = e.timeStamp + GAL.WHEEL_LOCK;
+    }, { passive: false });
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries, obs) => {
+        if (!entries.some((en) => en.isIntersecting)) return;
+        near = true;
+        preload();
+        obs.disconnect();
+      }, { rootMargin: GAL.NEAR_MARGIN }).observe(el);
+    } else {
+      near = true;
+    }
+
+    goTo(0, { animate: false, announce: false });
+    return { goTo, get index() { return index; }, button: (k) => buttons[k] };
+  }
+
+  // Slide image load fade (spec 4-1-7, Should).
+  function initPhotoFade() {
+    document.querySelectorAll('.g-open img').forEach((img) => {
       if (img.complete) return;
       img.classList.add('is-loading');
       const done = () => img.classList.remove('is-loading');
@@ -616,12 +781,12 @@
 
   /* ---------- Lightbox (spec 4-2) ---------- */
 
-  function initLightbox(bokeh) {
+  function initLightbox(bokeh, carousel) {
     const dialog = document.getElementById('lightbox');
-    const cells = [...document.querySelectorAll('.g-cell')];
-    if (!dialog || !cells.length) return;
+    const buttons = [...document.querySelectorAll('.g-open')];
+    if (!dialog || !buttons.length) return;
     if (typeof dialog.showModal !== 'function') {
-      cells.forEach((cell) => cell.addEventListener('click', () => window.open(cell.dataset.full, '_blank', 'noopener')));
+      buttons.forEach((btn) => btn.addEventListener('click', () => window.open(btn.dataset.full, '_blank', 'noopener')));
       return;
     }
 
@@ -633,30 +798,29 @@
     const btnNext = dialog.querySelector('.lb-next');
     const counterText = dialog.querySelector('.lb-counter__text');
     const counterSr = dialog.querySelector('.lb-counter__sr');
-    const total = cells.length;
+    const total = buttons.length;
 
-    const slides = cells.map((cell) => {
-      const thumb = cell.querySelector('img');
+    const slides = buttons.map((btn) => {
+      const source = btn.querySelector('img');   // the carousel's image for this slide
       const li = document.createElement('li');
       li.className = 'lb-slide';
       const img = document.createElement('img');
       img.className = 'lb-img is-empty';
-      img.alt = thumb.alt;
-      img.width = Number(cell.dataset.w);
-      img.height = Number(cell.dataset.h);
+      img.alt = source.alt;
+      img.width = Number(btn.dataset.w);
+      img.height = Number(btn.dataset.h);
       img.decoding = 'async';
       img.draggable = false;
       img.addEventListener('load', () => img.classList.remove('is-empty'));
       li.append(img);
       track.append(li);
       return {
-        li, img, full: cell.dataset.full, thumb: thumb.getAttribute('src'),
-        w: Number(cell.dataset.w), h: Number(cell.dataset.h), fw: 0, fh: 0, fullRequested: false,
+        li, img, source, full: btn.dataset.full, fullUrl: new URL(btn.dataset.full, document.baseURI).href,
+        w: Number(btn.dataset.w), h: Number(btn.dataset.h), fw: 0, fh: 0, fullRequested: false,
       };
     });
 
     let index = 0;
-    let opener = null;
     let closing = false;
     let closedByPop = false;
     let ignorePop = false;
@@ -719,13 +883,16 @@
       track.style.transform = `translate3d(calc(${-100 * index}% + ${dx}px), 0, 0)`;
     }
 
+    // The current slide starts from the file the carousel already shows (cached, same ratio), then swaps
+    // to the original once decoded. Neighbours and slides the carousel has not loaded get the original.
     function load(i, current = false) {
       const sl = slides[i];
-      if (!sl) return;
-      if (current && !sl.img.getAttribute('src')) sl.img.src = sl.thumb; // cached by the grid, same ratio
-      if (sl.fullRequested) return;
+      if (!sl || sl.fullRequested) return;
       sl.fullRequested = true;
-      if (!current) { sl.img.src = sl.full; return; }
+      const { source } = sl;
+      const shown = current && source.complete && source.naturalWidth > 0 ? source.currentSrc : '';
+      if (!shown || shown === sl.fullUrl) { sl.img.src = sl.full; return; }
+      sl.img.src = shown;
       const pre = new Image();
       pre.src = sl.full;
       const swap = () => { sl.img.src = sl.full; };
@@ -750,8 +917,10 @@
       if (document.activeElement === btnNext && btnNext.disabled) btnPrev.focus();
     }
 
-    function open(i, cell) {
-      opener = cell;
+    // Carousel follows the photo last seen here (spec 4-1-6); no animation, no live announcement.
+    const syncCarousel = () => carousel?.goTo(index, { animate: false, announce: false });
+
+    function open(i) {
       closing = false;
       dialog.showModal();
       root.classList.add('lb-open');
@@ -768,6 +937,7 @@
     function requestClose() {
       if (!dialog.open || closing) return;
       closing = true;
+      syncCarousel();
       dialog.classList.remove('is-open');
       setTimeout(() => { if (dialog.open) dialog.close(); }, token('--dur-fast'));
     }
@@ -787,7 +957,9 @@
         history.back();
       }
       closedByPop = false;
-      opener?.focus({ preventScroll: true });
+      // Focus the carousel's current slide button, not the opener: if the number changed, the opener is inert.
+      syncCarousel();
+      carousel?.button(carousel.index).focus({ preventScroll: true });
     });
     dialog.addEventListener('cancel', (e) => { e.preventDefault(); requestClose(); });
     window.addEventListener('popstate', () => {
@@ -795,7 +967,7 @@
       if (dialog.open) { closedByPop = true; requestClose(); }
     });
 
-    cells.forEach((cell, i) => cell.addEventListener('click', () => open(i, cell)));
+    buttons.forEach((btn, i) => btn.addEventListener('click', () => open(i)));
     btnClose.addEventListener('click', requestClose);
     btnPrev.addEventListener('click', () => show(index - 1));
     btnNext.addEventListener('click', () => show(index + 1));
@@ -938,15 +1110,7 @@
 
     function finishSwipe() {
       track.classList.remove('is-dragging');
-      const first = g.samples[0];
-      const lastSample = g.samples[g.samples.length - 1];
-      const dt = lastSample.t - first.t;
-      const v = dt > 0 ? (lastSample.x - first.x) / dt : 0;
-      const flick = Math.abs(v) >= LB.SWIPE_VELOCITY && Math.sign(v) === Math.sign(g.dx);
-      let target = index;
-      if (Math.abs(g.dx) >= LB.SWIPE_DIST || flick) target = g.dx < 0 ? index + 1 : index - 1;
-      if (target < 0 || target >= total) target = index;
-      show(target, true);
+      show(swipeTarget(index, total, g.dx, g.samples), true);
     }
 
     function tap(p, t) {
@@ -1254,8 +1418,9 @@
   safe('reveal', initReveal);
   safe('hero', () => initHero(bokeh));
   safe('sprigs', initSprigs);
-  safe('thumbs', initThumbs);
-  safe('lightbox', () => initLightbox(bokeh));
+  safe('photo-fade', initPhotoFade);
+  const carousel = safe('carousel', initCarousel);
+  safe('lightbox', () => initLightbox(bokeh, carousel));
   safe('bgm', initBgm);
   safe('copy', initCopyButtons);
   safe('kakao', initKakao);

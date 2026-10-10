@@ -2,8 +2,9 @@
 
 - 작성일: 2026-10-10
 - 갱신: 2026-10-10, 사용자 카피 수정 반영(9장). 바뀐 부분만 고쳤다.
+- 갱신: 2026-10-11, 갤러리를 3x5 그리드에서 한 장씩 넘기는 캐러셀로 바꾸고 사진 1·2번 순서를 맞바꿨다(10장). 갤러리와 lightbox 연결 부분만 고쳤다.
 - 입력: `00_user-input.md`, `01_concept-director_concept-sheet.md`, `02_copy-writer_copy.md`, `03_image-artist_manifest.md`, `04_motion-designer_motion-spec.md`
-- 산출물: `index.html`(440줄), `style.css`(1,010줄), `script.js`(1,277줄). 줄 수는 카피 수정 반영 후 기준이다. 어제의 "Warm Paper & Ink" 파일을 전부 새로 썼다.
+- 산출물: `index.html`(454줄), `style.css`(1,099줄), `script.js`(1,442줄). 줄 수와 3장의 `파일:줄`은 캐러셀 반영 후 기준이다. 어제의 "Warm Paper & Ink" 파일을 전부 새로 썼다.
 - 이전 컨셉 자산(`jo--*`, `op1789048062-*`, `divider-hairline.svg`, `og-thumbnail.jpg`, `monogram-iy.svg`, `floral-*`, `gallery-placeholder-*`, `hero-illustration.png`)은 세 파일 어디에서도 참조하지 않는다(grep 0건). 파일 자체는 지우지 않았다.
 
 ## 1. 외부 리소스
@@ -24,64 +25,68 @@
 | 2 | greeting (`#greeting`) | background | ① 헤더 ② 인사말 | 섹션 끝 sprig-divider ① (stroke-draw) |
 | 3 | couple-intro (`#couple`) | background | ① 헤더 ② 신랑·신부 두 줄("아들"/"딸"은 같은 폭 칸 `.couple__rel`) | 없음 |
 | 4 | calendar (`#calendar[data-bokeh=calendar]`) | background | ① string-lights + 헤더 ② 한글 일시 + 달력(caption "JANUARY 2027") ③ D-day | 보케, 전구 점등·호흡 |
-| 5 | gallery (`#gallery`) | background | ① 헤더 + 안내 ② 3x5 그리드 전체 | 헤더 위 sprig-divider ② |
+| 5 | gallery (`#gallery`) | background | ① 헤더 + 안내 ② 캐러셀 전체(`.g-carousel`: 사진 창 + 이전·카운터·다음 줄). 슬라이드 개별 등장 없음 | 헤더 위 sprig-divider ②, 캐러셀 트랙 전환(350ms) |
 | 6 | venue (`#venue`) | background + surface 카드 | ① 헤더 ② 정보 카드 + 주소 복사 + 지도 버튼 ③ 교통편 | 없음 |
 | 7 | notice (`#notice`) | background | ① 헤더(NOTICE / 축하 화환 안내) ② 본문 2행 | 없음 (보케 구간 아님) |
 | 8 | account (`#account`) | background + surface 카드 | ① 헤더 + 안내문 ② 신랑측 카드 ③ 신부측 카드 | 없음 |
 | 9 | guestbook (`#guestbook`) | surface 밴드 | ① 헤더 + 안내 ② 폼 ③ 전달 안내 | 없음 |
 | 10 | share (`#share[data-bokeh=share]`) | background | ① wreath 모노그램 ② Thank you + 맺음말 ③ 공유 버튼 | 상단 sprig-divider ③, 보케 |
-| - | lightbox (`dialog#lightbox`) | scrim #1C1514 / 0.96 | - | 스와이프·핀치·더블탭·끌어 닫기 |
+| - | lightbox (`dialog#lightbox`) | scrim #1C1514 / 0.96 | - | 스와이프·핀치·더블탭·끌어 닫기. 캐러셀 현재 장과 같은 번호로 열리고, 닫으면 캐러셀이 마지막으로 본 번호로 맞춰진다 |
 | - | BGM 토글 (`.bgm-toggle`, fixed) | 반투명 면 | hero 시퀀스 t=0 | glow 링 |
 
-RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 컨셉 시트 `photos.gallery.order` 그대로이며(02, 01, 08 / 03, 09, 12 / 07, 13, 05 / 11, 06, 14 / 10, 04, 15), hero.jpg는 갤러리에 없다. 02와 15에만 `object-position` 70% 50% / 54% 50%를 줬다.
+RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(2026-10-11)으로 1번과 2번을 맞바꾼 01, 02, 08 / 03, 09, 12 / 07, 13, 05 / 11, 06, 14 / 10, 04, 15다. 이 순서가 컨셉 시트 `photos.gallery.order`와 카피 시트 `gallery_alt` 순서보다 우선한다(`00_user-input.md` 맨 아래). alt는 파일별 문장 그대로이고 버튼 이름의 번호("사진 n / 15 크게 보기")만 새 순서로 매겼다. hero.jpg는 갤러리에 없다. 프레임은 모두 2:3이다. 세로 13장은 `object-fit: cover`, 가로 2장(2번 02, 15번 15)은 `contain`이며 surface 매트 위에 올라간다. 그리드에서 쓰던 02·15의 `object-position`은 지웠다.
 
 ## 3. 모션 명세 매핑
 
-위치는 `파일:줄` 기준이다.
+위치는 `파일:줄` 기준이며 2026-10-11 캐러셀 반영 후 다시 쟀다(이전 표의 줄 번호는 9장 카피 수정 때 이미 어긋나 있었다).
 
 ### Must
 
 | 명세 | 구현 | 위치 |
 |---|---|---|
-| 6 토큰 (`--ease-*` 5종, `--dur-*` 12종, `--reveal-distance`, `--stagger`, `--bulb-stagger`) + reduced 0ms 재정의 | 구현 | style.css:38-71 |
+| 6 토큰 (`--ease-*` 5종, `--dur-*` 12종, `--reveal-distance`, `--stagger`, `--bulb-stagger`) + 캐러셀 치수 `--g-gap`·`--g-side`·`--g-chrome`·`--g-w`(`@supports (height: 100svh)` 분기) + `@property --g-i`·`--g-dx` + reduced 0ms 재정의 | 구현 | style.css:38-83 |
 | `html.js` 게이트 | `<head>` 첫 인라인 스크립트 | index.html:5 |
-| reduced-motion CSS·JS 분기 | CSS 블록 + `@media (no-preference)` 안에 루프 배치, JS `matchMedia` + 런타임 `change` 처리(새로고침 없음) | style.css:937-1010, script.js:1265 |
-| 1 보케: 구간 3곳, `BOKEH` 상수(명세와 글자 단위 동일), 스프라이트, 30fps, DPR 1, 겹침 방지, 제외 영역, 합산 상한 12/16 | 구현. `makeSprite`/`pickDiameter`/`spawn`/`step`은 1-7 참고 코드 그대로(`step` 끝에 `globalAlpha = 1` 한 줄만 추가) | script.js:107-445 |
-| 1-4 정지 조건: 구간 이탈(600ms 페이드 후 정지), 탭 숨김, 라이트박스 | `pauses` Set(`'hidden'`, `'lightbox'`) | script.js:322-357, 385 |
-| 1-5 pre-seed, hero 첫 등장 1200ms, ResizeObserver 150ms 디바운스, fonts.ready·사진 load 재측정 | 구현. window resize 이벤트는 쓰지 않음 | script.js:296-383, 419 |
-| 1-6 reduced 정적 점 5개(hero만), calendar·share 캔버스 숨김 | 구현 | script.js:124, 280, 391 |
-| 2-0 공통 reveal(threshold 0.15, rootMargin -10%, 1회, 콜백 단위 stagger 최대 2) + 안전장치 | 구현 | script.js:450, style.css:916 |
-| 2-1 hero 로드 시퀀스 0/300/600/900/1700ms, 사진 opacity만, `decode()` 대기, preload | 구현 | script.js:9, 493; index.html:24 |
-| 3-1 sprig-divider stroke-draw 3곳(인라인 SVG, `sp-*` 클래스, IO threshold 0.5) | 구현 | index.html 각 `svg.sprig`, style.css:939-949, script.js:545 |
-| 3-2 전구 호흡(주기 표 그대로) + 화면 밖·라이트박스 일시정지 | 구현 | style.css:481-487, 951-959, script.js:563 |
-| 4-1 그리드 구조, `loading="lazy"`, `width`/`height`, `aspect-ratio: 2/3` | 구현 | index.html 갤러리, style.css:555 |
-| 4-2 lightbox: `showModal` 포커스 트랩, 스와이프(50px / 0.3px/ms), 핀치 1~3, 더블탭 2배, 팬 clamp, ←/→/Esc, 포커스 복귀, 스크롤 잠금, 썸네일→원본 교체, ±1 프리로드, 보케 정지 | 구현 | script.js:619-1000 |
-| 4-3 BGM: 자동재생 없음, `preload="none"`, 꺼짐(사선 음표)/켜짐 아이콘, `aria-pressed`, `aria-busy`, 탭 숨김 일시정지·복귀, 재생 실패 복구 | 구현 | index.html:36-60, script.js:1002 |
-| 4-4 복사(계좌·주소·링크): 라벨 전환 1600ms, 토스트 1800ms, `role="status"` 낭독(50ms 비웠다 다시), clipboard → execCommand → Selection 폴백, 진동 12ms | 구현 | script.js:79-101, 1084-1146 |
-| 4-5 D-day 한국 시간 계산, D-N / D-DAY / 숨김 분기, visibilitychange 갱신, 카운트업 없음 | 구현 | script.js:583 |
+| reduced-motion CSS·JS 분기 | CSS 블록 + `@media (no-preference)` 안에 루프 배치, JS `matchMedia` + 런타임 `change` 처리(새로고침 없음). 캐러셀은 토큰만 따라가고 JS 분기 없음 | style.css:1026-1099, script.js:1430 |
+| 1 보케: 구간 3곳, `BOKEH` 상수(명세와 글자 단위 동일), 스프라이트, 30fps, DPR 1, 겹침 방지, 제외 영역, 합산 상한 12/16 | 구현. `makeSprite`/`pickDiameter`/`spawn`/`step`은 1-7 참고 코드 그대로(`step` 끝에 `globalAlpha = 1` 한 줄만 추가) | script.js:106-446 |
+| 1-4 정지 조건: 구간 이탈(600ms 페이드 후 정지), 탭 숨김, 라이트박스 | `pauses` Set(`'hidden'`, `'lightbox'`) | script.js:225, 324, 418 |
+| 1-5 pre-seed, hero 첫 등장 1200ms, ResizeObserver 150ms 디바운스, fonts.ready·사진 load 재측정 | 구현. window resize 이벤트는 쓰지 않음 | script.js:159, 368-383 |
+| 1-6 reduced 정적 점 5개(hero만), calendar·share 캔버스 숨김 | 구현 | script.js:126, 291, 393 |
+| 2-0 공통 reveal(threshold 0.15, rootMargin -10%, 1회, 콜백 단위 stagger 최대 2) + 안전장치 | 구현 | script.js:452, style.css:1005 |
+| 2-1 hero 로드 시퀀스 0/300/600/900/1700ms, 사진 opacity만, `decode()` 대기, preload | 구현 | script.js:9, 495; index.html:26 |
+| 2-5 gallery reveal 2그룹(헤더 / 캐러셀 전체), 슬라이드 개별 등장 없음 | 구현. reveal은 `.g-carousel`, 슬라이드 이동은 안쪽 `.g-track`이라 서로 덮어쓰지 않는다 | index.html:203, 208 |
+| 3-1 sprig-divider stroke-draw 3곳(인라인 SVG, `sp-*` 클래스, IO threshold 0.5) | 구현 | index.html 각 `svg.sprig`, style.css:1027-1038, script.js:547 |
+| 3-2 전구 호흡(주기 표 그대로) + 화면 밖·라이트박스 일시정지 | 구현 | style.css:493-499, 1040-1048, script.js:565 |
+| 4-1 갤러리 캐러셀: 2:3 프레임(세로 cover, 가로 02·15 contain + surface 매트), peek 16px, transform 트랙(`--g-i`·`--g-dx`), 스와이프(8px 축 판정, 50px 또는 0.3px/ms, 양 끝 정지·저항 0.3, 350ms), `touch-action: pan-y pinch-zoom`, 가로로 판정된 뒤에만 포인터 캡처, 이전/다음 버튼 `aria-disabled` + "n / 15" 카운터, ←/→(포커스가 캐러셀 안일 때만), click 억제, `role="group"`·`aria-roledescription`·비현재 14장 `inert`+`aria-hidden`·`.g-status` 낭독·←/→ 시 포커스 이동, lightbox 같은 번호로 열기·닫으면 동기화·포커스 복귀, `srcset`/`sizes` + 로딩 창(index −1 ~ +2를 `eager`로, IO `rootMargin: 100% 0px`), JS 꺼짐 scroll-snap 폴백, `inert` 미지원 브라우저는 `tabindex="-1"` | 구현. 명세 4-1-11 CSS·4-1-12 JS를 옮겼고 차이는 4장 | index.html:208-238, style.css:559-669, script.js:22-23, 607-769 |
+| 4-2 lightbox: `showModal` 포커스 트랩, 스와이프(판정은 캐러셀과 같은 `swipeTarget`), 핀치 1~3, 더블탭 2배, 팬 clamp, ←/→/Esc, 스크롤 잠금, 슬라이드 목록을 캐러셀 `.g-open`의 `data-full`·`data-w`·`data-h`·img alt로 생성, 현재 장은 캐러셀 img `currentSrc`로 시작해 원본으로 교체(절대 URL 비교, 캐러셀이 아직 못 받았으면 처음부터 원본), ±1 원본, 닫기 시작과 `close` 두 곳에서 캐러셀을 lightbox 번호로 맞춤(애니메이션·낭독 없음), 그 뒤 캐러셀 현재 슬라이드 버튼으로 포커스, 보케 정지 | 구현 | script.js:610-617(`swipeTarget`), 784-1162 |
+| 4-3 BGM: 자동재생 없음, `preload="none"`, 꺼짐(사선 음표)/켜짐 아이콘, `aria-pressed`, `aria-busy`, 탭 숨김 일시정지·복귀, 재생 실패 복구 | 구현 | index.html:39-60, script.js:1166 |
+| 4-4 복사(계좌·주소·링크): 라벨 전환 1600ms, 토스트 1800ms, `role="status"` 낭독(50ms 비웠다 다시), clipboard → execCommand → Selection 폴백, 진동 12ms | 구현 | script.js:82-104, 1248-1308 |
+| 4-5 D-day 한국 시간 계산, D-N / D-DAY / 숨김 분기, visibilitychange 갱신, 카운트업 없음 | 구현 | script.js:585 |
 
 ### Should
 
 | 명세 | 구현 | 위치 |
 |---|---|---|
-| 3-2 전구 점등 시퀀스(0.3→1, 140ms 간격) | 구현 | style.css:952-957 |
-| 4-3 glow 링(3000ms 호흡), 볼륨 페이드(1500ms 들어옴, 400ms 나감) | 구현 | style.css:285-303, 962; script.js:1011 |
-| 4-1 썸네일 페이드 | 구현 | script.js:607 |
-| 4-2 아래로 끌어 닫기(80px, scrim 0.96→최저 0.4), Android 뒤로가기(`pushState`/`popstate`, 이중 닫기 방지) | 구현 | script.js:776-800, 860, 968 |
-| 4-4 placeholder 보호(`[[TODO`면 복사 대신 안내 토스트) | 구현 | script.js:1127 |
+| 3-2 전구 점등 시퀀스(0.3→1, 140ms 간격) | 구현 | style.css:1041-1046 |
+| 4-3 glow 링(3000ms 호흡), 볼륨 페이드(1500ms 들어옴, 400ms 나감) | 구현 | style.css:296-315, 1050-1053; script.js:1175 |
+| 4-1 슬라이드 이미지 로드 페이드(300ms `--dur-base`, 스피너 없음) | 구현. 예전 `initThumbs`의 대상만 `.g-open img`로 바꾸고 이름을 `initPhotoFade`로 고쳤다 | script.js:771-782, style.css:609 |
+| 4-1 이웃(peek) 탭으로 한 장 이동 + 뒤따르는 click 1회 억제 | 구현 | script.js:715-731 |
+| 4-2 아래로 끌어 닫기(80px, scrim 0.96→최저 0.4), Android 뒤로가기(`pushState`/`popstate`, 이중 닫기 방지) | 구현 | script.js:923-969, 1032, 1152 |
+| 4-4 placeholder 보호(`[[TODO`면 복사 대신 안내 토스트) | 구현 | script.js:1292 |
 | 4-4 계좌 접기 | **미구현.** 양가 계좌가 한 개씩이라 접기 없이 카드로 바로 보여 준다(명세도 "쓰면"이라는 조건부) | - |
-| 4-6 카카오 공유 + 링크 복사 폴백 | 구현 | script.js:1148 |
-| 4-7 길찾기 버튼 | 네이버 지도, 카카오맵 2개. 티맵은 미구현(아래 4장) | index.html:244-247 |
-| 4-8 방명록 상태 문구(200ms 페이드), 제출 중 비활성 | 구현 | script.js:1200 |
-| 4-9 스크롤 큐(1700ms 등장, 2400ms 루프, 첫 스크롤 후 제거, 압축 화면 숨김) | 구현 | style.css:381-425, 966-970; script.js:530 |
-| 1-7 `window.__bokeh = { config, stats() }` | 구현 | script.js:1276 |
+| 4-6 카카오 공유 + 링크 복사 폴백 | 구현 | script.js:1312 |
+| 4-7 길찾기 버튼 | 네이버 지도, 카카오맵 2개. 티맵은 미구현(아래 4장) | index.html:259-262 |
+| 4-8 방명록 상태 문구(200ms 페이드), 제출 중 비활성 | 구현 | script.js:1364 |
+| 4-9 스크롤 큐(1700ms 등장, 2400ms 루프, 첫 스크롤 후 제거, 압축 화면 숨김) | 구현 | style.css:406-437, 1055-1059; script.js:534-543 |
+| 1-7 `window.__bokeh = { config, stats() }` | 구현 | script.js:1441 |
 
 ### Nice-to-have
 
 | 명세 | 구현 | 위치 |
 |---|---|---|
-| `+` / `-` / `0` 키 줌 | 구현(1.5배 단위) | script.js:803 |
-| `ctrl + wheel` 줌 | 구현 | script.js:811 |
+| 4-2 `+` / `-` / `0` 키 줌 | 구현(1.5배 단위) | script.js:975 |
+| 4-2 `ctrl + wheel` 줌 | 구현 | script.js:983 |
+| 4-1 트랙패드 가로 휠 | 구현. 가로 성분이 클 때만 `preventDefault`, deltaX 누적 ±40에서 한 장, 이후 450ms 입력 무시(`GAL.WHEEL_STEP`·`WHEEL_LOCK`) | script.js:742-755 |
+| 4-1 전환 중 잡기 | **미구현.** 전환 중에 손가락을 대면 목표 위치로 짧게 점프한 뒤 끌린다(명세가 적은 미구현 시 동작, lightbox와 같음) | - |
 
 ## 4. 명세와 다르게 처리한 부분
 
@@ -96,7 +101,6 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 컨셉 시트 `phot
 | 보케 제외 영역 측정 | 요소 사각형 + 12px | 같은 값에서 상위 `.reveal`의 아직 남은 translateY를 빼고 잰다 | 측정 시점에 그룹이 12px 아래에 있으면 최종 위치와 어긋난다 |
 | 높이 40px 이하 변화 | 재배치 조건만 명시 | 재배치는 안 하고 새 높이를 벗어나는 입자만 지움 | 캔버스 아래 경계에서 원이 잘려 직선 모서리가 생기지 않게 |
 | `stats()` 정의 | `living`, `zones`, `maxPeak`, `running` | `living`과 `maxPeak`는 켜진 구간만, `zones`는 구간별 보유 입자 수 | 꺼진 구간의 멈춘 입자가 상한 판정에 섞이지 않게 |
-| 갤러리 셀 접근성 이름 | img alt가 담당 | 버튼 `aria-label` = "사진 n / 15 크게 보기: {alt}"(카피 시트), img alt도 유지 | 문구는 카피 시트 기준 |
 | 복사 성공 라벨 | "복사됨" | "복사했습니다"(카피 시트). 토스트 문구도 카피 시트(마침표 포함) | 문구는 카피 시트 기준 |
 | BGM `aria-label` | "배경 음악" | "배경음악"(카피 시트) | 같음 |
 | BGM 재생 실패 | 오류 문구 없음 | 화면 토스트 없이 `role="status"` 낭독만("음악을 재생하지 못했습니다. 다시 한번 눌러 주세요.") | 카피 시트의 상태 메시지를 쓰되 시각 피드백은 명세대로 없음 |
@@ -106,12 +110,20 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 컨셉 시트 `phot
 | 400/600ms 전환 | BGM 토글 등장 400ms, 스크롤 큐 등장 600ms·퇴장 400ms | `calc(var(--dur-fast) * 2)`, `calc(var(--dur-base) * 2)` | 토큰에 묶어 reduce에서 0ms가 되게 |
 | 핀치 1 미만 | "줄였다 놓으면 1로 복귀" | 제스처 중 최저 0.6까지 허용 후 250ms에 1로 복귀 | 하한이 명시되지 않음 |
 | 끌어 닫기 배경 | dialog 배경 opacity 변경 | scrim을 별도 요소(`.lb-scrim`)로 두고 그 opacity만 바꿈 | transform/opacity만 움직이는 규칙 유지 |
-| `showModal` 미지원 브라우저 | 언급 없음 | 셀을 누르면 원본 사진을 새 탭으로 연다 | 구형 Safari(15.4 미만) 대비 |
+| `showModal` 미지원 브라우저 | 언급 없음 | 캐러셀 슬라이드 버튼을 누르면 원본 사진을 새 탭으로 연다 | 구형 Safari(15.4 미만) 대비 |
 | greeting 그룹 ③ "혼주 표기" | greeting 안 | 혼주 표기는 couple-intro 섹션에 있음 | 컨셉 시트 `sections_order`가 두 섹션을 나눈다 |
 | UI 문구 위치 | - | 런타임 문구를 `index.html`의 `<template id="ui-text">`에 두고 JS가 읽음 | 저장소 규칙상 코드 파일에 한국어를 넣지 않는다. 모든 문구를 index.html에서 grep으로 확인할 수 있다 |
 | SVG 인라인 수정 | 9장 자산 협의 | sprig에 `sp-flower`/`sp-stem`/`sp-leaf--1~3`/`sp-dot--center`/`sp-dot--end` 클래스, string-lights 전구에 `data-i="0"~"6"`, 후광 `opacity="0.25"` → `fill-opacity="0.25"` | 원본 SVG 파일은 그대로 두고 인라인 사본에서 반영 |
 | hero 아래 여백 | 예산에 없음 | `padding-bottom: 24px` | 스크롤 큐가 화면 끝에 붙지 않게. 390x844, 375x667, 375x548 모두 첫 화면 안에 들어가는 것을 측정으로 확인 |
 | 캘린더 일요일 | 머리글 accent | 머리글만 accent, 날짜 숫자는 text | 컨셉 시트 지정 범위 그대로 |
+| 갤러리 순서 (2026-10-11) | 4-1: 02 01 08 …, "순서상 첫 장이 가로(02)", QA 확인값 "02, 01, 08만 요청" | 01 02 08 03 09 12 07 13 05 11 06 14 10 04 15. 첫 장은 세로 01, 가로 사진은 2번(02)과 15번(15). 첫 요청은 01, 02(썸네일), 08로 같은 세 장이다 | 사용자 요청(오케스트레이터 전달, `00_user-input.md` 맨 아래). 첫 화면이 위아래 매트가 큰 가로 사진으로 시작하지 않게 |
+| 캐러셀 click 억제 해제 | 플래그는 다음 pointerdown에서 초기화 | 같고, 키보드로 일어난 click(`e.detail === 0`)은 플래그와 상관없이 막지 않는다 | 터치 스와이프 뒤에는 click이 오지 않아 플래그가 남는다(70px 터치 스와이프에서 click 0건 실측). 그대로면 스와이프 다음의 Enter·Space 한 번이 사라져 lightbox가 열리지 않는다 |
+| 이전/다음 버튼 CSS | 4-1-11 참고 CSS | 참고 CSS에 더해 `border-radius: 50%`(포커스 링이 보이는 원을 따라감), `cursor: pointer`, 탭 하이라이트 끔, 5장 누름 규칙(`:active` scale 0.97, 120ms), `svg { position: relative }`. chevron 색은 BGM 아이콘처럼 SVG `stroke="#8E5558"` 속성 | 포커스 링이 44px 사각형으로 그려지지 않게, 그리고 hover 때 `::before` 원 면이 chevron 위에 칠해지지 않게 |
+| reduce의 누름 피드백 | 모든 버튼 `opacity: 0.85` | 이전/다음 버튼은 `:not([aria-disabled="true"]):active`에만 적용 | 끝에서 비활성(0.3)인 버튼을 누르면 0.85로 밝아지는 것을 막는다 |
+| 드래그 중 커서 | `.g-track.is-dragging { cursor: grabbing }` | 같은 규칙 + `.g-track.is-dragging .g-open { cursor: grabbing }` | 슬라이드 버튼의 `zoom-in`이 트랙 커서보다 우선해서, 사진 위에서 끌면 `grabbing`이 보이지 않는다 |
+| JS 꺼짐에서 `.g-status` | 4-1-9 "버튼 줄과 `.g-status`는 숨긴다"(참고 CSS는 버튼 줄만) | `html:not(.js) .g-status { display: none }`도 넣었다 | 4-1-9 본문대로 |
+| 캐러셀 반환값 | `{ goTo, index, button, img }` | `{ goTo, index, button }`. 지역 변수 이름은 `root` 대신 `el` | lightbox는 버튼 안 img를 직접 읽어 `img`가 필요 없다. 파일 전역의 `root`(문서 루트)와 이름이 겹치지 않게 |
+| 슬라이드 `data-index` | 4-1-8 마크업에 없음 | 넣지 않았다. 번호는 DOM 순서로 정한다 | 예전 그리드 버튼의 `data-index`는 스크립트에서 쓰지 않았다 |
 
 참고로 greeting을 화면 가운데에 둔 상태에서는 hero 아래쪽이 아직 IO 띠(가운데 70%)와 겹쳐서 `running`이 `['hero']`로 나온다. 명세 1-4의 IO 정의대로 동작한 결과다. gallery·guestbook 위치에서는 `running`이 빈 배열이다.
 
@@ -120,8 +132,11 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 컨셉 시트 `phot
 | 문구 | 위치 | 출처 |
 |---|---|---|
 | 계좌번호를 준비하고 있습니다 | 계좌 복사 버튼, placeholder 상태일 때 토스트·낭독 | 모션 명세 4-4 (카피 시트에 없음) |
+| 웨딩 사진 15장 | 캐러셀 묶음 `aria-label` (index.html:208) | 모션 명세 4-1-8 기본값. 카피 시트에 같은 항목이 생기면 그쪽을 쓴다 |
+| 슬라이드 | 캐러셀 `aria-roledescription` (index.html:208) | 모션 명세 4-1-8 기본값 |
+| "15장 중 n번째 사진, {alt}" | 캐러셀 `.g-status` 낭독. 앞부분은 기존 카피 키 `lb-counter`(`<template id="ui-text">`), 쉼표와 alt는 JS가 이어 붙임 | 모션 명세 4-1-8 기본 조합 |
 
-나머지 화면·낭독 문구는 모두 카피 시트에서 가져왔다. 메타 태그 중 `og:locale`(`ko_KR`)과 `theme-color`(`#FBF6F1`)는 설정값이다.
+캐러셀 이전/다음 버튼 이름("이전 사진", "다음 사진")과 슬라이드 버튼 이름("사진 n / 15 크게 보기: {alt}")은 카피 시트 `gallery_controls` 문구 그대로다. 나머지 화면·낭독 문구는 모두 카피 시트에서 가져왔다. 메타 태그 중 `og:locale`(`ko_KR`)과 `theme-color`(`#FBF6F1`)는 설정값이다.
 
 ## 6. placeholder 위치
 
@@ -131,18 +146,18 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 컨셉 시트 `phot
 12:       TODO(user): replace [[TODO:SITE_URL]] with the deployed origin without a trailing slash,
 18:  <meta property="og:url" content="[[TODO:SITE_URL]]/">
 19:  <meta property="og:image" content="[[TODO:SITE_URL]]/images/og-garden.jpg">
-250:      <!-- TODO(user): replace [[TODO:SUBWAY]], [[TODO:BUS]], [[TODO:PARKING]] with confirmed directions. -->
-254:          <dd>[[TODO:SUBWAY]]</dd>
-258:          <dd>[[TODO:BUS]]</dd>
-262:          <dd>[[TODO:PARKING]]</dd>
-293:          <!-- TODO(user): fill [[TODO:GROOM_BANK]] and [[TODO:GROOM_ACCOUNT]]; the copy button copies #groom-account. -->
-294:          <p class="account__number"><span>[[TODO:GROOM_BANK]]</span> <span id="groom-account">[[TODO:GROOM_ACCOUNT]]</span></p>
-308:          <!-- TODO(user): fill [[TODO:BRIDE_BANK]] and [[TODO:BRIDE_ACCOUNT]]; the copy button copies #bride-account. -->
-309:          <p class="account__number"><span>[[TODO:BRIDE_BANK]]</span> <span id="bride-account">[[TODO:BRIDE_ACCOUNT]]</span></p>
-329:      <!-- TODO(user): replace [[TODO:GUESTBOOK_ENDPOINT]] with a form endpoint that accepts POST
-331:      <form class="gb-form reveal" action="[[TODO:GUESTBOOK_ENDPOINT]]" method="POST" novalidate>
-379:        <!-- TODO(user): replace [[TODO:KAKAO_JS_KEY]] with the Kakao JavaScript key. Until then the button copies the link. -->
-380:        <button type="button" class="btn btn--primary" id="share-kakao" data-kakao-key="[[TODO:KAKAO_JS_KEY]]">카카오톡으로 공유하기</button>
+264:      <!-- TODO(user): replace [[TODO:SUBWAY]], [[TODO:BUS]], [[TODO:PARKING]] with confirmed directions. -->
+268:          <dd>[[TODO:SUBWAY]]</dd>
+272:          <dd>[[TODO:BUS]]</dd>
+276:          <dd>[[TODO:PARKING]]</dd>
+307:          <!-- TODO(user): fill [[TODO:GROOM_BANK]] and [[TODO:GROOM_ACCOUNT]]; the copy button copies #groom-account. -->
+308:          <p class="account__number"><span>[[TODO:GROOM_BANK]]</span> <span id="groom-account">[[TODO:GROOM_ACCOUNT]]</span></p>
+322:          <!-- TODO(user): fill [[TODO:BRIDE_BANK]] and [[TODO:BRIDE_ACCOUNT]]; the copy button copies #bride-account. -->
+323:          <p class="account__number"><span>[[TODO:BRIDE_BANK]]</span> <span id="bride-account">[[TODO:BRIDE_ACCOUNT]]</span></p>
+343:      <!-- TODO(user): replace [[TODO:GUESTBOOK_ENDPOINT]] with a form endpoint that accepts POST
+345:      <form class="gb-form reveal" action="[[TODO:GUESTBOOK_ENDPOINT]]" method="POST" novalidate>
+393:        <!-- TODO(user): replace [[TODO:KAKAO_JS_KEY]] with the Kakao JavaScript key. Until then the button copies the link. -->
+394:        <button type="button" class="btn btn--primary" id="share-kakao" data-kakao-key="[[TODO:KAKAO_JS_KEY]]">카카오톡으로 공유하기</button>
 ```
 
 placeholder가 남아 있을 때의 동작:
@@ -183,10 +198,12 @@ placeholder가 남아 있을 때의 동작:
 2. GitHub Pages: 저장소 루트를 그대로 배포한다. `.nojekyll`이 있으므로 Jekyll 처리 없이 정적 파일로 나간다.
 3. 카카오 공유를 쓰면 카카오 디벨로퍼스 앱의 [플랫폼 > Web]에 배포 도메인을 등록한다. 키가 없으면 버튼은 링크 복사로 동작한다.
 4. 카카오톡 미리보기 캐시: 공유 미리보기가 예전 이미지로 보이면 카카오 공유 디버거에서 URL 캐시를 초기화한다(og 이미지는 새 파일명 `og-garden.jpg`를 쓴다).
-5. 배포 후 휴대폰에서 확인할 것: 첫 화면(날짜·사진·이름·장소), BGM 토글, 갤러리 라이트박스 스와이프·핀치, 계좌 복사, 방명록 전송 1회, 카카오 공유 미리보기.
+5. 배포 후 휴대폰에서 확인할 것: 첫 화면(날짜·사진·이름·장소), BGM 토글, 갤러리 캐러셀 스와이프(가로로 넘김, 세로로는 페이지 스크롤)와 이전/다음 버튼, 라이트박스 스와이프·핀치와 닫은 뒤 캐러셀 번호, 계좌 복사, 방명록 전송 1회, 카카오 공유 미리보기.
 6. 쓰지 않는 예전 자산(`images/divider-hairline.svg`, `images/monogram-iy.svg`, `images/og-thumbnail.*`, `images/floral-*.png`, `images/gallery-placeholder-*.png`, `images/hero-illustration.png`, `images/photos/thumb/hero.jpg`)은 페이지에서 참조하지 않는다. 지울지는 사용자가 정한다.
 
 ## 9. 사용자 카피 수정 반영 (2026-10-10)
+
+아래 `파일:줄`은 2026-10-11 캐러셀 반영 후 줄 번호로 고쳤다.
 
 `00_user-input.md` 맨 아래 "사용자 카피 수정" 표의 항목만 반영했다. `script.js`는 바꾸지 않았다. 주소 복사는 `#venue-address`의 글자를 그대로 읽으므로 HTML만 고치면 된다.
 
@@ -194,13 +211,13 @@ placeholder가 남아 있을 때의 동작:
 |---|---|---|
 | `<title>`, `og:title` | "인혁 ♡ 유민, 우리 결혼합니다". 카카오 공유 제목은 지금처럼 og:title에서 읽는다 | index.html:8, 16 |
 | couple 제목 | "신랑 신부" | index.html:119 |
-| couple 정렬 | "아들"/"딸"을 `span.couple__rel`(inline-block, 폭 2em, 가운데 정렬)에 넣었다. `.couple__line`에 letter-spacing이 없어서 2em만으로 충분하다("아들" 글자 폭 28.36px < 칸 30px) | index.html:121-132, style.css:463-467 |
+| couple 정렬 | "아들"/"딸"을 `span.couple__rel`(inline-block, 폭 2em, 가운데 정렬)에 넣었다. `.couple__line`에 letter-spacing이 없어서 2em만으로 충분하다("아들" 글자 폭 28.36px < 칸 30px) | index.html:121-132, style.css:475-479 |
 | calendar 제목 | "예식일" | index.html:155 |
 | 영문 일시 줄 | `calendar__when-en` 문단과 CSS 규칙 삭제. hero의 `SUNDAY · 3 PM`은 그대로 | index.html, style.css |
 | 달력 caption | "JANUARY 2027"만 남기고 `cal__caption`("2027년 1월") span과 CSS 규칙 삭제 | index.html:160-162 |
-| 주소 | "서울 송파구 송파대로 155". index.html·script.js에 "NH송파농협" 0건 | index.html:236 |
-| notice 신설 | venue와 account 사이. 공용 `.section` / `.section-head` / `.eyebrow` / `.section-title` / `reveal` 패턴, 본문은 기본 문단 스타일(Gowun Batang 15px / 1.95, account 안내문과 같음)을 그대로 상속해 전용 CSS가 없다 | index.html:271-278 |
-| account 안내문 1연 | 3행으로 교체, 2연은 그대로 | index.html:286 |
+| 주소 | "서울 송파구 송파대로 155". index.html·script.js에 "NH송파농협" 0건 | index.html:250 |
+| notice 신설 | venue와 account 사이. 공용 `.section` / `.section-head` / `.eyebrow` / `.section-title` / `reveal` 패턴, 본문은 기본 문단 스타일(Gowun Batang 15px / 1.95, account 안내문과 같음)을 그대로 상속해 전용 CSS가 없다 | index.html:286-292 |
+| account 안내문 1연 | 3행으로 교체, 2연은 그대로 | index.html:300 |
 | 방명록 전송 성공 | "소중한 말씀이 잘 전달되었습니다. 감사합니다." | index.html `<template id="ui-text">` `gb-success` |
 
 notice의 배경과 간격: 컨셉 시트 `layout_mood`가 면을 background와 surface 두 단계로 두고 surface는 카드(venue·account)와 guestbook 밴드에만 쓴다고 정했으므로 background로 뒀다. 섹션 상하 패딩도 컨셉 시트의 80px 그대로다. 앞뒤(venue, account)가 모두 background 섹션이라 기존 venue → account 사이 간격(80 + 80px)이 그대로 이어진다. 보케 구간이 아니라 캔버스는 넣지 않았다. 섹션 번호 주석은 index.html·style.css 모두 notice를 7로 넣고 뒤를 8~10으로 밀었다.
@@ -233,3 +250,66 @@ notice의 배경과 간격: 컨셉 시트 `layout_mood`가 면을 background와 
 | 섹션 순서 | hero, greeting, couple, calendar, gallery, venue, notice, account, guestbook, share | 같음 |
 | 주소 복사 버튼이 넘기는 글자 | 서울 송파구 송파대로 155 | 같음 |
 | account 안내문 줄바꿈 | 3행 + 2행, 의도하지 않은 줄바꿈 없음 | 같음 |
+
+## 10. 갤러리 캐러셀 전환 (2026-10-11)
+
+`00_user-input.md` 맨 아래 "갤러리 방식 변경"과 순서 변경, 모션 명세의 "(2026-10-10 갤러리 캐러셀로 변경)" 절(2-5, 4-1, 4-2, 5, 6, 7, 10)만 반영했다. 다른 섹션은 건드리지 않았다.
+
+### 바꾼 범위
+
+| 파일 | 바꾼 것 |
+|---|---|
+| index.html | `#gallery`의 `ul.g-grid` 15칸을 4-1-8 마크업(`.g-carousel` > `.g-viewport` > `.g-track#g-track` > `.g-slide` 15개, `.g-controls`, `.g-status`)으로 교체. 슬라이드 img는 원본 `src` + `srcset`(썸네일·원본) + `sizes="(min-width: 480px) 432px, calc(100vw - 48px)"`, 원본 `width`/`height`, `loading="lazy"`, `decoding="async"`, `draggable="false"`. 갤러리·lightbox 주석 두 줄 |
+| style.css | `:root`에 `--g-*` 토큰·`@supports (100svh)`·`@property --g-i`/`--g-dx` 추가, 토큰 주석 4줄 갱신. `.g-grid`·`.g-cell` 규칙을 지우고 4-1-11 캐러셀 CSS로 교체. reduce 블록의 `.g-cell:active`를 `.g-nav:not([aria-disabled="true"]):active`로 교체 |
+| script.js | `GAL` 상수, `swipeTarget()`, `initCarousel()` 추가. `initThumbs` → `initPhotoFade`(대상 `.g-open img`). `initLightbox(bokeh, carousel)`: 슬라이드 목록을 `.g-open`에서 만들고, 현재 장을 캐러셀 `currentSrc`로 시작, `opener` 대신 닫기 시작·`close`에서 캐러셀 동기화와 포커스 복귀, `finishSwipe`는 `swipeTarget` 호출. 부팅 순서 `photo-fade → carousel → lightbox` |
+
+예전 그리드의 02·15 `object-position`, `.g-cell:active` scale 0.98, 썸네일 `src`, `data-index`는 모두 없어졌다(`grep 'g-cell\|g-grid\|object-position'` 0건).
+
+### 명세 QA 확인값 실측
+
+로컬 서버(`python3 -m http.server 8769 --bind 127.0.0.1`)와 headless Chrome CDP(DPR 2, 터치 에뮬레이션)로 쟀다. 검사 스크립트와 스크린샷은 scratchpad(`fe-carousel/`)에만 있다. Chrome이 Bash 샌드박스 안에서는 뜨지 않아 샌드박스를 끄고 실행했다. 110개 항목 모두 통과했다.
+
+| 화면 | 프레임 | peek | 프레임 + 버튼 줄 | 명세 표 |
+|---|---|---|---|---|
+| 390 x 664 | 342 x 513 | 16px | 577px | 같음 |
+| 375 x 548 | 290.7 x 436 (높이 기준) | 34px | 500px | 같음 |
+| 360 x 700 | 312 x 468 | 16px | 532px | 같음 |
+| 430 x 750 | 382 x 573 | 16px | 637px | 같음 |
+| 375 x 667 | 327 x 490.5 | 16px | 554.5px | 표에 없음(계산값과 같음) |
+| 1280 x 900 (컬럼 480) | 432 x 648 | 16px | 712px | 같음 |
+
+모든 화면에서 가로 스크롤 없음(scrollWidth = 화면 폭), 이전/다음 버튼 44x44, 콘솔 오류·예외 0건.
+
+| 4-1-12 확인값 | 결과 |
+|---|---|
+| 390px에서 프레임 342x513, peek 16px | 342 x 513, 다음 장 왼쪽 끝 x 374(= 24 + 342 + 8), peek 16px |
+| 14번에서 다음 → "15 / 15", 다음 `aria-disabled="true"`, 포커스는 다음 버튼 | 그대로. 한 번 더 눌러도 15에 머묾, opacity 0.3 |
+| hero에서 갤러리 사진 요청 0건, 갤러리 근처에서 01·02·08만 | hero 1.5초 동안 0건. 갤러리 근처에서 `01.jpg`, `thumb/02.jpg`, `08.jpg` 3건(DPR 2라 세로는 원본, 가로 02는 804w 썸네일). 2번으로 넘기면 `03.jpg` 추가 |
+| 4번에서 lightbox를 열어 7번까지 넘기고 닫기 → "7 / 15", 포커스는 7번 버튼 | → 두 번 + 스와이프 한 번으로 7/15, 닫기 버튼 → 캐러셀 "7", `document.activeElement` = "사진 7 / 15 크게 보기: …" 버튼. 닫기 모션 30ms 시점(dialog 아직 열림)에 이미 "7"로 맞춰짐, 닫은 직후 7번 프레임 x 24(애니메이션 없음), `.g-status`는 바뀌지 않음 |
+| 캐러셀 위에서 세로로 쓸어 올리면 페이지 스크롤, 트랙 고정 | scrollY 2597 → 2797, 번호·프레임 위치 그대로 |
+
+### 그 밖의 동작 확인
+
+| 항목 | 결과 |
+|---|---|
+| 스와이프 | 빠른 70px 왼쪽 → 다음 장. 느린 40px → 제자리. 40px을 0.7px/ms로 튕기면 → 이전 장. 드래그 중 `--g-dx`가 손가락 이동과 1:1(-60px), `will-change: transform`은 드래그 중에만 |
+| 양 끝 | 1번에서 오른쪽, 15번에서 왼쪽으로 끌면 제자리(순환 없음). 1번에서 100px 끌면 트랙은 30px(저항 0.3) |
+| 버튼·키보드 | 이전/다음 버튼 한 장씩, 끝에서 `aria-disabled`라 눌러도 그대로이고 포커스 유지. 슬라이드 버튼에서 → / ← 는 포커스가 새 슬라이드 버튼으로 옮겨 가고 `.g-status`는 그대로. 다음 버튼에서 → 는 포커스가 버튼에 남고 `.g-status` = "15장 중 n번째 사진, {alt}". Tab 순서: 현재 슬라이드 → 이전 → 다음. 비현재 14장 `inert` + `aria-hidden` |
+| 탭 | 현재 프레임 탭 → 같은 번호로 lightbox. 오른쪽·왼쪽 peek 탭 → 한 장 이동, lightbox 안 열림. 마우스로 90px 끌고 놓기 → 한 장 이동, lightbox 안 열림. 터치 스와이프 직후 Enter → lightbox 열림 |
+| lightbox | 첫 포커스 닫기 버튼, `html.lb-open`, 첫 `src`는 캐러셀 `currentSrc`(390 DPR 2에서는 원본 자체), 이웃은 원본. 슬라이드 순서·alt가 캐러셀과 같음. 열린 동안 캐러셀 번호 그대로. 7번에서 ← 세 번 후 Esc → 캐러셀 4, 포커스 4번 버튼 |
+| reduced-motion | 캐러셀 즉시 표시, 트랙·이미지 페이드 `transition-duration` 0s, 다음 버튼 30ms 뒤 이미 제자리. 드래그 중에는 손가락을 따라감(x -36). 설정을 되돌리면 새로고침 없이 0.35s |
+| JS 꺼짐 | `html.js` 없음, 뷰포트 `overflow-x: auto` + `scroll-snap-type: x mandatory`, 첫 장 x 24 가운데, 손가락 스와이프로 다음 장이 x 24에 멈춤. 버튼 줄·`.g-status` 숨김, `inert` 0개, 페이지 가로 스크롤 없음 |
+| 나머지 페이지 회귀 | 이전 `fe/cdp.mjs`의 scroll·reduced 시나리오를 8769에서 다시 돌림: 숨은 reveal 0, 안 그려진 디바이더 0, gallery·guestbook에서 보케 `running: []`, reduced 정적 상태 그대로, 콘솔 0건 |
+| `node --check script.js` | 통과 |
+
+### 스크린샷 (scratchpad, 저장소에 넣지 않음)
+
+`/private/tmp/claude-501/-Users-inhyeok-Workspace-wedding-letter/cc1402ba-2bf0-4475-9039-e013d45393f0/scratchpad/fe-carousel/`
+
+- 갤러리 첫 화면(헤더 + 1번 01): `first-screen-390.png`, `first-screen-360.png`
+- 세로 사진: `slide01-portrait-390.png`·`-360.png`(01), `slide03-portrait-390.png`·`-360.png`(08)
+- 가로 사진: `slide02-landscape-390.png`·`-360.png`(02), `slide15-landscape-390.png`·`-360.png`(15, 오른쪽 빈 자리에 페이지 background)
+- 화면별: `gallery-375x548.png`, `gallery-375x667.png`, `gallery-430x750.png`, `gallery-1280x900.png`
+- lightbox(2번에서 열기): `lightbox-from-slide2-390.png`, JS 꺼짐: `nojs-390.png`
+
+화면으로 본 것: 가로 02·15는 잘림 없이 surface 매트 가운데에 놓이고, 세로 사진은 프레임을 꽉 채운다. 사진 위에 화살표·글자·오버레이가 없고 이웃 사진은 흐리게·작게 처리하지 않았다. 375x548에서는 프레임이 줄어 버튼 줄까지 한 화면에 들어온다. 데스크톱에서는 480px 컬럼 가장자리에서 peek가 잘린다.
