@@ -4,185 +4,251 @@
   <meta charset="utf-8">
   <script>document.documentElement.classList.add('js');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#F8F5F0">
-  <title>방인혁 · 손유민의 결혼식에 초대합니다</title>
+  <meta name="theme-color" content="#FBF6F1">
+  <title>인혁 ♡ 유민, 우리 결혼합니다</title>
   <meta name="description" content="2027년 1월 3일 일요일 오후 3시, 더컨벤션 송파문정 13층 아모르홀">
 
   <!-- Open Graph / Kakao share preview.
-       [[TODO:SITE_URL]]: replace with the deployed origin, e.g. https://example.github.io/wedding-letter -->
+       TODO(user): replace [[TODO:SITE_URL]] with the deployed origin without a trailing slash,
+       e.g. https://example.github.io/wedding-letter. script.js reads og:url for the share/copy link. -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ko_KR">
-  <meta property="og:title" content="방인혁 · 손유민의 결혼식에 초대합니다">
+  <meta property="og:title" content="인혁 ♡ 유민, 우리 결혼합니다">
   <meta property="og:description" content="2027년 1월 3일 일요일 오후 3시, 더컨벤션 송파문정 13층 아모르홀">
   <meta property="og:url" content="[[TODO:SITE_URL]]/">
-  <meta property="og:image" content="[[TODO:SITE_URL]]/images/og-thumbnail.jpg">
+  <meta property="og:image" content="[[TODO:SITE_URL]]/images/og-garden.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="방인혁과 손유민이 서로를 바라보며 웃고 있는 웨딩 사진">
+  <meta property="og:image:alt" content="분홍 꽃가지 장식 아래 창가 벤치에 나란히 앉아 서로 바라보며 웃는 방인혁과 손유민">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="preload" as="image" href="images/photos/jo--8400.jpg" fetchpriority="high">
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+  <link rel="preload" as="image" href="images/photos/hero.jpg" fetchpriority="high">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+KR:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Allura&amp;family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&amp;family=Gowun+Batang:wght@400;700&amp;display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
 
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#greeting">본문 바로가기</a>
+  <a class="skip-link" href="#main">본문 바로가기</a>
 
-  <button type="button" class="music-toggle" id="music-toggle" aria-pressed="false" aria-label="배경음악">
-    <svg class="music-toggle__note" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <path d="M9 17.5V5.5l10-2v12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="6.5" cy="17.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
-      <circle cx="16.5" cy="15.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
-    </svg>
-    <span class="music-toggle__eq" aria-hidden="true">
-      <span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span>
+  <!-- BGM: audio/bgm.mp3 is never autoplayed; only this toggle starts it (preload="none"). -->
+  <button type="button" class="bgm-toggle" aria-pressed="false" aria-label="배경음악">
+    <span class="bgm-ring" aria-hidden="true"></span>
+    <span class="bgm-face" aria-hidden="true">
+      <svg class="bgm-icon bgm-icon--off" viewBox="0 0 24 24" width="18" height="18" focusable="false">
+        <g fill="none" stroke="#8E5558" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9.5 17V5.5l9-2V15"/>
+          <circle cx="7" cy="17" r="2.5"/>
+          <circle cx="16" cy="15" r="2.5"/>
+          <path d="M3.5 3.5l17 17"/>
+        </g>
+      </svg>
+      <svg class="bgm-icon bgm-icon--on" viewBox="0 0 24 24" width="18" height="18" focusable="false">
+        <g fill="none" stroke="#8E5558" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9.5 17V5.5l9-2V15"/>
+          <circle cx="7" cy="17" r="2.5"/>
+          <circle cx="16" cy="15" r="2.5"/>
+        </g>
+      </svg>
     </span>
   </button>
   <audio id="bgm" src="audio/bgm.mp3" loop preload="none"></audio>
 
-  <main class="card">
+  <main class="page" id="main" tabindex="-1">
 
-    <!-- 1. Hero -->
-    <header class="hero" id="hero">
-      <div class="hero__frame">
-        <img class="hero__photo" src="images/photos/jo--8400.jpg"
-             width="1067" height="1600" loading="eager" fetchpriority="high" decoding="async"
-             alt="화이트 스튜디오에서 신랑이 신부의 베일을 걷어 올리는 웨딩 사진">
+    <!-- 1. Hero: top text / full-bleed 3:2 photo (no crop, no overlay) / bottom text -->
+    <header class="hero bokeh-zone" data-bokeh="hero">
+      <canvas class="bokeh" aria-hidden="true"></canvas>
+      <div class="hero__top reveal" data-reveal="hero">
+        <p class="hero__eyebrow" lang="en">WE’RE GETTING MARRIED</p>
+        <p class="hero__date" lang="en">2027 · 01 · 03</p>
+        <p class="hero__time" lang="en">SUNDAY · 3 PM</p>
       </div>
-      <div class="hero__top hero-reveal">
-        <h1 class="hero__names" lang="en">Inhyeok <i class="amp">&amp;</i> Yumin</h1>
-        <p class="hero__date" lang="en">2027. 01. 03. SUN 3PM</p>
+      <img class="hero__photo" src="images/photos/hero.jpg" width="1600" height="1066"
+           fetchpriority="high" decoding="async" data-bokeh-exclude
+           alt="꽃 장식과 전구 줄이 걸린 아이보리색 문 앞에서 서로를 향해 몸을 기울인 두 사람">
+      <div class="hero__bottom reveal" data-reveal="hero">
+        <h1 class="hero__names" aria-label="방인혁과 손유민">방인혁<span class="hero__amp" aria-hidden="true">&amp;</span>손유민</h1>
+        <p class="hero__when">2027년 1월 3일 일요일 오후 3시</p>
+        <p class="hero__where">더컨벤션 송파문정 13층 아모르홀</p>
       </div>
-      <div class="hero__bottom hero-reveal">
-        <p class="hero__couple">방인혁 · 손유민</p>
-        <p class="hero__venue">더컨벤션 송파문정 13층 아모르홀</p>
-      </div>
-      <div class="hero__scroll" aria-hidden="true">
-        <span class="hero__scroll-label" lang="en">SCROLL</span>
-        <span class="hero__scroll-line"></span>
-      </div>
+      <span class="scroll-cue" aria-hidden="true"></span>
     </header>
 
     <!-- 2. Greeting -->
-    <section class="section greeting" id="greeting" aria-labelledby="greeting-title" tabindex="-1">
-      <div class="section__head reveal" style="--i:0">
-        <p class="section__label" lang="en">INVITATION</p>
-        <h2 class="section__title" id="greeting-title">초대합니다</h2>
-        <img class="divider" src="images/divider-hairline.svg" width="200" height="15" alt="" aria-hidden="true">
+    <section class="section greeting" id="greeting" aria-labelledby="greeting-title">
+      <div class="section-head reveal">
+        <p class="eyebrow" lang="en">INVITATION</p>
+        <h2 class="section-title" id="greeting-title">초대합니다</h2>
       </div>
-      <div class="greeting__body reveal" style="--i:1">
-        <p>새해가 열리는 첫 일요일,<br>저희 두 사람이<br>부부의 연을 맺고자 합니다.</p>
-        <p>아껴 주신 분들을 모시고<br>그 약속을 드리려 합니다.</p>
-        <p>귀한 걸음으로 함께해 주시면<br>더없는 기쁨으로 간직하겠습니다.</p>
+      <div class="greeting__body reveal">
+        <p>해가 일찍 지는 계절에도<br>서로의 곁은 늘 환했습니다.</p>
+        <p>이제 그 곁에서<br>부부로 살아가려 합니다.</p>
+        <p>저희가 나누는 첫 약속을<br>가까이에서 들어 주시면<br>더없이 기쁘겠습니다.</p>
       </div>
+      <!-- Source: images/deco/sprig-divider.svg, inlined for the stroke-draw animation (sp-* classes added here). -->
+      <svg class="sprig" viewBox="0 0 160 28" width="120" height="21" aria-hidden="true" focusable="false">
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4">
+          <g stroke="#A2AA92">
+            <path class="sp-stem" d="M74.53 14C61 9.6 38 18.8 15 12.6" pathLength="1"/>
+            <path class="sp-stem" d="M85.47 14C99 9.6 122 18.8 145 12.6" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--1" d="M64.33 12.76Q63.06 7.01 57.18 7.3Q58.45 13.05 64.33 12.76Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--2" d="M48.32 13.97Q42.93 14.25 42.36 19.61Q47.74 19.34 48.32 13.97Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--3" d="M30.75 14.79Q30.05 10.31 25.52 10.45Q26.22 14.93 30.75 14.79Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--1" d="M95.67 12.76Q96.94 7.01 102.82 7.3Q101.55 13.05 95.67 12.76Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--2" d="M111.68 13.97Q117.07 14.25 117.64 19.61Q112.26 19.34 111.68 13.97Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--3" d="M129.25 14.79Q129.95 10.31 134.48 10.45Q133.78 14.93 129.25 14.79Z" pathLength="1"/>
+          </g>
+          <path class="sp-flower" d="M78.53 11.98C76.08 7.21 83.92 7.21 81.47 11.98C85.25 8.17 87.67 15.63 82.38 14.77C87.17 17.19 80.82 21.8 80 16.5C79.18 21.8 72.83 17.19 77.62 14.77C72.33 15.63 74.75 8.17 78.53 11.98Z" pathLength="1" stroke="#C9A09F"/>
+        </g>
+        <circle class="sp-dot sp-dot--center" cx="80" cy="14" r="1.6" fill="#EBCB94"/>
+        <circle class="sp-dot sp-dot--end" cx="15" cy="12.6" r="1.2" fill="#A2AA92"/>
+        <circle class="sp-dot sp-dot--end" cx="145" cy="12.6" r="1.2" fill="#A2AA92"/>
+      </svg>
     </section>
 
     <!-- 3. Couple intro -->
     <section class="section couple" id="couple" aria-labelledby="couple-title">
-      <div class="section__head reveal" style="--i:0">
-        <p class="section__label" lang="en">BRIDE &amp; GROOM</p>
-        <h2 class="section__title" id="couple-title">신랑 신부</h2>
-        <img class="divider" src="images/divider-hairline.svg" width="200" height="15" alt="" aria-hidden="true">
+      <div class="section-head reveal">
+        <p class="eyebrow" lang="en">THE COUPLE</p>
+        <h2 class="section-title" id="couple-title">신랑 신부</h2>
       </div>
-      <ul class="couple__list reveal" style="--i:1">
+      <!-- The son / daughter word sits in an equal-width box (.couple__rel) so both rows share the same width and name position.
+           &nbsp; after the box: Chrome drops a plain space next to an inline-block from the accessibility tree. -->
+      <ul class="couple__list reveal">
         <li class="couple__row">
           <span class="couple__role">신랑</span>
-          <p class="couple__line">방주경 · 주진숙의 아들 <strong class="couple__name">인혁</strong></p>
+          <p class="couple__line">방주경 · 주진숙의 <span class="couple__rel">아들</span>&nbsp;<strong class="couple__name">인혁</strong></p>
         </li>
         <li class="couple__row">
           <span class="couple__role">신부</span>
-          <p class="couple__line">손홍희 · 김연주의 딸 <strong class="couple__name">유민</strong></p>
+          <p class="couple__line">손홍희 · 김연주의 <span class="couple__rel">딸</span>&nbsp;<strong class="couple__name">유민</strong></p>
         </li>
       </ul>
     </section>
 
-    <!-- 4. Calendar + D-day -->
-    <section class="section calendar" id="calendar" aria-labelledby="calendar-title">
-      <div class="section__head reveal" style="--i:0">
-        <p class="section__label" lang="en">THE DAY</p>
-        <h2 class="section__title" id="calendar-title">예식 일시</h2>
-        <img class="divider" src="images/divider-hairline.svg" width="200" height="15" alt="" aria-hidden="true">
+    <!-- 4. Calendar + D-day (bokeh zone) -->
+    <section class="section calendar bokeh-zone" id="calendar" data-bokeh="calendar" aria-labelledby="calendar-title">
+      <canvas class="bokeh" aria-hidden="true"></canvas>
+      <div class="section-head reveal" data-lights-trigger>
+        <!-- Source: images/deco/string-lights.svg, inlined for the bulb breathing animation
+             (data-i added per bulb; halo opacity moved to fill-opacity so CSS owns group opacity). -->
+        <svg class="lights" viewBox="0 0 240 44" width="200" height="37" aria-hidden="true" focusable="false" data-bokeh-exclude>
+          <g fill="none" stroke="#958379" stroke-width="1" stroke-linecap="round">
+            <path class="wire" d="M4 6Q120 38 236 6"/>
+            <path class="drops" d="M32.54 12.9V16.9M61.48 17.93V21.93M90.65 20.98V24.98M120 22V26M149.35 20.98V24.98M178.52 17.93V21.93M207.46 12.9V16.9"/>
+          </g>
+          <g class="bulb" data-i="0"><circle cx="32.54" cy="20.1" r="7" fill="#EBCB94" fill-opacity="0.25"/><circle cx="32.54" cy="20.1" r="3.2" fill="#EBCB94" stroke="#C9A09F" stroke-width="0.8"/></g>
+          <g class="bulb" data-i="1"><circle cx="61.48" cy="25.13" r="7" fill="#EBCB94" fill-opacity="0.25"/><circle cx="61.48" cy="25.13" r="3.2" fill="#EBCB94" stroke="#C9A09F" stroke-width="0.8"/></g>
+          <g class="bulb" data-i="2"><circle cx="90.65" cy="28.18" r="7" fill="#EBCB94" fill-opacity="0.25"/><circle cx="90.65" cy="28.18" r="3.2" fill="#EBCB94" stroke="#C9A09F" stroke-width="0.8"/></g>
+          <g class="bulb" data-i="3"><circle cx="120" cy="29.2" r="7" fill="#EBCB94" fill-opacity="0.25"/><circle cx="120" cy="29.2" r="3.2" fill="#EBCB94" stroke="#C9A09F" stroke-width="0.8"/></g>
+          <g class="bulb" data-i="4"><circle cx="149.35" cy="28.18" r="7" fill="#EBCB94" fill-opacity="0.25"/><circle cx="149.35" cy="28.18" r="3.2" fill="#EBCB94" stroke="#C9A09F" stroke-width="0.8"/></g>
+          <g class="bulb" data-i="5"><circle cx="178.52" cy="25.13" r="7" fill="#EBCB94" fill-opacity="0.25"/><circle cx="178.52" cy="25.13" r="3.2" fill="#EBCB94" stroke="#C9A09F" stroke-width="0.8"/></g>
+          <g class="bulb" data-i="6"><circle cx="207.46" cy="20.1" r="7" fill="#EBCB94" fill-opacity="0.25"/><circle cx="207.46" cy="20.1" r="3.2" fill="#EBCB94" stroke="#C9A09F" stroke-width="0.8"/></g>
+        </svg>
+        <p class="eyebrow" lang="en">THE DAY</p>
+        <h2 class="section-title" id="calendar-title">예식일</h2>
       </div>
-      <div class="reveal" style="--i:1">
-        <p class="calendar__date">2027년 1월 3일 일요일 오후 3시</p>
-        <p class="calendar__date-en" lang="en">Sunday, January 3, 2027 · 3PM</p>
-        <table class="calendar__grid">
-          <caption class="sr-only">2027년 1월 달력, 3일 일요일 예식</caption>
+      <div class="calendar__body reveal">
+        <p class="calendar__when">2027년 1월 3일 일요일 오후 3시</p>
+        <table class="cal">
+          <caption>
+            <span class="cal__caption-en" lang="en">JANUARY 2027</span>
+          </caption>
           <thead>
             <tr><th scope="col" class="is-sun">일</th><th scope="col">월</th><th scope="col">화</th><th scope="col">수</th><th scope="col">목</th><th scope="col">금</th><th scope="col">토</th></tr>
           </thead>
           <tbody>
             <tr><td></td><td></td><td></td><td></td><td></td><td>1</td><td>2</td></tr>
-            <tr><td class="is-sun"><span class="calendar__day-mark">3<span class="sr-only"> 예식일</span></span></td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
-            <tr><td class="is-sun">10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td></tr>
-            <tr><td class="is-sun">17</td><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td><td>23</td></tr>
-            <tr><td class="is-sun">24</td><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td><td>30</td></tr>
-            <tr><td class="is-sun">31</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td class="is-day"><span class="sr-only">1월 3일 일요일, 예식일</span><span class="cal__mark" aria-hidden="true">3</span></td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td></tr>
+            <tr><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td></tr>
+            <tr><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td><td>23</td></tr>
+            <tr><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td><td>30</td></tr>
+            <tr><td>31</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
           </tbody>
         </table>
       </div>
-      <div class="dday reveal" style="--i:2" id="dday" data-wedding-date="2027-01-03" hidden>
-        <p class="dday__count" lang="en" id="dday-count"></p>
+      <!-- D-day is computed in KST by script.js; hidden without JS. -->
+      <div class="dday reveal" id="dday" data-wedding-date="2027-01-03" hidden>
+        <p class="dday__count" id="dday-count" lang="en" aria-hidden="true"></p>
         <p class="dday__message" id="dday-message"></p>
       </div>
     </section>
 
-    <!-- 5. Gallery -->
+    <!-- 5. Gallery: 3 x 5 grid, 2:3 cells, thumbnails in the grid, originals in the lightbox -->
     <section class="section gallery" id="gallery" aria-labelledby="gallery-title">
-      <div class="section__head reveal" style="--i:0">
-        <p class="section__label" lang="en">GALLERY</p>
-        <h2 class="section__title" id="gallery-title">사진</h2>
-        <img class="divider" src="images/divider-hairline.svg" width="200" height="15" alt="" aria-hidden="true">
+      <svg class="sprig" viewBox="0 0 160 28" width="120" height="21" aria-hidden="true" focusable="false">
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4">
+          <g stroke="#A2AA92">
+            <path class="sp-stem" d="M74.53 14C61 9.6 38 18.8 15 12.6" pathLength="1"/>
+            <path class="sp-stem" d="M85.47 14C99 9.6 122 18.8 145 12.6" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--1" d="M64.33 12.76Q63.06 7.01 57.18 7.3Q58.45 13.05 64.33 12.76Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--2" d="M48.32 13.97Q42.93 14.25 42.36 19.61Q47.74 19.34 48.32 13.97Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--3" d="M30.75 14.79Q30.05 10.31 25.52 10.45Q26.22 14.93 30.75 14.79Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--1" d="M95.67 12.76Q96.94 7.01 102.82 7.3Q101.55 13.05 95.67 12.76Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--2" d="M111.68 13.97Q117.07 14.25 117.64 19.61Q112.26 19.34 111.68 13.97Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--3" d="M129.25 14.79Q129.95 10.31 134.48 10.45Q133.78 14.93 129.25 14.79Z" pathLength="1"/>
+          </g>
+          <path class="sp-flower" d="M78.53 11.98C76.08 7.21 83.92 7.21 81.47 11.98C85.25 8.17 87.67 15.63 82.38 14.77C87.17 17.19 80.82 21.8 80 16.5C79.18 21.8 72.83 17.19 77.62 14.77C72.33 15.63 74.75 8.17 78.53 11.98Z" pathLength="1" stroke="#C9A09F"/>
+        </g>
+        <circle class="sp-dot sp-dot--center" cx="80" cy="14" r="1.6" fill="#EBCB94"/>
+        <circle class="sp-dot sp-dot--end" cx="15" cy="12.6" r="1.2" fill="#A2AA92"/>
+        <circle class="sp-dot sp-dot--end" cx="145" cy="12.6" r="1.2" fill="#A2AA92"/>
+      </svg>
+      <div class="section-head reveal">
+        <p class="eyebrow" lang="en">GALLERY</p>
+        <h2 class="section-title" id="gallery-title">사진첩</h2>
+        <p class="section-note">사진을 누르면 크게 보실 수 있습니다.</p>
       </div>
-      <ul class="gallery__grid reveal" style="--i:1" id="gallery-grid">
-        <li><button type="button" class="gallery__item" data-full="images/photos/jo--8670.jpg" data-full-w="1067" data-full-h="1600" data-desc="서로 안고 바라보는 두 사람" aria-label="사진 1 / 15 크게 보기: 서로 안고 바라보는 두 사람"><img src="images/photos/thumb/jo--8670.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
-        <li><button type="button" class="gallery__item" data-full="images/photos/jo--9213.jpg" data-full-w="1067" data-full-h="1600" data-desc="흩날리는 꽃잎 속에 나란히 선 두 사람" aria-label="사진 2 / 15 크게 보기: 흩날리는 꽃잎 속에 나란히 선 두 사람"><img src="images/photos/thumb/jo--9213.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
-        <li><button type="button" class="gallery__item" data-full="images/photos/jo--8753.jpg" data-full-w="1600" data-full-h="1194" data-desc="창가 꽃장식 아래 나란히 앉은 두 사람" aria-label="사진 3 / 15 크게 보기: 창가 꽃장식 아래 나란히 앉은 두 사람"><img src="images/photos/thumb/jo--8753.jpg" width="600" height="448" alt="" loading="lazy" decoding="async"></button></li>
-        <li><button type="button" class="gallery__item" data-full="images/photos/op1789048062-01c.jpg" data-full-w="1600" data-full-h="1067" data-desc="창가에 앉은 신부" aria-label="사진 4 / 15 크게 보기: 창가에 앉은 신부"><img src="images/photos/thumb/op1789048062-01c.jpg" width="600" height="400" alt="" loading="lazy" decoding="async"></button></li>
-        <li><button type="button" class="gallery__item" data-full="images/photos/jo--9271.jpg" data-full-w="1600" data-full-h="1067" data-desc="꽃장식 문 앞에서 마주 선 두 사람" aria-label="사진 5 / 15 크게 보기: 꽃장식 문 앞에서 마주 선 두 사람"><img src="images/photos/thumb/jo--9271.jpg" width="600" height="400" alt="" loading="lazy" decoding="async"></button></li>
-        <li><button type="button" class="gallery__item" data-full="images/photos/op1789048062-05c.jpg" data-full-w="1067" data-full-h="1600" data-desc="화이트 서랍장 앞에서 반지를 끼워 주는 두 사람" aria-label="사진 6 / 15 크게 보기: 화이트 서랍장 앞에서 반지를 끼워 주는 두 사람"><img src="images/photos/thumb/op1789048062-05c.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
-        <li><button type="button" class="gallery__item" data-full="images/photos/jo--9055.jpg" data-full-w="1067" data-full-h="1600" data-desc="꽃 벽 앞에서 꽃다발을 들고 볼을 맞댄 두 사람" aria-label="사진 7 / 15 크게 보기: 꽃 벽 앞에서 꽃다발을 들고 볼을 맞댄 두 사람"><img src="images/photos/thumb/jo--9055.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
-        <li><button type="button" class="gallery__item" data-full="images/photos/op1789048062-02c.jpg" data-full-w="1067" data-full-h="1600" data-desc="무릎을 꿇고 신부에게 꽃을 건네는 신랑" aria-label="사진 8 / 15 크게 보기: 무릎을 꿇고 신부에게 꽃을 건네는 신랑"><img src="images/photos/thumb/op1789048062-02c.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
-        <li><button type="button" class="gallery__item" data-full="images/photos/jo--9115-mono.jpg" data-full-w="1067" data-full-h="1600" data-desc="이마를 맞대고 안은 두 사람, 흑백 사진" aria-label="사진 9 / 15 크게 보기: 이마를 맞대고 안은 두 사람, 흑백 사진"><img src="images/photos/thumb/jo--9115-mono.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
-        <li class="gallery__extra"><button type="button" class="gallery__item" data-full="images/photos/op1789048062-04c.jpg" data-full-w="1067" data-full-h="1600" data-desc="전구 벽 앞에서 손을 잡고 마주 선 두 사람" aria-label="사진 10 / 15 크게 보기: 전구 벽 앞에서 손을 잡고 마주 선 두 사람"><img src="images/photos/thumb/op1789048062-04c.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
-        <li class="gallery__extra"><button type="button" class="gallery__item" data-full="images/photos/jo--9716.jpg" data-full-w="1067" data-full-h="1600" data-desc="검은 예복 차림으로 앉아 볼을 맞댄 두 사람" aria-label="사진 11 / 15 크게 보기: 검은 예복 차림으로 앉아 볼을 맞댄 두 사람"><img src="images/photos/thumb/jo--9716.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
-        <li class="gallery__extra"><button type="button" class="gallery__item" data-full="images/photos/op1789048062-07c.jpg" data-full-w="1067" data-full-h="1600" data-desc="커튼 창가에 선 검은 예복 차림의 두 사람" aria-label="사진 12 / 15 크게 보기: 커튼 창가에 선 검은 예복 차림의 두 사람"><img src="images/photos/thumb/op1789048062-07c.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
-        <li class="gallery__extra"><button type="button" class="gallery__item" data-full="images/photos/jo--9534-mono.jpg" data-full-w="1600" data-full-h="1067" data-desc="커튼 창가 역광 속에 마주 선 두 사람, 흑백 사진" aria-label="사진 13 / 15 크게 보기: 커튼 창가 역광 속에 마주 선 두 사람, 흑백 사진"><img src="images/photos/thumb/jo--9534-mono.jpg" width="600" height="400" alt="" loading="lazy" decoding="async"></button></li>
-        <li class="gallery__extra"><button type="button" class="gallery__item" data-full="images/photos/op1789048062-09c.jpg" data-full-w="1067" data-full-h="1600" data-desc="반지를 낀 손을 보여 주며 웃는 두 사람" aria-label="사진 14 / 15 크게 보기: 반지를 낀 손을 보여 주며 웃는 두 사람"><img src="images/photos/thumb/op1789048062-09c.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
-        <li class="gallery__extra"><button type="button" class="gallery__item" data-full="images/photos/op1789048062-11c.jpg" data-full-w="1067" data-full-h="1600" data-desc="하트 풍선 피켓을 든 두 사람" aria-label="사진 15 / 15 크게 보기: 하트 풍선 피켓을 든 두 사람"><img src="images/photos/thumb/op1789048062-11c.jpg" width="400" height="600" alt="" loading="lazy" decoding="async"></button></li>
+      <ul class="g-grid reveal">
+        <li><button type="button" class="g-cell" data-index="0" data-full="images/photos/02.jpg" data-w="1600" data-h="1194" aria-haspopup="dialog" aria-label="사진 1 / 15 크게 보기: 분홍 꽃가지 장식 아래 창가 벤치에 나란히 앉아 서로 바라보며 웃는 두 사람"><img src="images/photos/thumb/02.jpg" width="804" height="600" loading="lazy" decoding="async" style="object-position: 70% 50%" alt="분홍 꽃가지 장식 아래 창가 벤치에 나란히 앉아 서로 바라보며 웃는 두 사람"></button></li>
+        <li><button type="button" class="g-cell" data-index="1" data-full="images/photos/01.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 2 / 15 크게 보기: 신랑이 신부를 안아 올리고 서로 마주 보며 웃는 모습"><img src="images/photos/thumb/01.jpg" width="600" height="900" loading="lazy" decoding="async" alt="신랑이 신부를 안아 올리고 서로 마주 보며 웃는 모습"></button></li>
+        <li><button type="button" class="g-cell" data-index="2" data-full="images/photos/08.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 3 / 15 크게 보기: 잎과 전구로 덮인 벽 앞에서 손을 맞잡고 마주 선 신랑과 베일을 쓴 신부"><img src="images/photos/thumb/08.jpg" width="600" height="900" loading="lazy" decoding="async" alt="잎과 전구로 덮인 벽 앞에서 손을 맞잡고 마주 선 신랑과 베일을 쓴 신부"></button></li>
+        <li><button type="button" class="g-cell" data-index="3" data-full="images/photos/03.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 4 / 15 크게 보기: 'Will you marry me?'와 'yes! yes! yes!'가 적힌 하트 풍선을 하나씩 든 두 사람"><img src="images/photos/thumb/03.jpg" width="600" height="900" loading="lazy" decoding="async" alt="'Will you marry me?'와 'yes! yes! yes!'가 적힌 하트 풍선을 하나씩 든 두 사람"></button></li>
+        <li><button type="button" class="g-cell" data-index="4" data-full="images/photos/09.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 5 / 15 크게 보기: 흰 꽃과 전구로 덮인 벽 앞에서 무릎을 꿇고 신부에게 꽃을 건네는 신랑"><img src="images/photos/thumb/09.jpg" width="600" height="900" loading="lazy" decoding="async" alt="흰 꽃과 전구로 덮인 벽 앞에서 무릎을 꿇고 신부에게 꽃을 건네는 신랑"></button></li>
+        <li><button type="button" class="g-cell" data-index="5" data-full="images/photos/12.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 6 / 15 크게 보기: 반지를 낀 손을 앞으로 펼쳐 보이며 웃는 두 사람"><img src="images/photos/thumb/12.jpg" width="600" height="900" loading="lazy" decoding="async" alt="반지를 낀 손을 앞으로 펼쳐 보이며 웃는 두 사람"></button></li>
+        <li><button type="button" class="g-cell" data-index="6" data-full="images/photos/07.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 7 / 15 크게 보기: 알록달록한 꽃잎이 흩날리는 가운데 손을 잡고 웃는 두 사람, 꽃다발을 든 신부"><img src="images/photos/thumb/07.jpg" width="600" height="900" loading="lazy" decoding="async" alt="알록달록한 꽃잎이 흩날리는 가운데 손을 잡고 웃는 두 사람, 꽃다발을 든 신부"></button></li>
+        <li><button type="button" class="g-cell" data-index="7" data-full="images/photos/13.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 8 / 15 크게 보기: 검은 예복 차림으로 나란히 앉아 얼굴을 맞대고 웃는 두 사람"><img src="images/photos/thumb/13.jpg" width="600" height="900" loading="lazy" decoding="async" alt="검은 예복 차림으로 나란히 앉아 얼굴을 맞대고 웃는 두 사람"></button></li>
+        <li><button type="button" class="g-cell" data-index="8" data-full="images/photos/05.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 9 / 15 크게 보기: 검은 배경에 비눗방울이 떠다니는 가운데 하트 풍선을 들고 크게 웃는 두 사람"><img src="images/photos/thumb/05.jpg" width="600" height="900" loading="lazy" decoding="async" alt="검은 배경에 비눗방울이 떠다니는 가운데 하트 풍선을 들고 크게 웃는 두 사람"></button></li>
+        <li><button type="button" class="g-cell" data-index="9" data-full="images/photos/11.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 10 / 15 크게 보기: 검은 드레스에 재킷을 걸치고 꽃다발을 든 채 눈을 감고 미소 짓는 신부"><img src="images/photos/thumb/11.jpg" width="600" height="900" loading="lazy" decoding="async" alt="검은 드레스에 재킷을 걸치고 꽃다발을 든 채 눈을 감고 미소 짓는 신부"></button></li>
+        <li><button type="button" class="g-cell" data-index="10" data-full="images/photos/06.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 11 / 15 크게 보기: 신랑이 신부의 베일을 걷어 올리며 마주 보는 모습"><img src="images/photos/thumb/06.jpg" width="600" height="900" loading="lazy" decoding="async" alt="신랑이 신부의 베일을 걷어 올리며 마주 보는 모습"></button></li>
+        <li><button type="button" class="g-cell" data-index="11" data-full="images/photos/14.jpg" data-w="1067" data-h="1600" aria-haspopup="dialog" aria-label="사진 12 / 15 크게 보기: 흰 서랍장과 꽃 앞에서 신랑이 신부의 손가락에 반지를 끼워 주는 모습"><img src="images/photos/thumb/14.jpg" width="600" height="899" loading="lazy" decoding="async" alt="흰 서랍장과 꽃 앞에서 신랑이 신부의 손가락에 반지를 끼워 주는 모습"></button></li>
+        <li><button type="button" class="g-cell" data-index="12" data-full="images/photos/10.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 13 / 15 크게 보기: 흰 꽃과 전구로 덮인 벽 앞에서 꽃다발을 들고 꼭 붙어 웃는 두 사람"><img src="images/photos/thumb/10.jpg" width="600" height="900" loading="lazy" decoding="async" alt="흰 꽃과 전구로 덮인 벽 앞에서 꽃다발을 들고 꼭 붙어 웃는 두 사람"></button></li>
+        <li><button type="button" class="g-cell" data-index="13" data-full="images/photos/04.jpg" data-w="1066" data-h="1600" aria-haspopup="dialog" aria-label="사진 14 / 15 크게 보기: 'We’re getting married'라고 적힌 케이크를 든 신랑과 비눗방울을 부는 신부"><img src="images/photos/thumb/04.jpg" width="600" height="900" loading="lazy" decoding="async" alt="'We’re getting married'라고 적힌 케이크를 든 신랑과 비눗방울을 부는 신부"></button></li>
+        <li><button type="button" class="g-cell" data-index="14" data-full="images/photos/15.jpg" data-w="1600" data-h="1066" aria-haspopup="dialog" aria-label="사진 15 / 15 크게 보기: 커튼 사이로 빛이 들어오는 창가에서 입을 맞추는 두 사람"><img src="images/photos/thumb/15.jpg" width="900" height="600" loading="lazy" decoding="async" style="object-position: 54% 50%" alt="커튼 사이로 빛이 들어오는 창가에서 입을 맞추는 두 사람"></button></li>
       </ul>
-      <div class="reveal" style="--i:2">
-        <button type="button" class="btn gallery__more" id="gallery-more" aria-controls="gallery-grid">사진 더 보기</button>
-      </div>
     </section>
 
     <!-- 6. Venue -->
     <section class="section venue" id="venue" aria-labelledby="venue-title">
-      <div class="section__head reveal" style="--i:0">
-        <p class="section__label" lang="en">LOCATION</p>
-        <h2 class="section__title" id="venue-title">오시는 길</h2>
-        <img class="divider" src="images/divider-hairline.svg" width="200" height="15" alt="" aria-hidden="true">
+      <div class="section-head reveal">
+        <p class="eyebrow" lang="en">LOCATION</p>
+        <h2 class="section-title" id="venue-title">오시는 길</h2>
       </div>
-      <div class="reveal" style="--i:1">
-        <p class="venue__name">더컨벤션 송파문정 13층 아모르홀</p>
-        <p class="venue__address" id="venue-address">서울 송파구 송파대로 155 NH송파농협 13층</p>
-        <button type="button" class="btn btn--small copy-btn" data-copy-target="#venue-address" data-status="주소가 복사되었습니다" aria-label="예식장 주소 복사하기">
-          <span class="copy-btn__label is-active" data-state="idle">주소 복사하기</span>
-          <span class="copy-btn__label" data-state="done">복사되었습니다</span>
-          <span class="copy-btn__label" data-state="fail">복사하지 못했습니다</span>
-        </button>
+      <div class="venue__main reveal">
+        <div class="card venue__card">
+          <p class="venue__name">더컨벤션 송파문정 13층 아모르홀</p>
+          <p class="venue__address" id="venue-address">서울 송파구 송파대로 155</p>
+          <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="address" data-copy-target="#venue-address">
+            <span class="copy-btn__labels">
+              <span class="copy-btn__label copy-btn__label--idle">주소 복사하기</span>
+              <span class="copy-btn__label copy-btn__label--done" aria-hidden="true"><svg class="copy-btn__check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>복사했습니다</span>
+              <span class="copy-btn__label copy-btn__label--fail" aria-hidden="true">복사하지 못했습니다</span>
+            </span>
+          </button>
+        </div>
         <div class="venue__maps">
-          <a class="btn" href="https://map.kakao.com/link/search/%EB%8D%94%EC%BB%A8%EB%B2%A4%EC%85%98%20%EC%86%A1%ED%8C%8C%EB%AC%B8%EC%A0%95" target="_blank" rel="noopener">카카오맵</a>
-          <a class="btn" href="https://map.naver.com/p/search/%EB%8D%94%EC%BB%A8%EB%B2%A4%EC%85%98%20%EC%86%A1%ED%8C%8C%EB%AC%B8%EC%A0%95" target="_blank" rel="noopener">네이버 지도</a>
+          <a class="btn btn--secondary" href="https://map.naver.com/p/search/%EB%8D%94%EC%BB%A8%EB%B2%A4%EC%85%98%20%EC%86%A1%ED%8C%8C%EB%AC%B8%EC%A0%95" target="_blank" rel="noopener" aria-label="네이버 지도에서 예식장 위치 보기 (새 창)">네이버 지도</a>
+          <a class="btn btn--secondary" href="https://map.kakao.com/link/search/%EB%8D%94%EC%BB%A8%EB%B2%A4%EC%85%98%20%EC%86%A1%ED%8C%8C%EB%AC%B8%EC%A0%95" target="_blank" rel="noopener" aria-label="카카오맵에서 예식장 위치 보기 (새 창)">카카오맵</a>
         </div>
       </div>
-      <dl class="venue__directions reveal" style="--i:2">
+      <!-- TODO(user): replace [[TODO:SUBWAY]], [[TODO:BUS]], [[TODO:PARKING]] with confirmed directions. -->
+      <dl class="venue__routes reveal">
         <div class="venue__route">
           <dt>지하철</dt>
           <dd>[[TODO:SUBWAY]]</dd>
@@ -193,127 +259,182 @@
         </div>
         <div class="venue__route">
           <dt>주차</dt>
-          <dd>[[TODO:PARKING]]<br>내비게이션에서 "더컨벤션 송파문정" 또는<br>"서울 송파구 송파대로 155"를 검색해 주세요.</dd>
+          <dd>[[TODO:PARKING]]</dd>
+        </div>
+        <div class="venue__route">
+          <dt>내비게이션</dt>
+          <dd>내비게이션에서 "더컨벤션 송파문정" 또는<br>"서울 송파구 송파대로 155"를 검색해 주세요.</dd>
         </div>
       </dl>
     </section>
 
-    <!-- 7. Account -->
+    <!-- 7. Notice -->
+    <section class="section notice" id="notice" aria-labelledby="notice-title">
+      <div class="section-head reveal">
+        <p class="eyebrow" lang="en">NOTICE</p>
+        <h2 class="section-title" id="notice-title">축하 화환 안내</h2>
+      </div>
+      <p class="notice__message reveal">축하 화환은 정중히 사양합니다.<br>따뜻한 마음만 감사히 받겠습니다.</p>
+    </section>
+
+    <!-- 8. Account -->
     <section class="section account" id="account" aria-labelledby="account-title">
-      <div class="section__head reveal" style="--i:0">
-        <p class="section__label" lang="en">WITH HEART</p>
-        <h2 class="section__title" id="account-title">마음 전하실 곳</h2>
-        <img class="divider" src="images/divider-hairline.svg" width="200" height="15" alt="" aria-hidden="true">
+      <div class="section-head reveal">
+        <p class="eyebrow" lang="en">WITH HEART</p>
+        <h2 class="section-title" id="account-title">마음 전하실 곳</h2>
+        <div class="account__message">
+          <p>멀리서나마 소중한 축하의 마음을<br>전하고 싶으신 분들을 위해<br>마음 전하실 곳을 안내드립니다.</p>
+          <p>보내 주신 따뜻한 마음,<br>오래도록 기억하겠습니다.</p>
+        </div>
       </div>
-      <div class="account__message reveal" style="--i:1">
-        <p>참석이 어려우신 분들을 위해<br>마음 전하실 곳을 안내드립니다.</p>
-        <p>보내 주시는 축하의 마음,<br>감사히 간직하겠습니다.</p>
+      <div class="card account__card reveal">
+        <div class="account__info">
+          <p class="account__side">신랑측</p>
+          <!-- TODO(user): fill [[TODO:GROOM_BANK]] and [[TODO:GROOM_ACCOUNT]]; the copy button copies #groom-account. -->
+          <p class="account__number"><span>[[TODO:GROOM_BANK]]</span> <span id="groom-account">[[TODO:GROOM_ACCOUNT]]</span></p>
+          <p class="account__holder"><span class="account__holder-label">예금주</span> 방인혁</p>
+        </div>
+        <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="account" data-copy-target="#groom-account" aria-label="신랑측 방인혁 계좌번호 복사하기">
+          <span class="copy-btn__labels">
+            <span class="copy-btn__label copy-btn__label--idle">복사하기</span>
+            <span class="copy-btn__label copy-btn__label--done" aria-hidden="true"><svg class="copy-btn__check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>복사했습니다</span>
+            <span class="copy-btn__label copy-btn__label--fail" aria-hidden="true">복사하지 못했습니다</span>
+          </span>
+        </button>
       </div>
-      <ul class="account__list reveal" style="--i:2">
-        <li class="account__row">
-          <div class="account__info">
-            <p class="account__side">신랑측</p>
-            <!-- Fill in: bank name and account number (the copy button copies #groom-account-number) -->
-            <p class="account__number"><span>[[TODO:GROOM_BANK]]</span> <span id="groom-account-number">[[TODO:GROOM_ACCOUNT]]</span></p>
-            <p class="account__holder">방인혁</p>
-          </div>
-          <button type="button" class="btn btn--small copy-btn" data-copy-target="#groom-account-number" data-status="계좌번호가 복사되었습니다" aria-label="신랑측 방인혁 계좌번호 복사하기">
-            <span class="copy-btn__label is-active" data-state="idle">복사하기</span>
-            <span class="copy-btn__label" data-state="done">복사되었습니다</span>
-            <span class="copy-btn__label" data-state="fail">복사하지 못했습니다</span>
-          </button>
-        </li>
-        <li class="account__row">
-          <div class="account__info">
-            <p class="account__side">신부측</p>
-            <!-- Fill in: bank name and account number (the copy button copies #bride-account-number) -->
-            <p class="account__number"><span>[[TODO:BRIDE_BANK]]</span> <span id="bride-account-number">[[TODO:BRIDE_ACCOUNT]]</span></p>
-            <p class="account__holder">손유민</p>
-          </div>
-          <button type="button" class="btn btn--small copy-btn" data-copy-target="#bride-account-number" data-status="계좌번호가 복사되었습니다" aria-label="신부측 손유민 계좌번호 복사하기">
-            <span class="copy-btn__label is-active" data-state="idle">복사하기</span>
-            <span class="copy-btn__label" data-state="done">복사되었습니다</span>
-            <span class="copy-btn__label" data-state="fail">복사하지 못했습니다</span>
-          </button>
-        </li>
-      </ul>
-    </section>
-
-    <!-- 8. Guestbook -->
-    <section class="section guestbook" id="guestbook" aria-labelledby="guestbook-title">
-      <div class="section__head reveal" style="--i:0">
-        <p class="section__label" lang="en">GUESTBOOK</p>
-        <h2 class="section__title" id="guestbook-title">방명록</h2>
-        <img class="divider" src="images/divider-hairline.svg" width="200" height="15" alt="" aria-hidden="true">
-      </div>
-      <p class="section__message reveal" style="--i:1">남겨 주신 말씀은<br>오래도록 간직하겠습니다.</p>
-      <!-- [[TODO:GUESTBOOK_ENDPOINT]]: form endpoint that accepts POST (e.g. https://formspree.io/f/xxxx or https://formsubmit.co/ajax/you@example.com) -->
-      <form class="form reveal" style="--i:2" action="[[TODO:GUESTBOOK_ENDPOINT]]" method="POST"
-            data-async-form data-success="소중한 말씀 감사합니다.">
-        <input type="hidden" name="_subject" value="[청첩장] 방명록">
-        <label class="form__field">
-          <span class="form__label">성함</span>
-          <input type="text" name="name" autocomplete="name" required maxlength="40">
-        </label>
-        <label class="form__field">
-          <span class="form__label">전하실 말씀</span>
-          <textarea name="message" rows="4" required maxlength="500" placeholder="두 사람에게 전하실 말씀을 남겨 주세요."></textarea>
-        </label>
-        <button type="submit" class="btn btn--solid form__submit">남기기</button>
-        <p class="form__result" role="status" aria-live="polite"></p>
-      </form>
-    </section>
-
-    <!-- 9. Share -->
-    <section class="section share" id="share" aria-labelledby="share-title">
-      <div class="section__head reveal" style="--i:0">
-        <p class="section__label" lang="en">SHARE</p>
-        <h2 class="section__title" id="share-title">청첩장 전하기</h2>
-        <img class="divider" src="images/divider-hairline.svg" width="200" height="15" alt="" aria-hidden="true">
-      </div>
-      <div class="share__buttons reveal" style="--i:1">
-        <button type="button" class="btn btn--solid" id="share-kakao">카카오톡으로 공유하기</button>
-        <button type="button" class="btn copy-btn" id="share-link" data-copy-url data-status="주소가 복사되었습니다" aria-label="청첩장 링크 복사하기">
-          <span class="copy-btn__label is-active" data-state="idle">링크 복사하기</span>
-          <span class="copy-btn__label" data-state="done">주소가 복사되었습니다</span>
-          <span class="copy-btn__label" data-state="fail">복사하지 못했습니다</span>
+      <div class="card account__card reveal">
+        <div class="account__info">
+          <p class="account__side">신부측</p>
+          <!-- TODO(user): fill [[TODO:BRIDE_BANK]] and [[TODO:BRIDE_ACCOUNT]]; the copy button copies #bride-account. -->
+          <p class="account__number"><span>[[TODO:BRIDE_BANK]]</span> <span id="bride-account">[[TODO:BRIDE_ACCOUNT]]</span></p>
+          <p class="account__holder"><span class="account__holder-label">예금주</span> 손유민</p>
+        </div>
+        <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="account" data-copy-target="#bride-account" aria-label="신부측 손유민 계좌번호 복사하기">
+          <span class="copy-btn__labels">
+            <span class="copy-btn__label copy-btn__label--idle">복사하기</span>
+            <span class="copy-btn__label copy-btn__label--done" aria-hidden="true"><svg class="copy-btn__check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>복사했습니다</span>
+            <span class="copy-btn__label copy-btn__label--fail" aria-hidden="true">복사하지 못했습니다</span>
+          </span>
         </button>
       </div>
     </section>
 
-    <footer class="footer">
-      <!-- Inline so the <text> glyphs render with the page's Cormorant Garamond -->
-      <svg class="footer__monogram" viewBox="0 0 120 120" width="80" height="80" role="img" aria-label="인혁과 유민의 이니셜 I &amp; Y 모노그램">
-        <g fill="none" stroke="currentColor">
-          <circle cx="60" cy="60" r="56" stroke-width="1" vector-effect="non-scaling-stroke"/>
-          <circle cx="60" cy="60" r="52" stroke-width="0.5" vector-effect="non-scaling-stroke"/>
+    <!-- 9. Guestbook (surface band) -->
+    <section class="section guestbook" id="guestbook" aria-labelledby="guestbook-title">
+      <div class="section-head reveal">
+        <p class="eyebrow" lang="en">GUESTBOOK</p>
+        <h2 class="section-title" id="guestbook-title">방명록</h2>
+        <p class="guestbook__message">축하의 한마디를 남겨 주세요.<br>한 줄씩 소중히 읽겠습니다.</p>
+      </div>
+      <!-- TODO(user): replace [[TODO:GUESTBOOK_ENDPOINT]] with a form endpoint that accepts POST
+           (e.g. https://formspree.io/f/xxxx). script.js sends it with fetch and Accept: application/json. -->
+      <form class="gb-form reveal" action="[[TODO:GUESTBOOK_ENDPOINT]]" method="POST" novalidate>
+        <input type="hidden" name="_subject" value="[청첩장] 인혁 · 유민 방명록">
+        <div class="gb-field">
+          <label class="gb-label" for="gb-name">성함</label>
+          <input class="gb-input" id="gb-name" type="text" name="name" autocomplete="name" maxlength="40" required>
+        </div>
+        <div class="gb-field">
+          <label class="gb-label" for="gb-message">남기실 말씀</label>
+          <textarea class="gb-input gb-textarea" id="gb-message" name="message" rows="5" maxlength="500" required placeholder="두 사람에게 전하고 싶은 이야기를 적어 주세요."></textarea>
+        </div>
+        <button type="submit" class="btn btn--primary gb-submit">남기기</button>
+        <p class="gb-status" role="status" aria-live="polite"></p>
+      </form>
+      <p class="guestbook__note reveal">남겨 주신 글은 두 사람에게만 전해집니다.</p>
+    </section>
+
+    <!-- 10. Share (bokeh zone, last section) -->
+    <section class="section share bokeh-zone" id="share" data-bokeh="share" aria-labelledby="share-title">
+      <canvas class="bokeh" aria-hidden="true"></canvas>
+      <svg class="sprig" viewBox="0 0 160 28" width="120" height="21" aria-hidden="true" focusable="false" data-bokeh-exclude>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4">
+          <g stroke="#A2AA92">
+            <path class="sp-stem" d="M74.53 14C61 9.6 38 18.8 15 12.6" pathLength="1"/>
+            <path class="sp-stem" d="M85.47 14C99 9.6 122 18.8 145 12.6" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--1" d="M64.33 12.76Q63.06 7.01 57.18 7.3Q58.45 13.05 64.33 12.76Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--2" d="M48.32 13.97Q42.93 14.25 42.36 19.61Q47.74 19.34 48.32 13.97Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--3" d="M30.75 14.79Q30.05 10.31 25.52 10.45Q26.22 14.93 30.75 14.79Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--1" d="M95.67 12.76Q96.94 7.01 102.82 7.3Q101.55 13.05 95.67 12.76Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--2" d="M111.68 13.97Q117.07 14.25 117.64 19.61Q112.26 19.34 111.68 13.97Z" pathLength="1"/>
+            <path class="sp-leaf sp-leaf--3" d="M129.25 14.79Q129.95 10.31 134.48 10.45Q133.78 14.93 129.25 14.79Z" pathLength="1"/>
+          </g>
+          <path class="sp-flower" d="M78.53 11.98C76.08 7.21 83.92 7.21 81.47 11.98C85.25 8.17 87.67 15.63 82.38 14.77C87.17 17.19 80.82 21.8 80 16.5C79.18 21.8 72.83 17.19 77.62 14.77C72.33 15.63 74.75 8.17 78.53 11.98Z" pathLength="1" stroke="#C9A09F"/>
         </g>
-        <g fill="currentColor" font-family="'Cormorant Garamond', 'Times New Roman', serif" font-weight="300" text-anchor="middle">
-          <text x="37" y="72" font-size="36">I</text>
-          <text x="60" y="70" font-size="22" font-style="italic">&amp;</text>
-          <text x="84" y="72" font-size="36">Y</text>
-        </g>
+        <circle class="sp-dot sp-dot--center" cx="80" cy="14" r="1.6" fill="#EBCB94"/>
+        <circle class="sp-dot sp-dot--end" cx="15" cy="12.6" r="1.2" fill="#A2AA92"/>
+        <circle class="sp-dot sp-dot--end" cx="145" cy="12.6" r="1.2" fill="#A2AA92"/>
       </svg>
-      <p class="footer__closing">함께해 주시는 모든 분께<br>진심으로 감사드립니다.</p>
-    </footer>
+      <div class="share__mono reveal">
+        <div class="monogram" role="img" aria-label="인혁과 유민의 이니셜">
+          <img class="monogram__wreath" src="images/deco/wreath.svg" width="120" height="120" alt="" loading="lazy" decoding="async" data-bokeh-exclude>
+          <span class="monogram__text" lang="en" aria-hidden="true">I<span class="monogram__amp">&amp;</span>Y</span>
+        </div>
+      </div>
+      <div class="share__thanks reveal">
+        <h2 class="share__title" id="share-title" lang="en">Thank you</h2>
+        <p class="share__closing">끝까지 봐 주셔서 감사합니다.<br>그날, 반갑게 뵙겠습니다.</p>
+      </div>
+      <div class="share__buttons reveal">
+        <!-- TODO(user): replace [[TODO:KAKAO_JS_KEY]] with the Kakao JavaScript key. Until then the button copies the link. -->
+        <button type="button" class="btn btn--primary" id="share-kakao" data-kakao-key="[[TODO:KAKAO_JS_KEY]]">카카오톡으로 공유하기</button>
+        <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="link">
+          <span class="copy-btn__labels">
+            <span class="copy-btn__label copy-btn__label--idle">링크 복사하기</span>
+            <span class="copy-btn__label copy-btn__label--done" aria-hidden="true"><svg class="copy-btn__check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>복사했습니다</span>
+            <span class="copy-btn__label copy-btn__label--fail" aria-hidden="true">복사하지 못했습니다</span>
+          </span>
+        </button>
+      </div>
+    </section>
+    <div class="reveal-sentinel" aria-hidden="true"></div>
   </main>
 
-  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="사진 크게 보기" hidden>
-    <div class="lightbox__stage" id="lightbox-stage">
-      <div class="lightbox__track" id="lightbox-track"></div>
+  <!-- Lightbox: slides are built by script.js from the grid buttons. -->
+  <dialog class="lightbox" id="lightbox" aria-label="사진 크게 보기">
+    <div class="lb-scrim" aria-hidden="true"></div>
+    <div class="lb-bar lb-bar--top">
+      <button type="button" class="lb-btn lb-close" aria-label="닫기">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="#FBF6F1" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
     </div>
-    <button type="button" class="lightbox__btn lightbox__close" id="lightbox-close" aria-label="닫기">
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-    </button>
-    <button type="button" class="lightbox__btn lightbox__prev" id="lightbox-prev" aria-label="이전 사진">
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <button type="button" class="lightbox__btn lightbox__next" id="lightbox-next" aria-label="다음 사진">
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <p class="lightbox__counter" id="lightbox-counter" lang="en" aria-live="polite"></p>
-  </div>
+    <div class="lb-stage">
+      <ul class="lb-track"></ul>
+    </div>
+    <div class="lb-bar lb-bar--bottom">
+      <button type="button" class="lb-btn lb-prev" aria-label="이전 사진">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="#FBF6F1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <p class="lb-counter" aria-live="polite"><span class="lb-counter__text" lang="en" aria-hidden="true"></span><span class="lb-counter__sr sr-only"></span></p>
+      <button type="button" class="lb-btn lb-next" aria-label="다음 사진">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7" fill="none" stroke="#FBF6F1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </dialog>
 
-  <p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
+  <div class="toast" aria-hidden="true"></div>
+  <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+
+  <!-- Runtime UI copy read by script.js ({n} and {total} are filled in at runtime). -->
+  <template id="ui-text">
+    <span data-key="copy-done-account">계좌번호를 복사했습니다.</span>
+    <span data-key="copy-done-address">주소를 복사했습니다.</span>
+    <span data-key="copy-done-link">청첩장 링크를 복사했습니다.</span>
+    <span data-key="copy-failed">복사하지 못했습니다. 길게 눌러 직접 복사해 주세요.</span>
+    <span data-key="copy-pending">계좌번호를 준비하고 있습니다.</span>
+    <span data-key="kakao-fallback">카카오톡 공유를 열 수 없어 링크를 복사했습니다. 대화방에 붙여 넣어 주세요.</span>
+    <span data-key="kakao-button">청첩장 보기</span>
+    <span data-key="bgm-failed">음악을 재생하지 못했습니다. 다시 한번 눌러 주세요.</span>
+    <span data-key="dday-before">인혁과 유민의 결혼식까지<br>{n}일 남았습니다.</span>
+    <span data-key="dday-today">오늘, 인혁과 유민이<br>부부가 됩니다.</span>
+    <span data-key="dday-after">인혁과 유민의 결혼식에<br>함께해 주셔서 감사합니다.</span>
+    <span data-key="lb-counter">{total}장 중 {n}번째 사진</span>
+    <span data-key="gb-name-empty">성함을 적어 주세요.</span>
+    <span data-key="gb-message-empty">남기실 말씀을 적어 주세요.</span>
+    <span data-key="gb-sending">보내는 중…</span>
+    <span data-key="gb-success">소중한 말씀이 잘 전달되었습니다. 감사합니다.</span>
+    <span data-key="gb-failed">말씀을 보내지 못했습니다. 잠시 후 다시 눌러 주세요.</span>
+    <span data-key="gb-unconfigured">지금은 방명록을 받을 수 없습니다. 축하의 말씀은 두 사람에게 직접 전해 주세요.</span>
+  </template>
 </body>
 </html>
