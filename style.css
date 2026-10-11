@@ -248,7 +248,7 @@ html.lb-open { overflow: hidden; }
 .copy-btn:not(.is-copied):not(.is-failed) .copy-btn__label--idle,
 .copy-btn.is-copied .copy-btn__label--done,
 .copy-btn.is-failed .copy-btn__label--fail { opacity: 1; }
-.copy-btn__check { flex: none; }
+.copy-btn__check { flex: none; color: var(--color-sage-deep); } /* surface 4.92:1; label text keeps the button color */
 
 /* ===== BGM toggle ===== */
 
@@ -545,6 +545,7 @@ html.lb-open { overflow: hidden; }
 
 .dday { margin-top: 36px; }
 .dday__count {
+  margin-top: 8px;
   padding-left: 0.06em;
   color: var(--color-accent);
   font: 300 34px/1.2 var(--font-en-serif);
@@ -552,7 +553,6 @@ html.lb-open { overflow: hidden; }
 }
 .dday__count[hidden] { display: none; }
 .dday__message {
-  margin-top: 8px;
   font: 400 15px/1.8 var(--font-ko-serif);
 }
 
@@ -716,17 +716,46 @@ html:not(.js) .g-status { display: none; }
 }
 .account__message p + p { margin-top: 1em; }
 
-.account__card {
-  padding: 20px;
-  text-align: left;
-}
+/* Account disclosure (motion spec 4-4): no height animation; only the chevron turns and the content fades in. */
+.account__card { text-align: left; }
 .account__card + .account__card { margin-top: 12px; }
+.account__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 20px;
+  border-radius: calc(var(--radius-card) - 1px); /* the focus ring follows the card corners */
+  list-style: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.account__summary::-webkit-details-marker { display: none; }
+.account__card[open] > .account__summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .account__side {
   color: var(--color-sage-deep);
   font: 600 14px/1.5 var(--font-ko-sans);
 }
+.account__chevron {
+  flex: none;
+  color: var(--color-accent);
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+.account__card[open] .account__chevron { transform: rotate(180deg); }
+.account__body {
+  margin: 0 20px;
+  padding: 16px 0 20px;
+  border-top: 1px solid var(--color-line);
+}
+/* Fade on ::details-content: content inside a closed <details> is not restyled there, so an animation
+   on .account__body would only play on the first open. Older engines hide it with display: none instead. */
+.account__card[open]::details-content { animation: account-open var(--dur-modal) var(--ease-out); }
+@supports not selector(::details-content) {
+  .account__card[open] .account__body { animation: account-open var(--dur-modal) var(--ease-out); }
+}
+@keyframes account-open { from { opacity: 0; } to { opacity: 1; } }
 .account__number {
-  margin-top: 6px;
   font: 500 15px/1.5 var(--font-ko-sans);
   word-break: break-all;
   overflow-wrap: anywhere;
@@ -850,6 +879,10 @@ html:not(.js) .g-status { display: none; }
   left: 50%;
   bottom: calc(24px + env(safe-area-inset-bottom));
   z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: max-content; /* left: 50% would otherwise shrink-wrap it to half the viewport */
   max-width: min(320px, calc(100vw - 48px));
   padding: 12px 20px;
@@ -876,6 +909,9 @@ html:not(.js) .g-status { display: none; }
     transform var(--dur-fast) var(--ease-out),
     visibility 0s;
 }
+/* Check icon for copy successes only. Light sage on the dark toast is about 5.5:1. */
+.toast__check { flex: none; display: none; color: var(--color-secondary); }
+.toast.is-done .toast__check { display: block; }
 
 /* ===== Lightbox ===== */
 

@@ -83,6 +83,7 @@
 
   const liveStatus = document.getElementById('live-status');
   const toastEl = document.querySelector('.toast');
+  const toastText = toastEl ? toastEl.querySelector('.toast__text') : null;
   let announceTimer = 0;
   let toastTimer = 0;
 
@@ -93,9 +94,11 @@
     announceTimer = setTimeout(() => { liveStatus.textContent = message; }, 50);
   }
 
-  function notify(message) {
-    if (toastEl) {
-      toastEl.textContent = message;
+  // done: true only for a successful copy; it shows the check icon in front of the toast text.
+  function notify(message, done = false) {
+    if (toastEl && toastText) {
+      toastText.textContent = message;
+      toastEl.classList.toggle('is-done', done);
       toastEl.classList.add('is-shown');
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => toastEl.classList.remove('is-shown'), token('--dur-fast') + TOAST_HOLD_MS);
@@ -594,10 +597,19 @@
       const kst = new Date(Date.now() + 9 * 3600e3);
       const today = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate());
       const days = Math.round((target - today) / 864e5);
-      count.hidden = days < 0;
-      count.textContent = days > 0 ? `D-${days}` : 'D-DAY';
+      // The counter is shown only before the wedding; the day itself and after show the message only.
+      count.hidden = days <= 0;
+      count.textContent = days > 0 ? `D - ${days}` : '';
       const key = days > 0 ? 'dday-before' : days === 0 ? 'dday-today' : 'dday-after';
-      message.replaceChildren(richText(key, { n: days }));
+      // After the wedding the wedding day counts as day 1, so the next day is day 2.
+      message.replaceChildren(richText(key, { n: days > 0 ? days : 1 - days }));
+      if (days > 0) {
+        // The visual counter is aria-hidden ("D - n" reads poorly), so screen readers get this sentence.
+        const sr = document.createElement('span');
+        sr.className = 'sr-only';
+        sr.append(' ', richText('dday-before-sr', { n: days }));
+        message.append(sr);
+      }
       box.hidden = false;
     }
     render();
@@ -1298,7 +1310,7 @@
         timer = setTimeout(() => btn.classList.remove('is-copied', 'is-failed'), COPY_LABEL_MS);
         if (ok) {
           if (navigator.vibrate) navigator.vibrate(12);
-          notify(text(`copy-done-${kind}`));
+          notify(text(`copy-done-${kind}`), true);
         } else {
           notify(text('copy-failed'));
           if (source) selectText(source);

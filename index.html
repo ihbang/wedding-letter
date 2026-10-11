@@ -172,8 +172,8 @@
       </div>
       <!-- D-day is computed in KST by script.js; hidden without JS. -->
       <div class="dday reveal" id="dday" data-wedding-date="2027-01-03" hidden>
-        <p class="dday__count" id="dday-count" lang="en" aria-hidden="true"></p>
         <p class="dday__message" id="dday-message"></p>
+        <p class="dday__count" id="dday-count" lang="en" aria-hidden="true"></p>
       </div>
     </section>
 
@@ -293,34 +293,45 @@
           <p>보내 주신 따뜻한 마음,<br>오래도록 기억하겠습니다.</p>
         </div>
       </div>
-      <div class="card account__card reveal">
-        <div class="account__info">
-          <p class="account__side">신랑측</p>
-          <p class="account__number"><span>신한은행</span> <span id="groom-account">110-335-546640</span></p>
-          <p class="account__holder"><span class="account__holder-label">예금주</span> 방인혁</p>
+      <!-- Collapsed by default; <details> opens and closes without JS. -->
+      <details class="card account__card reveal">
+        <summary class="account__summary">
+          <span class="account__side">신랑측</span>
+          <svg class="account__chevron" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="account__body">
+          <div class="account__info">
+            <p class="account__number"><span>신한은행</span> <span id="groom-account">110-335-546640</span></p>
+            <p class="account__holder"><span class="account__holder-label">예금주</span> 방인혁</p>
+          </div>
+          <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="account" data-copy-target="#groom-account" aria-label="신랑측 방인혁 계좌번호 복사하기">
+            <span class="copy-btn__labels">
+              <span class="copy-btn__label copy-btn__label--idle">복사하기</span>
+              <span class="copy-btn__label copy-btn__label--done" aria-hidden="true"><svg class="copy-btn__check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>복사했습니다</span>
+              <span class="copy-btn__label copy-btn__label--fail" aria-hidden="true">복사하지 못했습니다</span>
+            </span>
+          </button>
         </div>
-        <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="account" data-copy-target="#groom-account" aria-label="신랑측 방인혁 계좌번호 복사하기">
-          <span class="copy-btn__labels">
-            <span class="copy-btn__label copy-btn__label--idle">복사하기</span>
-            <span class="copy-btn__label copy-btn__label--done" aria-hidden="true"><svg class="copy-btn__check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>복사했습니다</span>
-            <span class="copy-btn__label copy-btn__label--fail" aria-hidden="true">복사하지 못했습니다</span>
-          </span>
-        </button>
-      </div>
-      <div class="card account__card reveal">
-        <div class="account__info">
-          <p class="account__side">신부측</p>
-          <p class="account__number"><span>국민은행</span> <span id="bride-account">298702-04-213005</span></p>
-          <p class="account__holder"><span class="account__holder-label">예금주</span> 손유민</p>
+      </details>
+      <details class="card account__card reveal">
+        <summary class="account__summary">
+          <span class="account__side">신부측</span>
+          <svg class="account__chevron" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="account__body">
+          <div class="account__info">
+            <p class="account__number"><span>국민은행</span> <span id="bride-account">298702-04-213005</span></p>
+            <p class="account__holder"><span class="account__holder-label">예금주</span> 손유민</p>
+          </div>
+          <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="account" data-copy-target="#bride-account" aria-label="신부측 손유민 계좌번호 복사하기">
+            <span class="copy-btn__labels">
+              <span class="copy-btn__label copy-btn__label--idle">복사하기</span>
+              <span class="copy-btn__label copy-btn__label--done" aria-hidden="true"><svg class="copy-btn__check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>복사했습니다</span>
+              <span class="copy-btn__label copy-btn__label--fail" aria-hidden="true">복사하지 못했습니다</span>
+            </span>
+          </button>
         </div>
-        <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="account" data-copy-target="#bride-account" aria-label="신부측 손유민 계좌번호 복사하기">
-          <span class="copy-btn__labels">
-            <span class="copy-btn__label copy-btn__label--idle">복사하기</span>
-            <span class="copy-btn__label copy-btn__label--done" aria-hidden="true"><svg class="copy-btn__check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>복사했습니다</span>
-            <span class="copy-btn__label copy-btn__label--fail" aria-hidden="true">복사하지 못했습니다</span>
-          </span>
-        </button>
-      </div>
+      </details>
     </section>
 
     <!-- 9. Guestbook (surface band) -->
@@ -413,12 +424,12 @@
     </div>
   </dialog>
 
-  <div class="toast" aria-hidden="true"></div>
+  <div class="toast" aria-hidden="true"><svg class="toast__check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="toast__text"></span></div>
   <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
 
   <!-- Runtime UI copy read by script.js ({n} and {total} are filled in at runtime). -->
   <template id="ui-text">
-    <span data-key="copy-done-account">계좌번호를 복사했습니다.</span>
+    <span data-key="copy-done-account">계좌번호가 복사되었습니다.</span>
     <span data-key="copy-done-address">주소를 복사했습니다.</span>
     <span data-key="copy-done-link">청첩장 링크를 복사했습니다.</span>
     <span data-key="copy-failed">복사하지 못했습니다. 길게 눌러 직접 복사해 주세요.</span>
@@ -426,9 +437,10 @@
     <span data-key="kakao-fallback">카카오톡 공유를 열 수 없어 링크를 복사했습니다. 대화방에 붙여 넣어 주세요.</span>
     <span data-key="kakao-button">청첩장 보기</span>
     <span data-key="bgm-failed">음악을 재생하지 못했습니다. 다시 한번 눌러 주세요.</span>
-    <span data-key="dday-before">인혁과 유민의 결혼식까지<br>{n}일 남았습니다.</span>
-    <span data-key="dday-today">오늘, 인혁과 유민이<br>부부가 됩니다.</span>
-    <span data-key="dday-after">인혁과 유민의 결혼식에<br>함께해 주셔서 감사합니다.</span>
+    <span data-key="dday-before">인혁 · 유민의 결혼식까지</span>
+    <span data-key="dday-before-sr">{n}일 남았습니다.</span>
+    <span data-key="dday-today">오늘,<br>저희 두 사람이 첫걸음을 내딛습니다.</span>
+    <span data-key="dday-after">함께 걸어가는 {n}번째 날<br>끝까지 축복해 주셔서 감사합니다.</span>
     <span data-key="lb-counter">{total}장 중 {n}번째 사진</span>
     <span data-key="gb-name-empty">성함을 적어 주세요.</span>
     <span data-key="gb-message-empty">남기실 말씀을 적어 주세요.</span>

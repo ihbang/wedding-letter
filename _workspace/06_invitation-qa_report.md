@@ -5,6 +5,8 @@
 > 2차 QA(사용자 카피 수정 반영) 결과는 문서 끝 "2차 QA" 절에 있다: PASS 38 / FAIL 0 / WARNING 1(새로 생긴 W5), 1차 WARNING 4건은 그대로 남아 있다. 바로 아래 요약은 1차 결과다.
 >
 > 3차 QA(갤러리 캐러셀, 2026-10-11) 결과는 문서 맨 끝 "3차 QA" 절에 있다: PASS 67 / FAIL 0 / WARNING 2(새로 생긴 W6·W7). W4는 해소됐고 W1·W2·W3·W5는 그대로다.
+>
+> 4차 QA(계좌 접기·복사 토스트, 2026-10-11) 결과는 문서 맨 끝 "4차 QA" 절에 있다: PASS 48 / FAIL 1 / 새 WARNING 0. 계좌 접기·복사 토스트 변경분은 FAIL 0이다. FAIL 1건(F1)은 카피 시트에서 바뀐 dday_message가 페이지에 반영되지 않은 것이다. W1·W2·W3은 해소됐고 W5·W6·W7은 그대로다.
 
 ## 요약
 
@@ -428,3 +430,141 @@ FAIL은 없다. WARNING 4건은 모두 페이지 코드가 아니라 배포 전 
 - JS가 꺼진 환경에서는 Chrome이 가로 스크롤 영역 안의 lazy 이미지를 미리 받아 갤러리 근처에서 15장을 모두 요청한다(폴백에서만). 슬라이드를 눌러도 lightbox가 열리지 않는 것은 명세 4-1-9가 적은 기존 한계다
 - 캐러셀 `keydown`(`script.js:679`)과 lightbox `keydown`(`:975`)이 수정 키를 보지 않아, 포커스가 그 안에 있을 때 Windows·Linux Chrome의 Alt+←(뒤로 가기)도 막힌다. 두 곳에 `if (e.altKey || e.ctrlKey || e.metaKey) return;` 한 줄씩 넣으면 된다
 - 화면 오른쪽 위에 고정된 BGM 토글은 갤러리를 화면 맨 위까지 올렸을 때 프레임 오른쪽 위 모서리를 덮는다. 다른 섹션과 예전 그리드에서도 같았고, 그 자리를 누르면 토글이 받는다
+
+---
+
+## 4차 QA (계좌 접기·복사 토스트) — 2026-10-11
+
+3차 QA 뒤 사용자가 커밋 3개(`b5abf79` og 주소·카카오 키·방명록 주소, `05d910b` 주석 정리, `5e7de56` 교통편·계좌번호)로 placeholder를 채웠다. 그 뒤 사용자 피드백(`00_user-input.md` 맨 아래 "계좌 영역 피드백", 카피 시트 account_info 아래 인용문)에 따라 frontend가 account 섹션을 접는 카드로 바꾸고 복사 토스트에 체크를 넣었다(`05_frontend-developer_summary.md` 11장). 기준은 모션 명세 4-4 표의 "계좌 접기"·토스트·reduced-motion 행이다. 작업 트리 변경분(`git diff`: `index.html`, `style.css`, `script.js`)을 검증하고 다른 섹션의 회귀를 확인했다.
+
+### 요약
+
+- 전체 결과: **FAIL** (FAIL 1)
+- 4차 판정 49항목: PASS 48 / FAIL 1 / 새 WARNING 0
+- **계좌 접기·복사 토스트 변경분은 FAIL 0이다.** FAIL 1건(F1)은 이번 변경과 무관하다. 작업 트리의 카피 시트 `dday_message`가 바뀌었는데 페이지와 `00_user-input.md`에는 반영·기록이 없다(아래 4-6). 구조 수정이 필요해 보고만 한다
+- 직접 수정: 없음. 페이지 코드에서 고칠 결함이 나오지 않았다
+- 기존 WARNING: **W1·W2·W3 해소**(W2·W3은 배포 후 실제 동작 1회 확인 권장), W4는 3차에 해소, W5·W6·W7은 그대로
+- 검증 방법
+  - 정적: 1차 `qa/static_checks.py`와 3차 `qa3/static3.py`를 `qa4/`로 옮겨 다시 돌렸다. static3은 50/50 PASS이고 출력이 3차와 같다. static_checks는 og:image가 절대 URL이 되어 경로 변환 한 줄만 고쳤고, 3차 출력과 다른 곳은 og:image 값, `@keyframes account-open: ['opacity']` 추가, 장식 전용 색 경고 1건(4-3 #29, 오탐)이다. 대비는 Python으로 WCAG 식을 계산했다
+  - 브라우저: 로컬 서버 `127.0.0.1:8773` + headless Chrome CDP(DPR 2, 터치 에뮬레이션)
+    - frontend 검사 `fe-account/check.mjs`를 포트만 바꿔 `qa4/fe-account-check.mjs`로 motion·reduced·nojs × 360·390에서 다시 돌렸다. 페이드 중간 샘플의 몇 ms 차이 말고는 frontend 결과와 같다
+    - QA 독립 검사 `qa4/account.mjs`(360/375/390/430, motion·reduced): 권한을 준 실제 클립보드 읽기, 펼친 뒤 접근성 트리 expanded 값, Space·Enter·Tab 키보드, 실제 터치 탭 전후 매 프레임 opacity·회전각 샘플, 토스트 위치·줄 수, 연속 토스트, BGM 토글 겹침을 쟀다
+    - 3차 회귀 드라이버를 `qa4/qa.mjs`로 옮겨 13개 시나리오를 돌리고 `qa4/compare4.py`로 3차 JSON과 비교했다. 캐러셀 검사 `qa4/carousel-check.mjs`는 110/110 PASS다. 바꾼 곳은 두 군데다. 카카오 키와 방명록 주소가 실제 값이 되어 모든 시나리오에서 `*kakao*`, `*formspree.io*` 요청을 막았다(시험 제출이 사용자 Formspree 받은편지함에 들어가지 않게). interact의 계좌 단계는 첫 카드를 연 뒤 복사하도록 바꿨다
+    - Chrome은 샌드박스 안에서 뜨지 않아 샌드박스를 끄고 실행했다. 끝난 뒤 서버와 Chrome을 종료했다(남은 프로세스 0, 포트 닫힘). 스크립트·출력·스크린샷은 scratchpad `qa4/`에만 있고 저장소에는 넣지 않았다
+
+### 4-1. 계좌 접기 (명세 4-4 "계좌 접기", 사용자 결정)
+
+| # | 항목 | 기준 | 측정 | 결과 |
+|---|------|------|------|------|
+| 1 | 마크업 | `<details>/<summary>`, 라벨은 기존 신랑측/신부측 | `index.html:297-334` `details.card.account__card.reveal` 2개, 첫 자식이 `summary.account__summary`(라벨 + `aria-hidden` 화살표 SVG). 본문의 `#groom-account`·`#bride-account`, `data-copy-target`, 버튼 `aria-label`은 커밋본과 같다 | PASS |
+| 2 | 기본 접힘 | 처음엔 숨김 | 네 폭 모두 `open=false`, 계좌번호·복사 버튼 `checkVisibility()` false | PASS |
+| 3 | 탭으로 열고 닫기 | 누르면 펼쳐짐 | 실제 터치 탭으로 열림 → 다시 탭하면 닫힘, 두 카드 모두 열기 가능, 열린 화살표 180deg | PASS |
+| 4 | summary 터치 영역 | 44px 이상 | 높이 56px, 폭은 카드 전체(310/325/340/380px) | PASS |
+| 5 | 기본 삼각형 숨김 | Safari 포함 | `style.css:734` `.account__summary::-webkit-details-marker { display: none; }`가 CSSOM에 있다. Chrome은 `display: flex` + `list-style: none`으로 표식 없음(스크린샷 `qa4/motion-360-collapsed.png`). Safari 실기는 이 환경에서 보지 못했다 | PASS |
+| 6 | 포커스 링 | 기존 2px accent, offset 2px | Tab으로 온 summary가 `:focus-visible`, `solid 2px rgb(142,85,88)`, offset 2px. 닫힘에서는 카드 모서리를 따라 돌고, 열림에서는 summary 아래 변이 직선이다(`qa4/motion-390-focus*.png`) | PASS |
+| 7 | 키보드 | `<summary>` 기본 동작 | Space로 열기·닫기, Enter로 열기. 닫힌 카드의 복사 버튼은 `focus()`가 걸리지 않는다. 열면 Tab 순서가 summary → "신랑측 방인혁 계좌번호 복사하기" → 다음 summary | PASS |
+| 8 | 접근성 이름·상태 | "신랑측"/"신부측", 펼침 상태 전달 | 접근성 트리 role DisclosureTriangle(Chrome의 summary 역할), 이름 "신랑측"·"신부측"(화살표는 이름에 안 들어감), expanded false → 열면 true | PASS |
+| 9 | 높이 애니메이션 금지 | 명세 4-4 | CSSOM에 height·max-height·grid-template-rows 전환 0. 새 키프레임 `account-open`은 opacity만 쓴다 | PASS |
+| 10 | 내용 페이드 | opacity 0→1 250ms | `::details-content`(`style.css:753`)에 `account-open` 250ms `--ease-out`. 열린 첫 프레임 0 → 100ms 0.78 → 231-235ms에 1(16ms 프레임 간격 안). 이 의사 요소가 없는 엔진은 `@supports not selector(::details-content)`(`:754`)로 `.account__body`에 건다 | PASS |
+| 11 | 같은 카드를 다시 열 때 | 매번 페이드 | 같은 카드를 열기·닫기·다시 열기 해도 두 번째 열기 첫 프레임이 0이고 232-233ms에 1. 두 번째 카드도 같다(네 폭) | PASS |
+| 12 | 화살표 회전 | rotate 0→180deg 200ms | transform 전환 200ms `--ease-standard`, 180deg 도달 198-202ms | PASS |
+| 13 | reduced-motion | 펼침·회전 즉시 | 토큰 0ms로 화살표 `transition-duration` 0s, 페이드 `animation-duration` 0s. 탭 뒤 첫 프레임에 이미 opacity 1, 180deg(360·390, 카드 두 장, 두 번 열기) | PASS |
+| 14 | JS 비활성 | 접고 펴기 가능 | `html.js` 없음, 탭으로 열리고 다시 탭하면 닫힘(360·390) | PASS |
+| 15 | 펼친 레이아웃 | 화면 밖·잘림 없음 | 네 폭에서 화면 밖 요소 0, 계좌번호 한 줄, 복사 버튼 높이 44px·카드 폭 전체, 펼친 카드 높이 201px, `scrollWidth` = 화면 폭 | PASS |
+| 16 | reveal | 숨은 reveal 0 | account reveal 그룹 3개(헤더, 신랑측 details, 신부측 details), 끝까지 스크롤 후 모두 보임 | PASS |
+
+### 4-2. 복사·토스트
+
+| # | 항목 | 기준 | 측정 | 결과 |
+|---|------|------|------|------|
+| 17 | 실제 클립보드 | 펼친 뒤 복사 | 클립보드에 `sentinel`을 넣고 실제 터치로 복사 → `navigator.clipboard.readText()`가 `110-335-546640`, `298702-04-213005`(네 폭, motion·reduced). frontend 검사는 writeText를 가로챘는데, QA는 실제 클립보드로 읽었다 | PASS |
+| 18 | 토스트 문구 | "계좌번호가 복사되었습니다." | `index.html:432`, 카피 시트 성공 상태 메시지 줄과 같다. `role="status"` 낭독도 같은 문구, 시각 토스트는 `aria-hidden="true"` | PASS |
+| 19 | 토스트 sage 체크 | 성공 시 체크 | `.toast.is-done`에서만 16px 체크 표시, `rgb(162,170,146)`, 글자 왼쪽, 세로 중심 차이 0px. 토스트 214 x 44px 한 줄, 화면 가운데 | PASS |
+| 20 | 버튼 체크 색 | sage | 체크 stroke `rgb(91,106,70)`, 라벨 글자는 accent `rgb(142,85,88)` 그대로. 복사 전후 버튼 폭 변화 0(CLS 0) | PASS |
+| 21 | 체크 없는 토스트 | 실패·placeholder·카카오 대체 | placeholder 보호(값을 `[[TODO:X]]`로 바꿔 시험), 복사 실패(두 방식 모두 거부: 2줄, 312-320px, 가운데 정렬, 계좌번호 선택됨, 버튼 "복사하지 못했습니다"), 카카오 대체 안내 모두 체크 `display: none` | PASS |
+| 22 | 연속 토스트 | 체크가 남지 않음 | 토스트가 떠 있는 동안 성공 → 250ms 뒤 placeholder 안내 → 성공: 체크가 표시 → 숨김 → 표시로 바뀐다(`notify`가 매번 `is-done`을 토글, `script.js:101`) | PASS |
+| 23 | 주소·링크 성공 | 체크 표시(공용 함수) | "주소를 복사했습니다.", "청첩장 링크를 복사했습니다."에도 체크. 05 요약 11장에 적혀 있고 오케스트레이터 지시와 맞다 | PASS |
+| 24 | script.js 변경 범위 | 토스트만 | `notify(message, done = false)`(`script.js:98-104`)와 계좌·주소·링크 성공 호출(`:1304`)만 바뀌었다. placeholder 안내(`:1295`), 실패(`:1306`), 카카오 대체(`:1339`)는 `done` 없이 그대로 | PASS |
+
+### 4-3. 대비 (WCAG 식 계산)
+
+| # | 쌍 | 기준 | 대비 | 결과 |
+|---|----|------|------|------|
+| 25 | 토스트 체크 `#A2AA92` / 토스트 면 `#3B2D2A` | 비텍스트 3:1 | 5.46:1 | PASS |
+| 26 | 버튼 체크 `#5B6A46` / surface `#F3EAE3` | 비텍스트 3:1 | 4.92:1 (데스크톱 hover 면 `#EDE1DB` 위 4.56:1) | PASS |
+| 27 | summary 라벨 `#5B6A46` / surface (Pretendard 600 14px) | 텍스트 4.5:1 | 4.92:1 | PASS |
+| 28 | 화살표 accent `#8E5558` / surface, 포커스 링 accent / bg·surface | 비텍스트 3:1 | 4.93:1, 5.45:1 / 4.93:1 | PASS |
+| 29 | 1차 정적 검사 "장식 전용 색이 글자 색으로 쓰임" 경고(`style.css:913` `.toast__check { color: var(--color-secondary) }`) | 컨셉 시트: secondary는 텍스트 금지 | 오탐이다. 이 `color`는 `stroke="currentColor"` SVG 체크에만 걸리고 글자가 없다. 컨셉 시트가 금지한 것은 글자 색이다. 같은 자리에 sage_deep을 쓰면 2.25:1로 비텍스트 기준에도 못 미친다 | PASS |
+
+### 4-4. 회귀 (다른 섹션)
+
+| # | 항목 | 측정 | 3차 대비 | 결과 |
+|---|------|------|------|------|
+| 30 | hero 보케 | 구간별 living 최대 hero 8 / calendar 6 / share 6, 구간별 보유 최대 8/6/6(모바일 합계 상한 12). 캔버스 alpha glow 0.255, primary 0.161(상한 0.28 / 0.18), 제외 영역 alpha 0. gallery·venue·notice·account·guestbook에서 `running []`, 화면 밖 전구 paused, guestbook 위치 무한 애니메이션 0 | 수치 차이는 무작위 범위 안 | PASS |
+| 31 | 갤러리 캐러셀 | `carousel-check.mjs` 110/110 PASS | 검사 목록 같음, 전환 중 샘플 위치만 다름 | PASS |
+| 32 | lightbox | lightbox·lbkeys 시나리오(핀치 3배 clamp, 더블탭, 팬 clamp, 포커스 트랩, 스크롤 잠금, 뒤로가기, 끌어 닫기, 키보드) | 문서 위치(top) 말고 같음 | PASS |
+| 33 | couple 정렬 | 네 폭의 행·줄·"아들/딸" 칸·이름 left/right/width | 문서 위치(top) 말고 같음 | PASS |
+| 34 | notice | 2줄, 간격, reduced 상태, notice에서 보케 정지 | 같음(venue~account 간격 포함) | PASS |
+| 35 | venue 주소·교통 | 교통편이 카피 시트 199-208행과 같다(지하철·주차·내비게이션, 버스 줄 삭제). 주소 복사 클립보드 "서울 송파구 송파대로 155", execCommand 폴백, 둘 다 실패 시 선택 | 섹션 높이 885 → 850px(430폭 826px)은 커밋 `5e7de56`이 버스 줄을 지운 결과 | PASS |
+| 36 | BGM | 탭 전 요청 0, 탭 후 재생·volume 0.60·링, 끄기, 음원 오류 복구, reduced 링 정지 | 같음 | PASS |
+| 37 | 방명록 | 빈 성함·빈 말씀, 501 응답, 성공 경로(fetch 대체) | 접수 주소가 생겨 3차의 "받을 수 없습니다" 단계가 전송 실패 문구로 바뀌었다(QA가 Formspree 요청을 막았기 때문). 실제 접수는 시험하지 않았다 | PASS |
+| 38 | D-day 계산 | 고정 시각 6개 결과, 실제 시각 표시 D-84 | 같음 | PASS |
+| 39 | 가로 스크롤 | 360/375/390/430에서 `scrollWidth` = 화면 폭(계좌를 펼쳤을 때도) | 같음 | PASS |
+| 40 | 콘솔 오류 | 페이지에서 생긴 오류·예외 0. 4xx/5xx는 QA가 일부러 넣은 501·404, 실패 요청 2건은 QA가 막은 카카오 SDK·Formspree, Canvas2D 경고는 QA 픽셀 측정 때문 | 같음 | PASS |
+| 41 | heading·랜드마크 | h1 1개 + h2 9개, 이름 없는 컨트롤 0, alt 없는 img 0, 장식 svg·canvas 노출 0 | 같음 | PASS |
+| 42 | reveal·디바이더 | 네 폭에서 끝까지 스크롤 후 숨은 reveal 0, 안 그려진 디바이더 0, 14px 미만 한글 0, 화면 밖 요소 0 | 같음 | PASS |
+| 43 | reduced-motion (페이지 전체) | 로드 직후·완주 후 상태, 런타임 전환 | 보케 무작위 값 말고 같음 | PASS |
+| 44 | JS 비활성 (페이지 전체) | nojs 결과 | 같음 | PASS |
+| 45 | 접근성 트리 버튼 목록 | 계좌 복사 버튼 2개가 접힌 동안 빠진다. 펼치면 나타나고 Tab으로 닿는다(4-1 #7) | 의도한 변화 | PASS |
+| 46 | 정적 회귀 | static3 50/50(3차와 같음), 1차 정적 출력은 요약에 적은 3곳만 다르다 | 같음 | PASS |
+| 47 | 코드 파일 한국어 | `script.js`, `style.css`에서 한글 0건 | 같음 | PASS |
+
+### 4-5. BGM 토글과 summary 화살표 겹침 (05 요약 11장 참고 사항)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 48 | 실사용 영향 | 고정 토글(위 16px, 오른쪽 16px, 40px)은 첫 summary의 위 끝이 화면 맨 위에서 약 0~24px 안에 있을 때만 화살표(20px)의 오른쪽 11px을 덮는다(화살표 면적의 35~55%). 이때 화살표 한가운데를 누르면 토글이 받아 음악이 켜진다. summary 위 끝이 25px 아래로 내려가면 가운데는 summary가 받고, 41px부터는 겹치지 않는다. 라벨과 나머지 막대(56px 높이, 카드 폭 전체)는 어느 위치에서나 summary가 받는다(네 폭 같음, `qa4/motion-390-bgm-overlap.png`) | PASS |
+
+판단: 실사용 문제로 보지 않는다. 겹치는 건 카드를 화면 맨 위에 딱 붙인 짧은 순간뿐이다. 그때도 토글이 화살표 위에 그대로 보여서 하객은 무엇을 누르는지 알 수 있다. 라벨이나 막대의 다른 곳을 눌러도 열린다. 3차에서 적은 갤러리 프레임 모서리와 같은 성격이라 고치지 않아도 된다.
+
+### 4-6. 교차 확인에서 나온 불일치
+
+| # | 항목 | 카피 시트 (작업 트리) | 페이지 | 결과 |
+|---|------|------|------|------|
+| 49 | dday_message | `02_copy-writer_copy.md:127-146`이 바뀌었다. 예식 전 "인혁 · 유민의 결혼식까지 / D - {n}", 당일 "오늘, / 저희 두 사람이 첫 걸음을 내딛습니다.", 예식 후 "(D+{n}) 함께 걸어가는 {n}번째 날 / 끝까지 축복해 주셔서 감사합니다." 카운터를 `aria-hidden`으로 둔다는 줄도 지워졌다 | `index.html:440-442` "인혁과 유민의 결혼식까지 {n}일 남았습니다." / "오늘, 인혁과 유민이 부부가 됩니다." / "인혁과 유민의 결혼식에 함께해 주셔서 감사합니다."(커밋본 카피). `script.js:600`은 예식 후 카운터를 숨긴다 | **FAIL (F1)** |
+
+이 변경은 `5e7de56`(오늘 09:26) 뒤의 작업 트리 diff에만 있다. `00_user-input.md` "계좌 영역 피드백"과 05 요약 11장에는 나오지 않는다. 사용자가 account_info 인용문과 함께 카피 시트에 직접 적은 수정으로 보이지만, 오케스트레이터 기록이 없어 의도를 단정할 수 없다. 계좌 변경과 무관하고 이번 변경으로 생긴 회귀도 아니다.
+
+### 기존 WARNING 현황
+
+- W1: **해소.** og:url·og:image가 `https://ihbang.github.io/wedding-letter/…` 절대 URL이다(`index.html:15-16`, 로컬 `images/og-garden.jpg` 1200 x 630 존재). 교통편(`:264, 268, 272`)과 계좌 4개(`:304, 323`)가 채워졌고, `index.html`에 `[[TODO` 0건
+- W2: **해소(코드).** 카카오 JavaScript 키가 들어갔다(`index.html:392`). 이 환경에서는 SDK 요청을 막아 대체 경로만 확인했다. 카카오 디벨로퍼스 [플랫폼 > Web]에 `https://ihbang.github.io`가 등록됐는지는 여기서 알 수 없으니, 배포 후 휴대폰에서 공유를 한 번 눌러 카드가 뜨는지 확인한다. 이제 공유 카드 제목은 og:title을 쓴다(W5 참고)
+- W3: **해소(코드).** 접수 주소가 Formspree로 채워졌다(`index.html:344`). QA는 실제로 제출하지 않았다. 배포 후 시험 글 1건을 보내 Formspree에 도착하는지, 성공 문구가 뜨는지 확인한다
+- W4: 3차에서 해소
+- W5: 그대로. `02_copy-writer_copy.md:310` `kakao_share.title`(3차 299행)은 여전히 "방인혁 & 손유민, 부부가 되는 날에 초대합니다"이고, 실제 공유 제목은 og:title "인혁 ♡ 유민, 우리 결혼합니다"다. 카카오 키가 들어가 이 차이가 실제 공유에 드러나게 됐다. 문서에서 같이 고칠 곳이 하나 늘었다. 카피 시트 15-26행의 placeholder 표(`GROOM_BANK`~`KAKAO_JS_KEY`)와 28행 "교통편 3종은 사용자가 주지 않았고"는 모두 채워진 지금과 맞지 않는다
+- W6: 그대로(`02_copy-writer_copy.md` gallery_alt 표 1 = 02, `:183` "그리드 버튼 접근성 이름", 컨셉 시트 `:104`, 모션 명세 `:447, 557, 879`)
+- W7: 그대로(`script.js:747-756`)
+
+### 4차에서 나온 이슈와 수정 제안
+
+- [ ] **F1 (FAIL, 구조 수정·사용자 확인 필요) `_workspace/02_copy-writer_copy.md:127-146` ↔ `index.html:440-442`, `script.js:599-603`** 카피 시트의 dday_message가 바뀌었는데 페이지는 예전 문구다 → 오케스트레이터가 사용자에게 이 수정을 반영할지 먼저 확인한다
+  - 반영하는 경우: `00_user-input.md`에 결정을 적고, copy-writer가 아래를 정한 뒤 frontend가 반영한다
+    - 예식 후 `{n}`의 기준. 다음 날이 "1번째 날"인지 "2번째 날"인지 정해야 한다. 지금 코드는 예식 후 카운터를 숨기는데, 새 카피는 `D+{n}` 표시를 전제로 한다
+    - `D - {n}`(띄어 쓴 형식)을 화면 카운터로 쓸지, 문구 둘째 줄로 쓸지. 스크린 리더가 "디 마이너스"로 읽지 않도록 시각 카운터는 `aria-hidden`으로 두고 "84일 남았습니다" 같은 sr-only 문장을 함께 둘 것을 권한다(예전 카피 시트의 근거 줄이 지워졌다)
+    - "첫 걸음"은 표준국어대사전에 한 낱말 "첫걸음"으로 올라 있다. "1번째 날"보다는 "첫 번째 날"처럼 읽히는 표기를 검토한다
+    - 반영 뒤 QA가 dday 시나리오(고정 시각 6개)를 새 문구 기준으로 다시 돈다
+  - 반영하지 않는 경우: 카피 시트 127-146행을 커밋본으로 되돌려 문서와 페이지를 맞춘다. 카피 시트는 사용자가 직접 고친 파일이라 QA가 손대지 않았다
+
+### 참고 (판정 대상 아님)
+
+- 복사 실패 토스트는 360~430폭에서 "복사하지 못했습니다. 길게 눌러 직접 복사해 / 주세요."처럼 둘째 줄에 한 어절만 남는다(`qa4/motion-360-fail-toast.png`). 토스트를 flex로 바꾸기 전에도 폭이 같아 이번 변경으로 생긴 것은 아니다. 원하면 `.toast__text { text-wrap: balance; }` 한 줄로 두 줄 길이를 고르게 할 수 있다
+- 열린 카드에서 포커스 링은 summary 아래 변을 따라 카드 안쪽을 가로지른다(아래 모서리 직각, `style.css:735`). 포커스된 대상이 summary라는 점이 잘 보여 문제는 아니다
+- Safari 실기는 이 환경에서 확인하지 못했다(`display: flex` summary 배치, `::-webkit-details-marker` 숨김, `::details-content` 또는 `@supports` 대체 경로의 페이드). 배포 후 iPhone에서 카드 하나를 두 번 열어 삼각형이 보이지 않는지, 페이드가 매번 나오는지 한 번 보면 된다
+
+### 4차 이후 F1 해소 (오케스트레이터 확인, 2026-10-11)
+
+- 사용자 확인으로 결정했다: 예식 후 `{n}`은 예식일을 1번째 날로 센다(다음 날이 "2번째 날"이라 "1번째 날"은 나오지 않는다). 큰 카운터는 예식 전에만 "D - {n}"으로 보여 준다. 결정은 `00_user-input.md` "D-day 문구 변경" 절에 있다
+- 오케스트레이터 기본값: "첫걸음" 표준 표기, 시각 카운터 `aria-hidden` + sr-only "{n}일 남았습니다."
+- 반영: `index.html` dday 블록(문구 → 카운터 순서)과 `ui-text`의 `dday-before`·`dday-before-sr`·`dday-today`·`dday-after`, `script.js` `initDday`, `style.css` `.dday__count`·`.dday__message` 여백
+- 고정 시각 5개(KST 정오 2026-10-11, 2027-01-02, 01-03, 01-04, 01-10)로 확인했다: 예식 전 "D - 84"/"D - 1" 표시와 숨은 문장 낭독, 당일·예식 후 카운터 숨김, 예식 후 "2번째 날"/"8번째 날", 콘솔 오류 0건. 스크립트와 캡처는 `scratchpad/fill-check/dday.mjs`, `dday-before.png`, `dday-today.png`
+- **F1: 해소**

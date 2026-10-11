@@ -28,7 +28,7 @@
 | 5 | gallery (`#gallery`) | background | ① 헤더 + 안내 ② 캐러셀 전체(`.g-carousel`: 사진 창 + 이전·카운터·다음 줄). 슬라이드 개별 등장 없음 | 헤더 위 sprig-divider ②, 캐러셀 트랙 전환(350ms) |
 | 6 | venue (`#venue`) | background + surface 카드 | ① 헤더 ② 정보 카드 + 주소 복사 + 지도 버튼 ③ 교통편 | 없음 |
 | 7 | notice (`#notice`) | background | ① 헤더(NOTICE / 축하 화환 안내) ② 본문 2행 | 없음 (보케 구간 아님) |
-| 8 | account (`#account`) | background + surface 카드 | ① 헤더 + 안내문 ② 신랑측 카드 ③ 신부측 카드 | 없음 |
+| 8 | account (`#account`) | background + surface 카드 | ① 헤더 + 안내문 ② 신랑측 카드 ③ 신부측 카드. 카드는 `details.card.account__card.reveal`이고 기본으로 접혀 있다(2026-10-11) | 계좌 접기: summary 화살표 회전 200ms, 펼친 내용 opacity 250ms |
 | 9 | guestbook (`#guestbook`) | surface 밴드 | ① 헤더 + 안내 ② 폼 ③ 전달 안내 | 없음 |
 | 10 | share (`#share[data-bokeh=share]`) | background | ① wreath 모노그램 ② Thank you + 맺음말 ③ 공유 버튼 | 상단 sprig-divider ③, 보케 |
 | - | lightbox (`dialog#lightbox`) | scrim #1C1514 / 0.96 | - | 스와이프·핀치·더블탭·끌어 닫기. 캐러셀 현재 장과 같은 번호로 열리고, 닫으면 캐러셀이 마지막으로 본 번호로 맞춰진다 |
@@ -72,7 +72,7 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 4-1 이웃(peek) 탭으로 한 장 이동 + 뒤따르는 click 1회 억제 | 구현 | script.js:715-731 |
 | 4-2 아래로 끌어 닫기(80px, scrim 0.96→최저 0.4), Android 뒤로가기(`pushState`/`popstate`, 이중 닫기 방지) | 구현 | script.js:923-969, 1032, 1152 |
 | 4-4 placeholder 보호(`[[TODO`면 복사 대신 안내 토스트) | 구현 | script.js:1292 |
-| 4-4 계좌 접기 | **미구현.** 양가 계좌가 한 개씩이라 접기 없이 카드로 바로 보여 준다(명세도 "쓰면"이라는 조건부) | - |
+| 4-4 계좌 접기 | 구현(2026-10-11 사용자 피드백). `<details>/<summary>`, 기본 접힘, 높이 애니메이션 없음. 화살표 `rotate(0→180deg)` `--dur-fast` 200ms `--ease-standard`, 열린 내용 `opacity 0→1` `--dur-modal` 250ms `--ease-out`(`::details-content`에 걸고, 이 의사 요소가 없는 엔진은 `.account__body`에 건다). reduced-motion은 토큰 0ms로 즉시. JS가 꺼져도 `<details>` 기본 동작으로 접고 편다 | index.html:297-334, style.css:719-757 |
 | 4-6 카카오 공유 + 링크 복사 폴백 | 구현 | script.js:1312 |
 | 4-7 길찾기 버튼 | 네이버 지도, 카카오맵 2개. 티맵은 미구현(아래 4장) | index.html:259-262 |
 | 4-8 방명록 상태 문구(200ms 페이드), 제출 중 비활성 | 구현 | script.js:1364 |
@@ -313,3 +313,48 @@ notice의 배경과 간격: 컨셉 시트 `layout_mood`가 면을 background와 
 - lightbox(2번에서 열기): `lightbox-from-slide2-390.png`, JS 꺼짐: `nojs-390.png`
 
 화면으로 본 것: 가로 02·15는 잘림 없이 surface 매트 가운데에 놓이고, 세로 사진은 프레임을 꽉 채운다. 사진 위에 화살표·글자·오버레이가 없고 이웃 사진은 흐리게·작게 처리하지 않았다. 375x548에서는 프레임이 줄어 버튼 줄까지 한 화면에 들어온다. 데스크톱에서는 480px 컬럼 가장자리에서 peek가 잘린다.
+
+## 11. 계좌 영역 피드백 반영 (2026-10-11)
+
+`00_user-input.md` 맨 아래 "계좌 영역 피드백"과 카피 시트 account_info 아래 인용문만 반영했다. account 섹션과 복사 토스트 외에는 건드리지 않았다. 카카오페이 `송금하기` 버튼은 이번에 넣지 않았다.
+
+### 바꾼 범위
+
+| 파일 | 바꾼 것 |
+|---|---|
+| index.html | 계좌 카드 2개를 `div.card.account__card.reveal`에서 `details.card.account__card.reveal`로 바꿨다. `summary.account__summary` 안에 기존 라벨(`span.account__side` 신랑측·신부측)과 아래 화살표 SVG(`aria-hidden`)가 있고, `.account__body` 안에 계좌번호 줄·예금주 줄·`복사하기` 버튼이 그대로 있다. `#groom-account`·`#bride-account`, `data-copy-target`, 버튼 `aria-label`은 바뀌지 않았다. 토스트는 `svg.toast__check` + `span.toast__text`로 나눴다. `copy-done-account` 문구는 "계좌번호가 복사되었습니다."로 바꿨다 |
+| style.css | `.account__card` 패딩을 summary(최소 높이 56px, 좌우 20px)와 body(좌우 20px, 위 16px·아래 20px, 위쪽 line 구분선)로 나눴다. 기본 삼각형은 `list-style: none` + `::-webkit-details-marker`로 숨겼다. summary 모서리를 카드에 맞춰 포커스 링(기존 전역 `:focus-visible`)이 카드를 따라 돈다. 화살표 회전과 내용 페이드는 위 "계좌 접기" 행에 적었다. 토스트를 flex로 바꾸고, 체크는 `.toast.is-done`일 때만 보인다(`--color-secondary` #A2AA92, 토스트 면 대비 5.46:1). 버튼 체크 `.copy-btn__check`는 `--color-sage-deep` #5B6A46(surface 대비 4.92:1)이고 라벨 글자 색은 accent 그대로다. 새 색 변수는 없다(둘 다 기존 변수) |
+| script.js | `notify(message, done = false)`: 글자는 `.toast__text`에 넣고 `done`이면 `is-done`을 붙인다. 복사 성공(계좌·주소·링크)만 `done = true`. 복사 실패, placeholder 보호, 카카오 폴백 안내에는 체크가 없다 |
+
+`::details-content`에 페이드를 건 이유: Chrome은 닫힌 `<details>`의 내용을 `content-visibility: hidden`으로 숨겨 그 안을 다시 스타일하지 않는다. `.account__body`에 애니메이션을 걸면 처음 펼칠 때만 페이드가 나오고 두 번째부터는 나오지 않았다(실측). 의사 요소 쪽은 매번 다시 스타일된다.
+
+이 변경으로 script.js 85행 뒤, style.css 251행·719행·913행 근처 줄 번호가 몇 줄 밀렸다. 이 문서 3장의 다른 행에 적힌 줄 번호는 고치지 않았다.
+
+### 확인 (headless Chrome 154 CDP, DPR 2, 터치 에뮬레이션)
+
+로컬 서버 `python3 -m http.server 8772 --bind 127.0.0.1`. Chrome이 Bash 샌드박스 안에서는 뜨지 않아 샌드박스를 끄고 실행했다. 검사 스크립트·결과·스크린샷은 scratchpad `fe-account/`에만 있다.
+
+| 항목 | 360 x 740 / 390 x 844 |
+|---|---|
+| 처음 상태 | 두 카드 모두 닫힘, 복사 버튼 안 보임, summary 높이 56px, 화살표 회전 없음 |
+| 탭 | 신랑측 탭 → 열림(버튼 보임), 다시 탭 → 닫힘. 두 카드 모두 열기 → 둘 다 열림, 화살표 180deg |
+| 모션 | 같은 카드를 두 번 열어 두 번 다 내용 opacity 0 → 100ms 무렵 0.7 → 1, 화살표 200ms 전환(`--ease-standard`) |
+| reduced-motion | 클릭 직후(0ms 샘플) 이미 opacity 1, 화살표 180deg, 진행 중 애니메이션 0개 |
+| JS 꺼짐 | `html.js` 없음, 탭으로 열고 닫힘 |
+| 접근성 | summary 역할 DisclosureTriangle, 이름 "신랑측", expanded false. Tab으로 summary에 오면 `:focus-visible` 2px accent 링, offset 2px, Enter로 열림 |
+| 복사 | 클립보드에 `110-335-546640`, `298702-04-213005`(주소·링크도 그대로) |
+| 토스트 | 계좌 성공 "계좌번호가 복사되었습니다." 앞에 16px 체크 rgb(162,170,146), `role="status"` 낭독 같은 문구, 시각 토스트 `aria-hidden="true"`. 주소·링크 성공에도 체크. placeholder 보호·복사 실패·카카오 폴백에는 체크 없음 |
+| 버튼 체크 | 성공 라벨 체크 stroke rgb(91,106,70), 라벨 글자 rgb(142,85,88) 그대로 |
+| 그 밖 | 가로 스크롤 없음(scrollWidth = 화면 폭), 끝까지 스크롤 후 숨은 reveal 0개, account reveal 그룹 3개(헤더, 신랑측 details, 신부측 details), 콘솔 오류 0건. `node --check script.js` 통과 |
+
+화면으로 본 것: 닫힌 카드는 surface 면·line 테두리·16px 모서리의 낮은 막대 두 개로 정돈되어 보인다. 펼치면 라벨 아래 구분선, 계좌번호·예금주, 전체 폭 `복사하기` 버튼이 예전 카드와 같은 배치로 나온다. fixed BGM 토글이 화면 맨 위에 걸린 summary의 화살표 위에 잠시 겹칠 수 있다(다른 콘텐츠가 그 버튼 아래로 지나갈 때와 같은 일이고, summary는 나머지 폭 전체가 눌린다). 이번에는 손대지 않았다.
+
+### 스크린샷 (scratchpad, 저장소에 넣지 않음)
+
+`/private/tmp/claude-501/-Users-inhyeok-Workspace-wedding-letter/cc1402ba-2bf0-4475-9039-e013d45393f0/scratchpad/fe-account/`
+
+- 접힘: `motion-390-collapsed.png`, `motion-360-collapsed.png`
+- 펼침: `motion-390-expanded.png`, `motion-360-expanded.png`
+- 토스트 + 버튼 체크: `motion-390-toast.png`, `motion-360-toast.png`
+- 포커스 링(닫힘·열림): `motion-390-focus.png`, `motion-390-focus-open.png`
+- reduced-motion: `reduced-390-*.png`, `reduced-360-*.png`
