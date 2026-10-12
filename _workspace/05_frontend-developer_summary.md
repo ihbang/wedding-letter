@@ -5,6 +5,7 @@
 - 갱신: 2026-10-11, 갤러리를 3x5 그리드에서 한 장씩 넘기는 캐러셀로 바꾸고 사진 1·2번 순서를 맞바꿨다(10장). 갤러리와 lightbox 연결 부분만 고쳤다.
 - 갱신: 2026-10-12, 오시는 길에 카카오맵 고정 지도를 넣고 카카오 키를 `<head>` 메타 태그 한 곳으로 옮겼다(12장). venue 섹션과 카카오 공유의 키 읽는 줄만 고쳤다.
 - 갱신: 2026-10-12, 디자인 감사(`07_concept-director_design-audit.md`) D1~D4 (a)와 수정 목록 M1~M18을 반영하고, 갤러리를 파일 번호 순서(01~15)로 바꿨다(13장). 2장 표의 배경·그릇 칸과 갤러리 순서 문단을 함께 고쳤다.
+- 갱신: 2026-10-12, 마지막 share 섹션을 공유하기(`#share`)와 맺음(`#closing`)으로 나누고 보케 구간을 맺음으로 옮겼다(14장). 2장 표의 10·11행을 고쳤다.
 - 입력: `00_user-input.md`, `01_concept-director_concept-sheet.md`, `02_copy-writer_copy.md`, `03_image-artist_manifest.md`, `04_motion-designer_motion-spec.md`
 - 산출물: `index.html`(454줄), `style.css`(1,099줄), `script.js`(1,442줄). 줄 수와 3장의 `파일:줄`은 캐러셀 반영 후 기준이다. 어제의 "Warm Paper & Ink" 파일을 전부 새로 썼다.
 - 이전 컨셉 자산(`jo--*`, `op1789048062-*`, `divider-hairline.svg`, `og-thumbnail.jpg`, `monogram-iy.svg`, `floral-*`, `gallery-placeholder-*`, `hero-illustration.png`)은 세 파일 어디에서도 참조하지 않는다(grep 0건). 파일 자체는 지우지 않았다.
@@ -33,7 +34,8 @@
 | 7 | notice (`#notice`) | background | ① 헤더(NOTICE / 축하 화환 안내) ② 본문 2행 | 없음 (보케 구간 아님) |
 | 8 | account (`#account`) | background + surface 카드 | ① 헤더 + 안내문 ② 신랑측 카드 ③ 신부측 카드. 카드는 `details.card.account__card.reveal`이고 기본으로 접혀 있다(2026-10-11) | 계좌 접기: summary 화살표 회전 200ms, 펼친 내용 opacity 250ms |
 | 9 | guestbook (`#guestbook`) | background (2026-10-12까지 surface 밴드) | ① 헤더 + 안내 ② 폼(필드 `#FFFDFB` 면 + field_border 테두리, 모서리 16) ③ 전달 안내 | 없음 |
-| 10 | share (`#share[data-bokeh=share]`) | background | ① wreath 모노그램 ② Thank you + 맺음말 ③ 공유 버튼 | 상단 sprig-divider ③, 보케 |
+| 10 | share 공유하기 (`#share`, 2026-10-12 분리) | background | ① 헤더(SHARE / 공유하기) + 문구 2행 ② 카카오톡 공유(primary)·링크 복사(secondary) 전체 폭 세로 쌓기, 사이 8 | 없음 (보케 구간 아님) |
+| 11 | closing 맺음 (`#closing[data-bokeh=closing]`, 마지막 섹션) | background | ① 장식 + wreath 모노그램(sprig는 `.reveal` 밖에서 stroke-draw, 모노그램만 `.reveal`) ② Allura Thank you(h2) + 2027.01.03 + Inhyeok & Yumin(이탤릭) | 상단 sprig-divider ③, 보케 |
 | - | lightbox (`dialog#lightbox`) | scrim #1C1514 / 0.96 | - | 스와이프·핀치·더블탭·끌어 닫기. 캐러셀 현재 장과 같은 번호로 열리고, 닫으면 캐러셀이 마지막으로 본 번호로 맞춰진다 |
 | - | BGM 토글 (`.bgm-toggle`, fixed) | 반투명 면 | hero 시퀀스 t=0 | glow 링 |
 
@@ -488,3 +490,64 @@ notice의 배경과 간격: 컨셉 시트 `layout_mood`가 면을 background와 
 - 비교 대상: 감사 당시 화면 `design-audit/shots-390/`, 추천안 미리보기 `design-audit/preview-390/`
 
 - 오케스트레이터 후속 수정(2026-10-12): 감사 문서 R8 여백 단계에 맞춰 `.share__closing` 위 여백 16 → 20(제목 → 제목 밑 문장), `.share__buttons` gap 10 → 8(버튼 사이). 6차 QA 뒤 `.account__side`·`.gb-label` 줄 높이를 컨셉 시트 label 규칙(1.6)으로 맞췄고(`.couple__role`은 이미 1.6), 방명록 textarea는 크기 조절 손잡이가 16px 곡선 모서리 위에 겹쳐서 `resize: none`으로 바꿨다(W10).
+
+## 14. 공유하기와 맺음 섹션 분리 (2026-10-12)
+
+`00_user-input.md` 맨 아래 "공유하기와 맺음 섹션 분리"와 카피 시트의 section_titles, `## share`(문구, share_buttons, kakao_share), `## closing`(monogram, thank_you, 날짜, 이름)을 반영했다. 사용자가 `index.html`에서 직접 고친 인사말 연 구분(4행 + 5행)은 건드리지 않았다. 보케의 모양과 수치는 바꾸지 않았다(개선안은 motion-designer가 따로 만들고 있다).
+
+### 바꾼 범위
+
+| 파일 | 바꾼 것 |
+|---|---|
+| index.html | `#share` 하나를 둘로 나눴다. **10 공유하기** `section.share#share`(보케 구간 아님, 장식 없음): `.section-head.reveal`(eyebrow SHARE, `h2.section-title#share-title` 공유하기, `p.share__message` 2행) + `.share__buttons.reveal`(카카오톡 공유 primary, 링크 복사 secondary). 두 버튼의 마크업·id·data 속성은 그대로 옮겼다. **11 맺음** `section.closing.bokeh-zone#closing[data-bokeh=closing][aria-labelledby=closing-title]`: 보케 캔버스, sprig 인라인 SVG(그대로, `data-bokeh-exclude`), `.closing__mono.reveal`(wreath 모노그램 그대로, wreath `<img>`에 `data-bokeh-exclude`), `.closing__thanks.reveal`(`h2.closing__title#closing-title[lang=en]` Thank you, `p.closing__date[lang=en]` 2027.01.03, `p.closing__names[lang=en]` Inhyeok & Yumin). 맺음말 "끝까지 봐 주셔서 감사합니다. / 그날, 반갑게 뵙겠습니다."는 지웠다 |
+| style.css | `.share__message`(T5 본문 Gowun Batang 400 15/1.95, 제목 → 문장 20), `.share__buttons`(grid, gap 8. 위 여백은 섹션 머리의 40이 맡는다). 하단 safe-area 패딩과 sprig 여백은 `.closing`으로 옮기고 sprig → 모노그램을 32에서 24로 바꿨다. `.share__thanks`·`.share__title` → `.closing__thanks`·`.closing__title`(값 그대로). 새 규칙 `.closing__date`(T13 표 제목: Cormorant Garamond 500 16/20, 0.16em, text, `lining-nums`, 왼쪽 0.16em 패딩으로 가운데 보정), `.closing__names`(Cormorant Garamond italic 400 22/1.4, text). `.share__closing` 삭제. 보케 구간 주석 |
+| script.js | `BOKEH.ZONES`의 `share: 6` → `closing: 6`과 그 위 주석 한 줄. 보케 코드는 `data-bokeh` 이름으로 구간을 찾으므로 다른 줄은 그대로이고, `__bokeh.stats().zones`의 키가 `closing`이 된다 |
+
+이름 글꼴: Google Fonts 링크에 Cormorant Garamond `1,400`(이탤릭 400)이 이미 들어 있다. 브라우저에서 `document.fonts.check('italic 400 22px "Cormorant Garamond"')`가 true이고 이탤릭 면 1개가 `loaded`다(가짜 기울임이 아니다).
+
+### 여백 (감사 문서 R8)
+
+| 섹션 | 값 |
+|---|---|
+| 공유하기 | 패딩 80 / eyebrow → 제목 10 / 제목 → 문구 20 / 머리 → 버튼 40 / 버튼 사이 8 / 패딩 80 |
+| 맺음 | 패딩 80 / sprig → 모노그램 24 / 모노그램 → Thank you 32(블록 → 블록) / Thank you → 날짜 20(제목 → 제목 밑 문장) / 날짜 → 이름 8(나란한 한 쌍) / 패딩 80 + safe-area |
+
+wreath.svg 위쪽에 여백이 있어 sprig와 화환 잎 사이는 24보다 넓어 보인다. 분리 전(32)에도 같았다.
+
+### reveal 그룹 (모션 명세 2-0, 섹션당 최대 3)
+
+- 공유하기: ① 머리(eyebrow, 제목, 문구) ② 버튼 두 개.
+- 맺음: ① 장식 + 모노그램 ② Thank you + 날짜 + 이름. sprig는 지금까지처럼 `.reveal`에 넣지 않고 3-1 stroke-draw로만 등장한다(모션 명세 2-2·2-7 "sprig는 reveal 대상이 아니다"). 그래서 `.reveal` 요소는 `.closing__mono`와 `.closing__thanks` 둘이다. 390에서 맺음으로 한 번에 스크롤했을 때 sprig `.is-drawn`과 모노그램 `.is-visible`이 같은 표본(120ms)에서 함께 켜졌다.
+
+### 명세 문서와 어긋나는 곳
+
+- `04_motion-designer_motion-spec.md`는 아직 보케 구간을 `share`로 적고 있다(머리말 `zone_counts`, 1장 구간·슬롯·제외 영역 표, 1-7 `BOKEH` 참고 코드, 2-6·2-7, 3-1 위치, 8장 성능 예산, 10장 QA 체크리스트, 11장 한 줄 정리). 코드는 `closing`으로 바꿨고 수치는 같다. motion-designer가 개선안을 낼 때 함께 고치면 된다.
+- 이 문서 3장·7장·13장, 감사 문서 R1·R2·R4의 `share` 보케·맺음말·safe-area·Allura 48 표기는 당시 기준 기록이다. 지금은 맺음(`#closing`)에 해당한다.
+
+### 확인 (headless Chrome 154 CDP, DPR 2, 터치 에뮬레이션)
+
+로컬 서버 `python3 -m http.server 8785 --bind 127.0.0.1`. Chrome은 Bash 샌드박스 안에서 뜨지 않아 샌드박스를 끄고 실행했고, 끝난 뒤 서버와 Chrome을 모두 종료했다. 모든 실행에서 `*kakao*`, `*formspree*` 요청을 막았다. 실행: 360x780, 390x844, 430x932(모션), 390x844 reduced-motion, 390x844 JS 꺼짐.
+
+| 항목 | 결과 |
+|---|---|
+| 섹션 순서 | hero, greeting, couple, calendar, gallery, venue, notice, account, guestbook, share, closing (5회 모두) |
+| heading | h1 1개, h2 10개(기존 9 + 공유하기). 맺음 h2는 "Thank you". `#share`·`#closing`의 `aria-labelledby`가 각 h2를 가리킨다 |
+| 인사말 | 두 문단이 4행, 5행 그대로 |
+| reveal·장식 | 끝까지 스크롤한 뒤 숨은 reveal 0 / 26(5회 모두). 맺음 sprig `.is-drawn`, 선 dashoffset 최대 0, 점 opacity 1, 남은 애니메이션 0. 시간 표본(390): 진입 전 줄기·잎 dashoffset 1, 끝 점 0 → 진입 120ms 뒤 `.is-drawn`·모노그램 `.is-visible` → 720ms 줄기 0.851 → 3.1초 모두 0, 끝 점 1 |
+| 보케 | 보케 구간 hero, calendar, closing. 맺음 가운데: `running: ["closing"]`, 맺음 생존 최대 5(360·390)·6(430), `maxPeak` glow ≤ 0.278, primary ≤ 0.179. 공유하기가 띠 안에 있고 맺음 위끝이 띠 아래(85%)에 있을 때: `running: []`(360·390·430). 공유하기에는 캔버스·sprig·모노그램·`data-bokeh-exclude`가 없다. 맺음 제외 영역은 sprig, wreath |
+| 링크 복사·카카오 폴백 | 링크 복사: 라벨 "복사했습니다", 토스트·상태 "청첩장 링크를 복사했습니다.", 클립보드 `og:url`. 카카오(SDK 차단): 토스트·상태 "카카오톡 공유를 열 수 없어 링크를 복사했습니다. 대화방에 붙여 넣어 주세요.", 클립보드 `og:url`. 360·390·430·reduced 모두 같음 |
+| 버튼 폭 | 360 312, 390 342, 430 382 = 컬럼 폭. 순서 카카오 → 링크 복사 |
+| 글자 | 문구 Gowun Batang 400 15px/29.25px text 가운데. Thank you Allura 400 48px accent. 날짜 Cormorant 500 16px/20px, 자간 2.56px(0.16em), text, `lining-nums`. 이름 Cormorant italic 400 22px/30.8px, text |
+| 가로 스크롤 | 없음(scrollWidth = 화면 폭, 탭 뒤에도) |
+| 콘솔 | 오류·경고·예외 0건(5회 모두) |
+| reduced-motion | 숨은 reveal 0, sprig 완성 상태, calendar·closing 캔버스 `display: none`, hero 캔버스만 켜짐(정지 점), 맺음·공유하기·맨 위 모두 `running: []` |
+| JS 꺼짐 | `html.js` 없음, 26개 reveal 모두 opacity 1, sprig 완성 상태, 공유하기·맺음 내용과 여백 모두 표시 |
+| 문법 | `node --check script.js` 통과. script.js·style.css에 한글 0줄 |
+
+### 스크린샷 (scratchpad, 저장소에 넣지 않음)
+
+`/private/tmp/claude-501/-Users-inhyeok-Workspace-wedding-letter/cc1402ba-2bf0-4475-9039-e013d45393f0/scratchpad/fe-closing/`
+
+- `shots/share-{motion-360,motion-390,motion-430,reduced-390,nojs-390}.png`
+- `shots/closing-{motion-360,motion-390,motion-430,reduced-390,nojs-390}.png`
+- 원자료 `result-*.json`, 검사 스크립트 `check.mjs`(구조·여백·보케·복사), `draw.mjs`(sprig 시간 표본)

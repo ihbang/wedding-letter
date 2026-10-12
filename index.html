@@ -86,8 +86,8 @@
         <h2 class="section-title" id="greeting-title">초대합니다</h2>
       </div>
       <div class="greeting__body reveal">
-        <p>연인이 되어<br>서로의 삶에 스며든 두 사람이<br>새해의 시작과 함께 부부로서의<br>첫걸음을 내딛고자 합니다.<br>소중한 분들 앞에서 서로에게<br>평생의 약속을 전하려 하오니</p>
-        <p>두 사람의 설레는 시작을<br>따뜻한 축복과 격려로<br>함께해 주시면 감사하겠습니다.</p>
+        <p>연인이 되어<br>서로의 삶에 스며든 두 사람이<br>새해의 시작과 함께 부부로서의<br>첫걸음을 내딛고자 합니다.</p>
+        <p>소중한 분들 앞에서 서로에게<br>평생의 약속을 전하려 하오니<br>두 사람의 설레는 시작을<br>따뜻한 축복과 격려로<br>함께해 주시면 감사하겠습니다.</p>
       </div>
       <!-- Source: images/deco/sprig-divider.svg, inlined for the stroke-draw animation (sp-* classes added here). -->
       <svg class="sprig" viewBox="0 0 160 28" width="120" height="21" aria-hidden="true" focusable="false">
@@ -363,8 +363,27 @@
       <p class="guestbook__note reveal">남겨 주신 글은 두 사람에게만 전해집니다.</p>
     </section>
 
-    <!-- 10. Share (bokeh zone, last section) -->
-    <section class="section share bokeh-zone" id="share" data-bokeh="share" aria-labelledby="share-title">
+    <!-- 10. Share -->
+    <section class="section share" id="share" aria-labelledby="share-title">
+      <div class="section-head reveal">
+        <p class="eyebrow" lang="en">SHARE</p>
+        <h2 class="section-title" id="share-title">공유하기</h2>
+        <p class="share__message">저희의 소식을<br>가까운 분들께도 함께 나눠 주세요.</p>
+      </div>
+      <div class="share__buttons reveal">
+        <button type="button" class="btn btn--primary" id="share-kakao">카카오톡으로 공유하기</button>
+        <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="link">
+          <span class="copy-btn__labels">
+            <span class="copy-btn__label copy-btn__label--idle">링크 복사하기</span>
+            <span class="copy-btn__label copy-btn__label--done" aria-hidden="true"><svg class="copy-btn__check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>복사했습니다</span>
+            <span class="copy-btn__label copy-btn__label--fail" aria-hidden="true">복사하지 못했습니다</span>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 11. Closing (bokeh zone, last section) -->
+    <section class="section closing bokeh-zone" id="closing" data-bokeh="closing" aria-labelledby="closing-title">
       <canvas class="bokeh" aria-hidden="true"></canvas>
       <svg class="sprig" viewBox="0 0 160 28" width="120" height="21" aria-hidden="true" focusable="false" data-bokeh-exclude>
         <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4">
@@ -384,25 +403,16 @@
         <circle class="sp-dot sp-dot--end" cx="15" cy="12.6" r="1.2" fill="#A2AA92"/>
         <circle class="sp-dot sp-dot--end" cx="145" cy="12.6" r="1.2" fill="#A2AA92"/>
       </svg>
-      <div class="share__mono reveal">
+      <div class="closing__mono reveal">
         <div class="monogram" role="img" aria-label="인혁과 유민의 이니셜">
           <img class="monogram__wreath" src="images/deco/wreath.svg" width="120" height="120" alt="" loading="lazy" decoding="async" data-bokeh-exclude>
           <span class="monogram__text" lang="en" aria-hidden="true">I<span class="monogram__amp">&amp;</span>Y</span>
         </div>
       </div>
-      <div class="share__thanks reveal">
-        <h2 class="share__title" id="share-title" lang="en">Thank you</h2>
-        <p class="share__closing">끝까지 봐 주셔서 감사합니다.<br>그날, 반갑게 뵙겠습니다.</p>
-      </div>
-      <div class="share__buttons reveal">
-        <button type="button" class="btn btn--primary" id="share-kakao">카카오톡으로 공유하기</button>
-        <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="link">
-          <span class="copy-btn__labels">
-            <span class="copy-btn__label copy-btn__label--idle">링크 복사하기</span>
-            <span class="copy-btn__label copy-btn__label--done" aria-hidden="true"><svg class="copy-btn__check" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>복사했습니다</span>
-            <span class="copy-btn__label copy-btn__label--fail" aria-hidden="true">복사하지 못했습니다</span>
-          </span>
-        </button>
+      <div class="closing__thanks reveal">
+        <h2 class="closing__title" id="closing-title" lang="en">Thank you</h2>
+        <p class="closing__date" lang="en">2027.01.03</p>
+        <p class="closing__names" lang="en">Inhyeok &amp; Yumin</p>
       </div>
     </section>
     <div class="reveal-sentinel" aria-hidden="true"></div>

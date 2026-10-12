@@ -109,9 +109,9 @@
 
   /* ---------- Bokeh background (spec 1) ---------- */
 
-  // Bokeh background for zones: hero, calendar, share.
+  // Bokeh background for zones: hero, calendar, closing.
   const BOKEH = Object.freeze({
-    ZONES: { hero: 8, calendar: 6, share: 6 },          // living-particle slots per zone (<= 8)
+    ZONES: { hero: 8, calendar: 6, closing: 6 },        // living-particle slots per zone (<= 8)
     MAX_TOTAL_MOBILE: 12, MAX_TOTAL_WIDE: 16,            // wide = (min-width: 768px)
     D_MIN: 12, D_MAX: 56,
     SIZE_MIX: [[0.50, 12, 24], [0.35, 24, 40], [0.15, 40, 56]], // [share, min, max]

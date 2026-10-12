@@ -314,7 +314,7 @@ html.lb-open { overflow: hidden; }
   transition-duration: calc(var(--dur-fast) * 2);
 }
 
-/* ===== Bokeh zones (hero, calendar, share) ===== */
+/* ===== Bokeh zones (hero, calendar, closing) ===== */
 
 .bokeh-zone {
   position: relative;
@@ -852,8 +852,19 @@ html:not(.js) .venue__map { display: none; }
 
 /* ===== 10. Share ===== */
 
-.share { padding-bottom: calc(var(--section-pad) + env(safe-area-inset-bottom)); }
-.share .sprig { margin-bottom: 32px; }
+.share__message {
+  margin-top: 20px;
+  font: 400 15px/1.95 var(--font-ko-serif);
+}
+.share__buttons {
+  display: grid;
+  gap: 8px;
+}
+
+/* ===== 11. Closing (last section) ===== */
+
+.closing { padding-bottom: calc(var(--section-pad) + env(safe-area-inset-bottom)); }
+.closing .sprig { margin-bottom: 24px; }
 
 .monogram {
   position: relative;
@@ -879,19 +890,23 @@ html:not(.js) .venue__map { display: none; }
   font: normal 400 30px/1 var(--font-script);
 }
 
-.share__thanks { margin-top: 32px; }
-.share__title {
+.closing__thanks { margin-top: 32px; }
+.closing__title {
   color: var(--color-accent);
   font: 400 48px/1.2 var(--font-script);
 }
-.share__closing {
+.closing__date { /* table-title role (concept audit T13) */
   margin-top: 20px;
-  font: 400 15px/1.95 var(--font-ko-serif);
+  padding-left: 0.16em; /* balances the trailing letter-spacing so the line stays centred */
+  color: var(--color-text);
+  font: 500 16px/20px var(--font-en-serif);
+  font-variant-numeric: lining-nums; /* after the font shorthand, which resets it */
+  letter-spacing: 0.16em;
 }
-.share__buttons {
-  display: grid;
-  gap: 8px;
-  margin-top: 32px;
+.closing__names {
+  margin-top: 8px;
+  color: var(--color-text);
+  font: italic 400 22px/1.4 var(--font-en-serif);
 }
 
 .reveal-sentinel { height: 1px; }

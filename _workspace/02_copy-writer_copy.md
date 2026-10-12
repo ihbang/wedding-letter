@@ -60,7 +60,8 @@ WE’RE GETTING MARRIED
 - notice: NOTICE / 축하 화환 안내
 - account: WITH HEART / 마음 전하실 곳
 - guestbook: GUESTBOOK / 방명록
-- share: 별도 eyebrow·한글 제목 없음. Allura `Thank you`가 제목 자리를 맡는다(아래 `share` 참고).
+- share: SHARE / 공유하기
+- closing: 별도 eyebrow·한글 제목 없음. Allura `Thank you`가 제목 자리를 맡는다(아래 `share` 참고).
 
 ---
 
@@ -69,14 +70,14 @@ WE’RE GETTING MARRIED
 서로의 삶에 스며든 두 사람이
 새해의 시작과 함께 부부로서의
 첫걸음을 내딛고자 합니다.
+
 소중한 분들 앞에서 서로에게
 평생의 약속을 전하려 하오니
-
 두 사람의 설레는 시작을
 따뜻한 축복과 격려로
 함께해 주시면 감사하겠습니다.
 
-- 9행 2연(6 + 3), 한 행 최대 16자. 종이 청첩장 인사말을 바탕으로 사용자가 정했다(2026-10-12).
+- 9행 2연(4 + 5, 2026-10-12 사용자가 연 구분 조정), 한 행 최대 16자. 종이 청첩장 인사말을 바탕으로 사용자가 정했다(2026-10-12).
 - 종이 원문에서 바뀐 곳: "이제는 부부로서의 인연을 시작하고자 합니다" → "새해의 시작과 함께 부부로서의 첫걸음을 내딛고자 합니다". 1월 3일(2027년 첫 일요일)이라는 새해의 시작을 담았다.
 - 예식 당일 D-day 문구 "저희 두 사람이 첫걸음을 내딛습니다"와 '첫걸음'이 겹치는 것은 의도다. 인사말의 다짐을 당일 문구가 받아 준다(사용자 확인).
 
@@ -260,21 +261,8 @@ D - {n}
 ---
 
 ## share
-
-권장 순서: sprig-divider → wreath 모노그램 → `Thank you` → closing → 공유 버튼
-
-### monogram
-- 표시 텍스트: I & Y (`&`만 Allura)
-- 접근성 이름: 인혁과 유민의 이니셜
-
-### thank_you
-Thank you
-
-- Allura, `lang="en"`. 섹션 제목(h2) 역할을 한다.
-
-## closing
-끝까지 봐 주셔서 감사합니다.
-그날, 반갑게 뵙겠습니다.
+저희의 소식을
+가까운 분들께도 함께 나눠 주세요.
 
 ### share_buttons
 - 카카오톡 버튼: 카카오톡으로 공유하기
@@ -284,11 +272,28 @@ Thank you
   - 성공 상태 메시지: 청첩장 링크를 복사했습니다.
 - 카카오 공유를 열 수 없을 때(키 미설정·SDK 실패, 링크 복사로 대신함): 카카오톡 공유를 열 수 없어 링크를 복사했습니다. 대화방에 붙여 넣어 주세요.
 
-## kakao_share
+### kakao_share
 - title: 인혁 ♡ 유민, 우리 결혼합니다
 - description: 2027년 1월 3일 일요일 오후 3시, 더컨벤션 송파문정 13층 아모르홀
 - imageUrl: `https://ihbang.github.io/wedding-letter/images/og-garden.jpg` (1200x630)
 - button: 청첩장 보기
+
+
+## closing
+권장 순서: sprig-divider → wreath 모노그램 → `Thank you`
+
+### monogram
+- 표시 텍스트: I & Y (`&`만 Allura)
+- 접근성 이름: 인혁과 유민의 이니셜
+
+### thank_you
+Thank you (Allura, `lang="en"`. 섹션 제목(h2) 역할을 한다.)
+
+2027.01.03
+Inhyeok & Yumin
+
+- 날짜와 이름은 영문 글꼴(Cormorant Garamond)로 쓰고 `lang="en"`을 붙인다. 이름은 이탤릭이다.
+- 이름은 처음에 한글 "인혁 & 유민"(이탤릭)으로 적었다. 이탤릭이 있는 한글 명조가 없어서, 사용자가 영문 이탤릭으로 정했다(2026-10-12).
 
 ---
 
