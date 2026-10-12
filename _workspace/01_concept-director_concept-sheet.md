@@ -11,7 +11,7 @@ ceremony:
   time_ko: "오후 3시"
   venue: "더컨벤션 송파문정"
   hall: "13층 아모르홀"
-  address: "서울 송파구 송파대로 155 NH송파농협 13층"
+  address: "서울 송파구 송파대로 155"   # 사용자 수정(2026-10-10): 'NH송파농협 13층' 삭제. 카카오맵 주소 검색도 이 값을 쓴다 (2026-10-12 디자인 통일 때 지난 결정에 맞춤)
   formality: "1월 실내 컨벤션 웨딩홀 예식. '가든'은 사진과 화면의 분위기이며 야외 예식이 아니다"
 parents:
   groom_father: "방주경"
@@ -27,14 +27,14 @@ mood_keywords:   # 기본값: '로맨틱 가든' 안에서 사진(꽃 가랜드,
 palette:   # 기본값: 사진 픽셀 샘플링으로 만든 커스텀 팔레트. 근거와 대비 계산은 본문 참고
   primary: "#C9A09F"     # blush rose: hero 가랜드 꽃 샘플 그대로. 장식 전용(선, 아이콘, 보케). bg 대비 2.17이므로 텍스트 금지
   secondary: "#A2AA92"   # light sage: hero 가랜드 잎(#677753)과 background를 6:4로 섞은 색. 장식 전용. bg 대비 2.25이므로 텍스트 금지
-  accent: "#8E5558"      # deep rose: primary와 같은 색상을 어둡게 내린 색. 버튼 면, 링크, 강조 숫자, 영문 eyebrow. bg 5.45 / surface 4.93
-  background: "#FBF6F1"  # warm ivory: hero 아이보리 벽(#E4D6CD)을 밝힌 페이지 바탕
-  surface: "#F3EAE3"     # wall ivory: 카드와 guestbook 밴드 면. hero 벽과 같은 색 계열
-  text: "#3B2D2A"        # rose-brown black: 본문. bg 12.26 / surface 11.09
-  muted: "#75655E"       # warm taupe gray: 캡션, 보조 정보. bg 5.17 / surface 4.68
+  accent: "#8E5558"      # deep rose: primary와 같은 색상을 어둡게 내린 색. 버튼 면, 버튼 윤곽선(원형 버튼 포함), 링크, 강조 숫자, 영문 eyebrow. bg 5.45 / surface 4.93 (2026-10-12 디자인 통일: 원형 버튼 윤곽선 추가)
+  background: "#FBF6F1"  # warm ivory: hero 아이보리 벽(#E4D6CD)을 밝힌 페이지 바탕. 모든 섹션의 바탕 (2026-10-12 디자인 통일)
+  surface: "#F3EAE3"     # wall ivory: 카드 면(계좌 접기, 카카오맵), 갤러리 사진 매트, 데스크톱 컬럼 바깥. 섹션 면(밴드)으로 쓰지 않는다. hero 벽과 같은 색 계열 (2026-10-12 디자인 통일: guestbook 밴드 폐지)
+  text: "#3B2D2A"        # rose-brown black: 본문과 값(주소 포함). bg 12.26 / surface 11.09 (2026-10-12 디자인 통일)
+  muted: "#75655E"       # warm taupe gray: 보조 안내, 보조 값, placeholder에만. 라벨과 값에는 쓰지 않는다. bg 5.17 / surface 4.68 (2026-10-12 디자인 통일)
 palette_extended:   # 기본값
   glow: "#EBCB94"          # 전구 빛: 08·09·10 전구 영역 샘플(#EAC88E, #ECD19C) 평균. 보케와 전구 장식 전용. 텍스트 금지(bg 1.45)
-  sage_deep: "#5B6A46"     # 가랜드 잎 샘플 그대로. 작은 아이콘, 보조 라벨 허용(bg 5.44 / surface 4.92)
+  sage_deep: "#5B6A46"     # 가랜드 잎 샘플 그대로. 정보 라벨(typography.scale.label) 색, 작은 아이콘(bg 5.44 / surface 4.92) (2026-10-12 디자인 통일: 독립 라벨은 모두 이 색, D4)
   on_accent: "#FFFCF8"     # accent 면 위의 글자(5.72)
   line: "#E4D6CD"          # hero 벽 샘플 그대로. 1px 구분선, 카드 테두리(장식). 비텍스트 대비 1.32이므로 입력 필드 경계로 쓰지 않는다
   field_border: "#958379"  # 입력 필드 경계. WCAG 1.4.11 비텍스트 3:1 충족(bg 3.37 / surface 3.05)
@@ -42,16 +42,25 @@ palette_extended:   # 기본값
 typography:   # 기본값
   korean_serif: "Gowun Batang"          # Google Fonts 400/700. 인사말, 이름, 섹션 제목, 본문
   korean_sans: "Pretendard"             # jsDelivr CDN pretendard@v1.3.9 dynamic-subset, 400/500/600. 주소, 계좌, 버튼, 폼, 작은 정보
-  english_serif: "Cormorant Garamond"   # Google Fonts 300/400/500 + 400 italic. 날짜 숫자, 영문 eyebrow, 영문 이름
+  english_serif: "Cormorant Garamond"   # Google Fonts 300/400/500 + 400 italic. 날짜 숫자, 영문 eyebrow, 영문 이름. 숫자는 모두 lining (scale.figures, 2026-10-12 디자인 통일)
   english_script: "Allura"              # Google Fonts 400. 사용처는 hero의 '&', wreath 모노그램의 '&', 마지막 'Thank you' 3곳뿐. 28px 이상, 정보 전달 텍스트에 금지
-  scale:
-    hero_date: "Cormorant Garamond 300, 34px (뷰포트 높이 640px 이하에서 28px), letter-spacing 0.06em, text"
+  scale:   # 텍스트 역할별 모양. 역할마다 한 모양만 쓴다. 해당 선택자 목록은 07 감사 문서 3장 R4 표(T1~T14) (2026-10-12 디자인 통일: 역할 추가·정리)
+    hero_date: "Cormorant Garamond 300, 34px (뷰포트 높이 640px 이하에서 28px), letter-spacing 0.06em, text, lining figures"   # (2026-10-12 디자인 통일: lining)
     hero_names: "Gowun Batang 700, 22px, letter-spacing 0.08em, text / '&'는 Allura 34px, accent"
-    eyebrow: "Cormorant Garamond 500, 13px, 대문자, letter-spacing 0.28em, accent"
-    section_title: "Gowun Batang 700, 20px, text"
-    body: "Gowun Batang 400, 15px, line-height 1.95, 가운데 정렬, text"
-    info: "Pretendard 400, 14px, line-height 1.6, text 또는 muted"
-    button: "Pretendard 500, 14px"
+    eyebrow: "Cormorant Garamond 500, 13px, 대문자, letter-spacing 0.28em, accent. 섹션 머리에만, 섹션당 한 번"   # (2026-10-12 디자인 통일)
+    section_title: "Gowun Batang 700, 20px, line-height 1.5, text. 예외는 share의 'Thank you'(Allura 48px, accent) 하나"   # (2026-10-12 디자인 통일)
+    names: "Gowun Batang 700, 18px, text (couple의 이름. hero 이름은 hero_names)"   # (2026-10-12 디자인 통일)
+    key_line: "핵심 한 줄(섹션의 답: 예식일 섹션의 일시, 오시는 길의 장소명). Gowun Batang 400, 17px, line-height 1.6, text, 가운데. 굵게 하지 않는다"   # (2026-10-12 디자인 통일: 새 역할)
+    body: "Gowun Batang 400, 15px, line-height 1.95, 문단 사이 1.95em(빈 줄 하나), 가운데 정렬, text. couple 행과 D-day 문구도 같은 값"   # (2026-10-12 디자인 통일)
+    info: "정보 값(주소, 교통 안내). Pretendard 400, 14px, line-height 1.7, text"   # (2026-10-12 디자인 통일: 주소 muted → text)
+    account_number: "계좌번호. Pretendard 500, 15px, line-height 1.5, text. 받아 적는 숫자 열이라 한 단계 크게"   # (2026-10-12 디자인 통일)
+    label: "정보 라벨(값 앞에 따로 서는 이름표: 신랑·신부, 지하철·주차·내비게이션, 신랑측·신부측, 성함·남기실 말씀). Pretendard 600, 14px, line-height 1.6, sage_deep. 값과 한 줄에 붙은 접두어('예금주')는 라벨이 아니라 그 줄의 색을 따른다"   # (2026-10-12 디자인 통일: D4)
+    sub_info: "보조 안내·보조 값(갤러리 안내, 방명록 맺음 안내, 예금주 줄, hero 장소 줄). Pretendard 400, 14px, line-height 1.6(예금주 줄은 1.5), muted"   # (2026-10-12 디자인 통일)
+    table_title: "표 제목(달력 위 'JANUARY 2027'). Cormorant Garamond 500, 16px / 20px, 대문자, letter-spacing 0.16em, text, lining figures. eyebrow 모양을 섹션 안에서 다시 쓰지 않는다. 섹션 안 소제목이 필요하면 이 모양을 쓴다"   # (2026-10-12 디자인 통일: 새 역할)
+    table_head: "달력 요일. Pretendard 500, 14px, muted, 일요일 accent"   # (2026-10-12 디자인 통일)
+    figures: "숫자 모양 두 가지. ① 분위기 숫자(hero 날짜, 'SUNDAY · 3 PM', 'JANUARY 2027', D-day, 갤러리·라이트박스 카운터)는 Cormorant Garamond, 모두 lining figures(font-variant-numeric: lining-nums). 카운터는 tabular-nums도 넣는다. old-style 숫자는 쓰지 않는다. ② 읽고 받아 적는 데이터 숫자(달력 날짜, 계좌번호, 주소)는 Pretendard"   # (2026-10-12 디자인 통일: D3)
+    button: "Pretendard 500, 14px, line-height 1.2"   # (2026-10-12 디자인 통일)
+    input: "Pretendard 400, 16px, line-height 1.5, text, placeholder muted (iOS 확대 방지)"   # (2026-10-12 디자인 통일)
     min_size: "한글 최소 14px. 영문 대문자 eyebrow와 hero 보조 줄만 12~13px 허용"
 imagery_direction: |   # 기본값: gpt-image2 미설치 전제
   실제 웨딩 사진이 주인공이다. 장식은 가는 선(라인아트) SVG만 쓴다.
@@ -98,90 +107,73 @@ photos:
     output: "images/og-garden.jpg"
     subject_check: "두 얼굴이 크롭 높이 39~60%, 가로 44~62%. 가운데 1:1 영역(가로 24~76%) 안에 두 얼굴이 모두 들어간다"
     tool_hint: "jpegtran -crop 1600x840+0+64 → djpeg -scale 3/4 → cjpeg -quality 85 (y 64는 16의 배수라 무손실 크롭 경계와 맞는다)"
-  gallery:   # 기본값: 사용자가 순서를 디렉터에게 위임, 사용자 미확인
+  gallery:   # 방식과 순서 모두 사용자 지정: 한 장씩 넘기는 캐러셀(2026-10-10), 파일 번호 순서(2026-10-12)
     count: 15
     hero_in_gallery: false
-    grid: "3열 x 5행 균일 그리드. 셀 비율 2:3(세로), gap 4px, 좌우 거터 16px, 모서리 4px, object-fit cover"
-    grid_src: "images/photos/thumb/{file}"
+    layout: "한 장씩 옆으로 넘기는 캐러셀. 프레임 2:3, 모서리 4px, 프레임 면 surface. 세로 사진은 object-fit cover, 가로 사진(02, 15)은 contain으로 surface 매트 위에 올린다(자르지 않는다). 좌우로 이웃 사진이 16px 보인다. 사진 아래 가운데에 이전·다음 원형 버튼과 'n / 15' 카운터. 자동 넘김·썸네일 목록 없음. 치수와 제스처는 모션 명세 4-1"   # (2026-10-12: 3x5 그리드 명세를 현재 캐러셀로 고침)
+    slide_src: "images/photos/{file} (srcset에 images/photos/thumb/{file} 포함)"   # (2026-10-12: grid_src 대체)
     lightbox_src: "images/photos/{file}"
     lightbox: "원본 비율(contain), 좌우 스와이프, 핀치 줌, 'n / 15' 카운터, 배경 lightbox_scrim #1C1514 불투명도 0.96, 사진 위에 텍스트·그라데이션 없음"
-    order:
+    order:   # 파일 번호 순서 01~15 (사용자 지정 2026-10-12). desc는 파일별로 그대로. 행 단위 챕터와 가로 사진 object-position은 캐러셀·파일 번호 순서로 바뀌며 없앴다 (2026-10-12)
       - pos: 1
-        file: "02.jpg"
-        orientation: "가로 1600x1194"
-        chapter: "꽃과 불빛 아래"
-        object_position: "70% 50%"
-        desc: "벚꽃 가지 장식 아래 창가 벤치에 나란히 앉아 마주 보는 두 사람"
-      - pos: 2
         file: "01.jpg"
         orientation: "세로"
-        chapter: "꽃과 불빛 아래"
         desc: "화이트 배경, 신랑이 신부를 안아 올리고 서로 바라보며 웃는 상반신"
+      - pos: 2
+        file: "02.jpg"
+        orientation: "가로 1600x1194"
+        desc: "벚꽃 가지 장식 아래 창가 벤치에 나란히 앉아 마주 보는 두 사람"
       - pos: 3
-        file: "08.jpg"
-        orientation: "세로"
-        chapter: "꽃과 불빛 아래"
-        desc: "녹색 잎과 전구 벽 앞에서 손을 맞잡고 마주 선 두 사람, 신부는 베일"
-      - pos: 4
         file: "03.jpg"
         orientation: "세로"
-        chapter: "Will you marry me?"
         desc: "화이트 셔츠와 블랙 드레스, 'Will you marry me?'와 'yes! yes! yes!' 하트 풍선 피켓"
+      - pos: 4
+        file: "04.jpg"
+        orientation: "세로"
+        desc: "'We're getting married' 케이크를 든 신랑과 비눗방울을 부는 신부"
       - pos: 5
-        file: "09.jpg"
+        file: "05.jpg"
         orientation: "세로"
-        chapter: "Will you marry me?"
-        desc: "흰 꽃과 전구 벽 앞 잔디에서 신랑이 무릎 꿇고 꽃을 건네는 장면"
+        desc: "블랙 배경과 비눗방울, 하트 풍선을 들고 크게 웃는 두 사람"
       - pos: 6
-        file: "12.jpg"
+        file: "06.jpg"
         orientation: "세로"
-        chapter: "Will you marry me?"
-        desc: "블랙 수트와 블랙 드레스, 반지 낀 손을 펼쳐 보이며 웃는 두 사람"
+        desc: "신랑이 신부의 베일을 걷어 올리는 전신"
       - pos: 7
         file: "07.jpg"
         orientation: "세로"
-        chapter: "웃음이 번지는 날"
         desc: "화이트 배경, 컬러 컨페티가 날리는 가운데 손잡고 웃는 전신, 신부는 꽃다발"
       - pos: 8
-        file: "13.jpg"
+        file: "08.jpg"
         orientation: "세로"
-        chapter: "웃음이 번지는 날"
-        desc: "블랙 수트와 블랙 드레스, 나란히 앉아 볼을 맞대고 웃는 두 사람"
+        desc: "녹색 잎과 전구 벽 앞에서 손을 맞잡고 마주 선 두 사람, 신부는 베일"
       - pos: 9
-        file: "05.jpg"
+        file: "09.jpg"
         orientation: "세로"
-        chapter: "웃음이 번지는 날"
-        desc: "블랙 배경과 비눗방울, 하트 풍선을 들고 크게 웃는 두 사람"
+        desc: "흰 꽃과 전구 벽 앞 잔디에서 신랑이 무릎 꿇고 꽃을 건네는 장면"
       - pos: 10
-        file: "11.jpg"
-        orientation: "세로"
-        chapter: "베일과 반지"
-        desc: "블랙 드레스에 재킷을 걸치고 꽃다발을 든 신부 단독 전신"
-      - pos: 11
-        file: "06.jpg"
-        orientation: "세로"
-        chapter: "베일과 반지"
-        desc: "신랑이 신부의 베일을 걷어 올리는 전신"
-      - pos: 12
-        file: "14.jpg"
-        orientation: "세로"
-        chapter: "베일과 반지"
-        desc: "화이트 서랍장과 꽃 앞에서 신랑이 신부에게 반지를 끼워 주는 장면"
-      - pos: 13
         file: "10.jpg"
         orientation: "세로"
-        chapter: "We're getting married"
         desc: "흰 꽃과 전구 벽 앞, 꽃다발을 들고 볼을 맞대고 웃는 두 사람"
-      - pos: 14
-        file: "04.jpg"
+      - pos: 11
+        file: "11.jpg"
         orientation: "세로"
-        chapter: "We're getting married"
-        desc: "'We're getting married' 케이크를 든 신랑과 비눗방울을 부는 신부"
+        desc: "블랙 드레스에 재킷을 걸치고 꽃다발을 든 신부 단독 전신"
+      - pos: 12
+        file: "12.jpg"
+        orientation: "세로"
+        desc: "블랙 수트와 블랙 드레스, 반지 낀 손을 펼쳐 보이며 웃는 두 사람"
+      - pos: 13
+        file: "13.jpg"
+        orientation: "세로"
+        desc: "블랙 수트와 블랙 드레스, 나란히 앉아 볼을 맞대고 웃는 두 사람"
+      - pos: 14
+        file: "14.jpg"
+        orientation: "세로"
+        desc: "화이트 서랍장과 꽃 앞에서 신랑이 신부에게 반지를 끼워 주는 장면"
       - pos: 15
         file: "15.jpg"
         orientation: "가로 1600x1066"
-        chapter: "We're getting married"
-        object_position: "54% 50%"
         desc: "커튼 창가 역광 속에서 입맞추는 두 사람"
 audio:
   bgm: "audio/bgm.mp3"   # 사용자 지정: 기존 파일 재사용(MP3 192kbps, 약 2분 50초). 자동재생 금지, 탭으로 재생
@@ -196,17 +188,33 @@ hero_layout: |   # 기본값 (사진 고정·크롭 금지는 사용자 지정)
   세로 예산(390x664, iPhone 14 Safari 가시 영역): 48+16+10+40+6+16+28+260+28+36+12+24+22+20+30 = 596px ≤ 664 → 첫 화면에 날짜·사진·이름·장소 모두 보임.
   압축 규칙(@media (max-height: 640px)): padding-top 28, 사진 위아래 18, 날짜 숫자 28px, 아래 블록 간격 8, 스크롤 큐 숨김.
         375x548(iPhone SE Safari 가시 영역)에서 28+16+8+34+4+16+18+250+18+34+8+22+20 = 476px ≤ 548.
-  BGM 토글: position fixed, top 16, right 16, 40x40 원형. 날짜 줄(가운데 약 220px 폭)과 겹치지 않는다.
+  BGM 토글: position fixed, top 16, right 16, 40x40 원형, 윤곽선 1px accent(2026-10-12 디자인 통일). 날짜 줄(가운데 약 220px 폭)과 겹치지 않는다.
   데스크톱(≥481px): 컬럼 max-width 480px 가운데 정렬, 컬럼 바깥은 surface #F3EAE3.
-layout_mood: |   # 기본값
+layout_mood: |   # 기본값. 면·그릇·정렬·모서리·버튼·여백 규칙은 2026-10-12 디자인 통일(사용자 결정 D1~D4 모두 (a)). 근거와 관계별 수치는 _workspace/07_concept-director_design-audit.md 3장 R1~R9
   모바일 우선 단일 컬럼(max 480px), 가운데 정렬, 본문 좌우 거터 24px(갤러리 16px, hero 사진 0).
-  섹션 상하 패딩 80px. 섹션 헤더는 영문 eyebrow(accent) + 한글 제목(text) 2단.
-  면은 두 단계뿐이다: background(기본)와 surface(카드: venue 정보, account 계좌 카드 / 밴드: guestbook 섹션 전체).
+  섹션 상하 패딩 80px. 예외는 hero, greeting·couple 묶음(greeting 아래 0, couple 위 56, 사이에 sprig), share 아래 safe-area 세 곳뿐이다(2026-10-12 디자인 통일).
+  섹션 헤더는 영문 eyebrow(accent) + 한글 제목(text) 2단.
+  면(2026-10-12 디자인 통일, D1): 두 단계뿐이다. 모든 섹션의 바탕은 background다. surface는 카드(account 계좌 접기, venue 카카오맵), 갤러리 사진 매트, 데스크톱 컬럼 바깥에만 쓰고 섹션 면(밴드)으로 쓰지 않는다. 섹션은 여백과 장식 SVG로만 나눈다.
   hero, calendar, share는 background 위에 두고 보케 배경이 보이는 구간으로 쓴다(surface 위에서는 보케 대비가 부족하다).
-  모서리: 카드 16px, 버튼 999px(pill), 갤러리 셀 4px, hero 사진 0. 그림자 없음, 경계는 1px line #E4D6CD.
-  버튼: 주 버튼 = accent 면 + on_accent 글자(5.72), 높이 44px 이상. 보조 버튼 = 투명 면 + 1px accent 테두리 + accent 글자(bg 5.45 / surface 4.93).
-  입력 필드: 면 #FFFDFB, 1px field_border #958379, placeholder muted. 포커스 링 2px accent, offset 2px.
-  캘린더: 2027년 1월, 일요일 열 머리글 accent, 3일은 지름 36px accent 원 + on_accent 숫자.
+  그릇(2026-10-12 디자인 통일, D2): 정보를 담는 방식은 내용으로 정한다.
+    - 문장(인사·안내·맺음)과 섹션의 답(예식일 일시, 오시는 길 장소명·주소)은 맨 텍스트로 가운데에 둔다.
+    - 라벨 + 값 여러 행은 구분선 목록(교통편), 표는 가는 선 표(달력), 사진은 사진 프레임, 입력은 필드.
+    - 카드는 눌러서 상태가 바뀌거나(계좌 접기) 바깥 콘텐츠를 담는 틀(카카오맵)에만 쓴다. 강조하려고 카드에 넣지 않는다. 강조는 글자 크기와 위치로 한다.
+    - 오시는 길 순서: 장소명(key_line) → 주소(info) → 주소 복사(전체 폭) → 24 → 카카오맵 고정 지도 카드(4:3, 실패하면 숨김) → 네이버 지도·카카오맵 버튼(2분할) → 교통편 목록.
+  정렬(2026-10-12 디자인 통일): 가운데는 섹션 머리, 문장, 섹션의 답, 버튼 묶음. 왼쪽은 라벨-값 목록, 폼, 카드 안의 라벨-값.
+    왼쪽 정렬 글자의 시작점은 두 가지뿐이다: 목록·폼은 컬럼 가장자리(들여쓰기 0), 카드 안은 카드 안쪽 20px.
+  모서리 다섯 단계(2026-10-12 디자인 통일): 16(카드, 입력 필드) / 999(pill 버튼) / 50%(원형 버튼) / 4(사진 프레임) / 0(hero 사진). 계좌 summary의 15는 카드 안쪽 맞춤이다. 그림자 없음, 경계는 1px line #E4D6CD.
+  버튼(2026-10-12 디자인 통일): 높이 44px 이상, Pretendard 500 14px, 모서리 999.
+    - 주 버튼 = accent 면 + on_accent 글자(5.72). 그 섹션의 마지막 행동 하나에만 쓴다(남기기, 카카오톡으로 공유하기).
+    - 보조 버튼 = 투명 면 + 1px accent 테두리 + accent 글자(bg 5.45 / surface 4.93). 그 밖의 모든 행동.
+    - 폭: 단독 버튼은 담긴 영역의 전체 폭(컬럼 또는 카드 안쪽). 대등한 두 선택지는 2분할(지도 버튼). 내용 폭 버튼은 쓰지 않는다.
+    - 원형 아이콘 버튼(갤러리 이전·다음, BGM 토글)도 윤곽선은 1px accent다. primary 윤곽선은 쓰지 않는다. 비활성은 opacity 0.3.
+  여백 단계(2026-10-12 디자인 통일): 8, 12, 16, 20, 24, 32, 40, 56, 80만 쓴다.
+    섹션 머리 → 콘텐츠 40, 섹션 안 블록 → 블록 32, 장식 → 섹션 머리 24, 섹션 사이 구분 장식(greeting sprig) 56, 제목 → 제목 밑 문장 20,
+    이어진 요소(값 → 버튼, 지도 → 지도 버튼, 필드 → 필드, 목록 행 안쪽 위아래) 16, 형제 카드 사이·사진 → 버튼 줄 12, 라벨 → 필드·나란한 버튼 사이 8.
+    eyebrow → 제목 10만 예외다. hero 내부 간격은 hero_layout을 따른다.
+  입력 필드: 면 #FFFDFB, 1px field_border #958379, 모서리 16(2026-10-12 디자인 통일), placeholder muted. 포커스 링 2px accent, offset 2px.
+  캘린더: 2027년 1월, 일요일 열 머리글 accent, 3일은 지름 36px accent 원 + on_accent 숫자. 달력 위 'JANUARY 2027'은 eyebrow가 아니라 표 제목(typography.scale.table_title)이다(2026-10-12 디자인 통일).
 motion_direction: |   # 기본값 (보케 사용 자체는 사용자 선택 설명에서 옴)
   무드: '겨울 오후에 켜진 정원의 전구'. 화면 가장자리에서 따뜻한 빛망울이 숨 쉬듯 천천히 밝아졌다 어두워진다. 눈에 띄는 움직임이 아니라 공기의 결이어야 한다.
   모션 카탈로그 매핑: 첫 키워드 '로맨틱'의 기본값(romantic-lush, 꽃잎 파티클 24~40개)을 쓰지 않는다. 카탈로그 C(별빛/반딧불이)를 크고 흐린 보케로 바꿔 쓰고 density는 minimal로 한다.
@@ -225,13 +233,14 @@ motion_direction: |   # 기본값 (보케 사용 자체는 사용자 선택 설�
     BGM 토글 재생 중에는 버튼 둘레에 glow 링이 3초 주기로 은은하게 숨 쉰다.
   금지: 꽃잎·컨페티·하트 파티클, 패럴랙스, hero 사진 Ken Burns·확대, 터치 반응 파티클, 사진 위 오버레이 효과.
   prefers-reduced-motion: reduce → 보케는 hero 위아래 여백에 정지한 흐린 점 5개만(같은 불투명도 상한). 디바이더는 완성된 상태, 전구 깜빡임 없음, 섹션은 즉시 표시.
-sections_order:   # rsvp 제외, guestbook 유지는 사용자 지정. 나머지 순서는 기본값
+sections_order:   # rsvp 제외, guestbook 유지, notice 신설(venue와 account 사이, 2026-10-10)은 사용자 지정. 나머지 순서는 기본값 (2026-10-12 디자인 통일 때 notice를 지난 결정에 맞춰 넣음)
   - hero
   - greeting
   - couple-intro
   - calendar
   - gallery
   - venue
+  - notice
   - account
   - guestbook
   - share
@@ -241,7 +250,7 @@ defaults_applied:
   - "팔레트: 사진 픽셀 샘플링 기반 커스텀 7색 + 확장 토큰 6개"
   - "폰트: Gowun Batang + Pretendard + Cormorant Garamond + Allura(3곳 한정)"
   - "hero 레이아웃: 위 텍스트 / 가로 사진 풀블리드 / 아래 텍스트 3단 스택"
-  - "갤러리 15장 순서와 3열 2:3 그리드 (사용자 위임, 미확인)"
+  # (2026-10-12) '갤러리 15장 순서와 3열 2:3 그리드' 항목 삭제: 갤러리 방식(캐러셀)과 순서(파일 번호순)가 모두 사용자 지정으로 바뀌어 기본값이 아니다
   - "장식 자산 4종(SVG)과 og 썸네일 소스 02.jpg 크롭"
   - "보케 모션 밀도·불투명도·속도 상한"
   - "섹션 순서 중 rsvp 제외·guestbook 유지 외 나머지 순서"
@@ -279,9 +288,9 @@ accent #8E5558은 primary와 같은 장밋빛 색상을 명도만 내린 색이�
 | accent #8E5558 | background | 5.45 | 링크·강조·보조 버튼 글자 AA |
 | accent #8E5558 | surface | 4.93 | 카드 안 링크·보조 버튼 AA |
 | on_accent #FFFCF8 | accent #8E5558 | 5.72 | 주 버튼 글자 AA |
-| sage_deep #5B6A46 | background / surface | 5.44 / 4.92 | 작은 라벨 AA |
+| sage_deep #5B6A46 | background / surface | 5.44 / 4.92 | 정보 라벨 AA (2026-10-12 디자인 통일: 독립 라벨 전부) |
 | field_border #958379 | background / surface | 3.37 / 3.05 | 입력 경계 비텍스트 3:1 |
-| primary #C9A09F | background | 2.17 | 장식 전용 (텍스트 금지) |
+| primary #C9A09F | background | 2.17 | 장식 전용 (텍스트·버튼 윤곽선 금지, 2026-10-12 디자인 통일) |
 | secondary #A2AA92 | background | 2.25 | 장식 전용 (텍스트 금지) |
 | glow #EBCB94 | background | 1.45 | 장식 전용 (텍스트 금지) |
 | line #E4D6CD | background | 1.32 | 장식 구분선 전용 (입력 경계 금지) |
@@ -331,49 +340,23 @@ accent #8E5558은 primary와 같은 장밋빛 색상을 명도만 내린 색이�
 - 압축 규칙을 적용하면 iPhone SE(375x548)에서도 476px로 첫 화면 안에 들어간다.
 - hero 섹션 바탕은 background다. 사진 속 벽(#E4D6CD)이 바탕보다 한 톤 짙어서, 사진이 벽에 걸린 패널처럼 보인다.
 
-## 갤러리
+## 갤러리 (2026-10-12: 캐러셀과 파일 번호 순서로 고침)
 
-### 형태: 3열 x 5행, 셀 2:3
+### 형태: 한 장씩 넘기는 캐러셀, 프레임 2:3
 
-- 15장이 3열 5행으로 빈칸 없이 맞아떨어진다. 세로 13장은 원본 비율이 2:3이라 썸네일에서 잘리는 부분이 없다. 전신 컷(06, 07, 09, 11)도 구도가 그대로 남는다.
-- 가로 2장(02, 15)만 2:3으로 크롭한다. object-position 값은 두 사람이 들어가도록 썸네일 좌표로 계산했다. 02는 70% 50%(두 사람과 드레스 자락), 15는 54% 50%(두 사람과 베일)이다. 라이트박스에서는 원본 비율로 보인다.
-- 390px 화면에서 셀은 약 117x175px이고 그리드 전체 높이는 약 890px이다.
-- 정사각 크롭을 쓰지 않는 이유: 전신 컷의 발끝과 머리 위 장식(전구, 꽃)이 잘린다. 메이슨리를 쓰지 않는 이유: 가로 2장 때문에 열 높이가 어긋나고 행 단위 흐름이 깨진다.
+사용자 결정(2026-10-10)으로 3x5 썸네일 그리드를 캐러셀로 바꿨다. 치수, 제스처, 접근성은 모션 명세 4-1이 기준이다.
 
-### 순서와 배치 이유
+- 프레임은 2:3이다. 15장 중 13장이 세로 2:3이라 대부분 잘림이나 여백 없이 프레임을 채우고, 전신 컷(06, 07, 09, 11)의 발끝과 머리 위 장식도 남는다.
+- 세로 사진은 `object-fit: cover`, 가로 2장(02, 15)은 `contain`으로 surface 매트 위에 올린다. 자르지 않으므로 object-position은 쓰지 않는다. hero와 같은 "액자 속 사진 한 장" 구도다.
+- 좌우로 이웃 사진이 16px 보여서 옆으로 넘길 수 있다는 것을 글 없이 알린다. 이웃 사진도 원래 톤 그대로 둔다(흐리게, 작게, 투명하게 하지 않는다).
+- 이전·다음 원형 버튼과 "n / 15" 카운터는 사진 아래 가운데에 둔다. 사진 위에는 버튼과 글자를 얹지 않는다. 자동 넘김과 썸네일 목록은 없다.
+- 사진을 누르면 같은 번호로 라이트박스가 열린다(원본 비율, 핀치 줌).
 
-각 행이 한 챕터다. 그리드 칸은 (행, 열)로 적는다.
+### 순서: 파일 번호순 01 → 15
 
-| # | 칸 | 파일 | 방향 | 한 줄 설명 | 배치 이유 |
-|---|---|---|---|---|---|
-| 1 | 1,1 | 02 | 가로 | 벚꽃 가지 아래 창가 벤치에 나란히 앉은 컷 | 오프닝. hero의 꽃 가랜드·아이보리 벽을 그대로 이어받아 hero에서 갤러리로 자연스럽게 넘어간다 |
-| 2 | 1,2 | 01 | 세로 | 안아 올려 서로 바라보는 상반신 | 꽃 장식 컷 사이에 흰 여백의 클로즈업을 두어 숨을 고른다. 02와 같은 수트지만 배경과 프레이밍이 다르다 |
-| 3 | 1,3 | 08 | 세로 | 잎·전구 벽 앞에서 손잡고 마주 선 컷 | 첫 행 끝에 첫 '불빛' 컷을 둬서 컨셉의 두 축(꽃, 빛)을 첫 행에서 모두 보여 준다 |
-| 4 | 2,1 | 03 | 세로 | "Will you marry me?" 하트 풍선 피켓 | 프러포즈 챕터의 질문 |
-| 5 | 2,2 | 09 | 세로 | 꽃·전구 벽 앞에서 무릎 꿇고 꽃을 건네는 컷 | 질문에 답하는 장면이자 2행의 색 앵커. 08과는 대각선이라 맞닿지 않는다 |
-| 6 | 2,3 | 12 | 세로 | 반지 낀 손을 펼쳐 보이는 컷 | 프러포즈의 결과("yes"). 03과 같은 행이지만 09가 사이에 있다 |
-| 7 | 3,1 | 07 | 세로 | 컨페티 속 손잡고 웃는 전신 | 프러포즈 뒤의 축하. 위(03)와 의상·색이 다르다 |
-| 8 | 3,2 | 13 | 세로 | 블랙 의상, 앉아서 볼 맞댄 컷 | 축하 사이의 다정한 클로즈업. 12와 대각선이라 맞닿지 않는다 |
-| 9 | 3,3 | 05 | 세로 | 블랙 배경, 비눗방울과 하트 풍선 | 갤러리 한가운데 유일한 어두운 배경으로 리듬을 바꾼다. 풍선이 겹치는 03, 비눗방울이 겹치는 04와 멀리 둔다 |
-| 10 | 4,1 | 11 | 세로 | 블랙 드레스·재킷 차림의 신부 단독 | 서약 챕터를 여는 신부 컷. 같은 의상의 03·04와 떨어져 있다 |
-| 11 | 4,2 | 06 | 세로 | 베일을 걷어 올리는 전신 | 서약의 순간. 같은 화이트 스튜디오 베이지 세트인 01·07과 두 칸 이상 떨어져 있다 |
-| 12 | 4,3 | 14 | 세로 | 서랍장과 꽃 앞에서 반지를 끼워 주는 컷 | 서약의 완성. 반지를 보여 주는 12와 멀리 둔다 |
-| 13 | 5,1 | 10 | 세로 | 꽃·전구 벽 앞, 꽃다발 들고 볼 맞댄 컷 | 마지막 행을 다시 불빛으로 연다. 첫 행의 08과 짝을 이룬다 |
-| 14 | 5,2 | 04 | 세로 | "We're getting married" 케이크와 비눗방울 | 청첩장의 메시지와 같은 문구라 끝 직전에 둔다. 같은 의상의 03과는 3행 떨어져 있다 |
-| 15 | 5,3 | 15 | 가로 | 커튼 창가 역광 속 입맞춤 | 피날레. 가장 밝고 조용한 컷으로 갤러리를 닫는다 |
+사용자 지정(2026-10-12, "사진첩의 이미지 순서를 내가 파일명으로 매겨둔 번호와 일치시켜줘"). 사진별 설명은 frontmatter `photos.gallery.order`에 있다. 가로 사진은 2번(02)과 15번(15)이다.
 
-챕터: 1행 꽃과 불빛 아래 → 2행 Will you marry me? → 3행 웃음이 번지는 날 → 4행 베일과 반지 → 5행 We're getting married. 챕터 이름은 화면에 표시하지 않는다. 순서와 alt 작성에만 쓴다.
-
-### 인접 검사 (QA 기준)
-
-다음 쌍은 같은 행에서 옆 칸, 같은 열에서 위아래 칸, 라이트박스 연속 순서(행이 바뀌는 3→4, 6→7, 9→10, 12→13 포함) 중 어느 것으로도 맞닿지 않는다. 배치를 고를 때 스크립트로 전수 검사했다.
-
-- 꽃·전구 벽: 08, 09, 10 (그리고 어두운 배경 05와도 서로 맞닿지 않음)
-- 화이트 셔츠 + 블랙 드레스·재킷 세트: 03, 04, 11
-- 블랙 의상 + 화이트 배경: 11, 12, 13, 15
-- 베이지 수트 화이트 스튜디오: 01, 06, 07
-- 풍선·비눗방울: 03–05, 04–05
-- 반지: 12–14
+이전에 두었던 행 단위 챕터 배치와 인접 검사(배경이나 의상이 같은 사진끼리 맞닿지 않게 하는 기준)는 이 결정으로 없앴다. 파일 번호순에서는 꽃·전구 벽 사진 08, 09, 10이 이어지지만 사용자가 고른 순서이므로 그대로 둔다.
 
 ## 카피라이터에게
 
@@ -383,10 +366,10 @@ accent #8E5558은 primary와 같은 장밋빛 색상을 명도만 내린 색이�
 - hero eyebrow 제안: "WE'RE GETTING MARRIED". 04 케이크의 문구와 호응한다. 섹션 eyebrow는 영문 대문자 한두 단어로 한다(예: INVITATION, THE DAY, GALLERY, LOCATION, GUESTBOOK, THANK YOU). 최종 문구는 카피라이터가 정한다.
 - 혼주 표기: "방주경 · 주진숙의 아들 인혁", "손홍희 · 김연주의 딸 유민". **장남/장녀 등 서열 표기 금지.**
 - 일시: "2027년 1월 3일 일요일 오후 3시". 영문: "2027 · 01 · 03" + "SUNDAY · 3 PM".
-- 장소: "더컨벤션 송파문정 13층 아모르홀", 주소 "서울 송파구 송파대로 155 NH송파농협 13층".
+- 장소: "더컨벤션 송파문정 13층 아모르홀", 주소 "서울 송파구 송파대로 155"(사용자 수정 2026-10-10. 2026-10-12 디자인 통일 때 지난 결정에 맞춤).
 - 교통편(지하철·주차), 계좌번호, 방명록 접수 주소는 사용자가 나중에 제공했다(2026-10-11). 값은 `_workspace/00_user-input.md`와 카피 시트에 있다. 버스 안내는 넣지 않는다.
 - 마지막 share 섹션의 'Thank you'는 Allura로 쓰이므로 영문 두 단어 그대로 둔다.
-- 갤러리 alt는 `photos.gallery.order[].desc`를 바탕으로 쓰되 파일명이나 챕터 이름은 넣지 않는다.
+- 갤러리 alt는 `photos.gallery.order[].desc`를 바탕으로 쓰되 파일명은 넣지 않는다(2026-10-12: 챕터를 없애며 챕터 이름 언급 삭제).
 
 ## 이미지 아티스트에게
 
@@ -401,7 +384,7 @@ accent #8E5558은 primary와 같은 장밋빛 색상을 명도만 내린 색이�
 
 - frontmatter `motion_direction`의 보케 상한이 기준이다. 이 값은 텍스트 대비를 지키기 위한 한계이므로 줄이는 것은 자유지만 늘리면 안 된다.
 - 첫 키워드가 '로맨틱'이어도 꽃잎 파티클은 쓰지 않는다. 사진에 이미 컨페티(07)와 비눗방울(04, 05)이 있어서 화면 파티클이 사진과 겹쳐 보인다.
-- 보케 구현 방식(섹션별 캔버스 또는 공용 fixed 캔버스 + 구간 페이드)은 자유다. 조건은 세 가지다. calendar 구간에서도 보여야 하고, hero 사진과 카드 위로는 보이지 않아야 하며, surface 위(guestbook, 카드)에는 나타나지 않아야 한다.
+- 보케 구현 방식(섹션별 캔버스 또는 공용 fixed 캔버스 + 구간 페이드)은 자유다. 조건은 세 가지다. calendar 구간에서도 보여야 하고, hero 사진과 카드 위로는 보이지 않아야 하며, surface 위(카드, 사진 매트)에는 나타나지 않아야 한다. guestbook은 surface 밴드가 아니라 background 섹션이지만 보케 구간도 아니다(2026-10-12 디자인 통일).
 - string-lights의 전구 깜빡임과 sprig-divider stroke-draw는 SVG 구조(class='bulb', pathLength='1')를 전제로 한다.
 
 ## 프론트엔드 개발자에게
@@ -409,7 +392,9 @@ accent #8E5558은 primary와 같은 장밋빛 색상을 명도만 내린 색이�
 - CSS 변수: `--color-primary:#C9A09F`, `--color-secondary:#A2AA92`, `--color-accent:#8E5558`, `--color-bg:#FBF6F1`, `--color-surface:#F3EAE3`, `--color-text:#3B2D2A`, `--color-muted:#75655E`, `--color-glow:#EBCB94`, `--color-sage-deep:#5B6A46`, `--color-on-accent:#FFFCF8`, `--color-line:#E4D6CD`, `--color-field-border:#958379`, `--color-scrim:#1C1514`.
 - primary, secondary, glow, line은 글자 색으로 쓰지 않는다. 작은 글자는 text, muted, accent, sage_deep만 쓴다.
 - hero는 `hero_layout` 그대로 만든다. `<img src="images/photos/hero.jpg" width="1600" height="1066" fetchpriority="high">`, width 100% / height auto. object-fit cover, transform scale, 사진 위 텍스트·그라데이션은 금지한다.
-- 갤러리: 그리드는 `images/photos/thumb/`, 라이트박스는 `images/photos/` 원본을 쓴다. 셀은 `aspect-ratio: 2/3`, 02와 15에만 지정된 object-position을 준다. 썸네일은 `loading="lazy"`.
+- 갤러리(2026-10-12: 현재 캐러셀로 고침): frontmatter `photos.gallery`와 모션 명세 4-1대로 만든다. 슬라이드 img는 `images/photos/` 원본 + `srcset`(`images/photos/thumb/` 포함), 라이트박스는 원본. 프레임 `aspect-ratio: 2/3`, 가로 사진 02·15는 `contain` + surface 매트. 순서는 파일 번호순 01~15.
+- 디자인 통일(2026-10-12): 섹션 배경, 그릇, 정렬, 모서리, 버튼, 여백은 `layout_mood`, 글자 모양은 `typography.scale`의 역할 하나에 맞춘다. 새 요소가 어느 역할에도 맞지 않으면 새 모양을 만들기 전에 concept-director에게 묻는다. 구현 순서와 선택자별 변경은 07 감사 문서 4장(M1~M18).
+- lining figures 주의: `font` 단축 속성은 `font-variant-numeric`을 normal로 되돌린다. `font-variant-numeric`은 같은 규칙의 `font` 선언 뒤에 쓰고, 뒤에 오는 다른 `font` 규칙이 덮어쓰지 않는지 확인한다.
 - 폰트: Google Fonts(Gowun Batang 400/700, Cormorant Garamond 300/400/500/400i, Allura 400) + Pretendard jsDelivr dynamic-subset CSS. `display=swap`.
 - og: `og:image`는 `images/og-garden.jpg`(1200x630). `og:image:width`/`height`를 명시한다. favicon은 `images/favicon.svg`.
 - `unused_legacy_assets`에 적힌 파일은 참조하지 않는다.
@@ -419,7 +404,8 @@ accent #8E5558은 primary와 같은 장밋빛 색상을 명도만 내린 색이�
 - 서열 표기("장남/장녀/차남/차녀")가 없고 "아들", "딸"만 쓰였는지
 - 2027-01-03이 일요일로 표기되고 캘린더 3일 강조가 일요일 열에 있는지
 - hero.jpg가 크롭·확대·오버레이 없이 3:2로 보이고, 390x664와 375x548 뷰포트 첫 화면에 날짜와 두 이름이 함께 보이는지
-- 갤러리 15장이 위 순서·파일명과 일치하고 hero.jpg가 갤러리에 없는지. 인접 검사 쌍이 맞닿지 않는지
+- 갤러리 15장이 파일 번호순(01~15)이고 hero.jpg가 갤러리에 없는지, 가로 사진 02·15가 잘리지 않고 매트 위에 보이는지 (2026-10-12: 인접 검사 기준 삭제)
+- 디자인 통일(2026-10-12): 모든 섹션 배경이 background(guestbook 포함)인지, 오시는 길 장소명·주소에 카드가 없는지, 독립 라벨이 모두 sage_deep 600인지, Cormorant 숫자가 모두 lining인지, 원형 버튼 윤곽선이 accent인지, 내용 폭 버튼이 없는지, 모서리가 다섯 단계 안에 있는지. 계산 스타일 기준값은 07 감사 문서 4장 "구현 후 확인할 것"
 - 사진에 CSS filter, mix-blend-mode, 오버레이 의사요소가 없는지
 - 대비 표의 조합만 텍스트에 쓰였는지(primary, secondary, glow, line이 글자 색으로 쓰이지 않았는지), 입력 경계가 field_border인지
 - 보케가 상한(입자 수, 불투명도 glow 0.28 / primary 0.18, 속도)을 지키고, hero 사진·카드·surface 위에 나타나지 않으며, reduced-motion에서 정지하는지

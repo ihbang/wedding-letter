@@ -692,3 +692,193 @@ FAIL은 없다. WARNING 4건은 모두 페이지 코드가 아니라 배포 전 
 - 10초 시간 제한으로 늦게 실패하면, 그때 하객이 오시는 길을 보고 있을 경우 지도 상자(약 273px)가 사라지며 아래 버튼과 교통편이 위로 올라온다. 도메인 미등록·사용 설정 꺼짐 같은 흔한 실패는 한 화면 앞에서 바로 끝나서 보이지 않는다. 카카오 CDN이 멈춘 경우에만 생기므로 지금 동작(오케스트레이터 기본값)으로 충분하다
 - 공유 SDK가 실패한 뒤 다시 누르면 SDK를 또 요청한다(두 번 실패하면 `kakao_js_sdk` 태그 2개). 커밋본부터 있던 동작이고, 매번 링크 복사로 대체되니 문제는 없다
 - 카카오 로고 링크(`http://map.kakao.com/`)는 inert라서 눌리지 않는다. 바로 아래 "카카오맵" 버튼이 같은 역할을 한다
+
+---
+
+## 6차 QA (디자인 통일·갤러리 순서) — 2026-10-12
+
+마지막 커밋(`9bc0a6a`) 뒤 작업 트리에 두 가지 변경이 있다. ① concept-director 감사 문서 `07_concept-director_design-audit.md`의 통일 규칙 R1~R9와 수정 목록 M1~M18을 사용자 결정 D1~D4(모두 (a))대로 반영했고, 오케스트레이터가 `.share__closing` 위 여백 16 → 20, `.share__buttons` gap 10 → 8을 더 맞췄다. ② 갤러리를 파일 번호순 01~15로 바꿨다. 결정 기록은 `00_user-input.md` 맨 아래 "디자인 통일", "갤러리 순서를 파일 번호순으로" 절이고, frontend 반영 내역은 `05_frontend-developer_summary.md` 13장이다. 코드 변경은 `index.html`(슬라이드 15줄 순서, `.venue__info`, 주석 1줄), `style.css`(M1~M18과 후속 2건), `script.js`(주석 1줄)뿐이다.
+
+### 요약
+
+- 전체 결과: **PASS** (FAIL 0)
+- 6차 판정 67항목: PASS 62 / FAIL 0 / WARNING 5 (새 WARNING W8·W9·W10, 기존 W6 잔여)
+- **디자인 통일 변경분은 FAIL 0이다.** 감사 문서 1장 현황 표의 항목을 `getComputedStyle`로 다시 뽑아 R1~R9와 대조했고, 같은 역할의 요소는 모두 같은 값이다. 규칙과 다른 값은 문서가 예외를 적지 않은 것(W9)과 입력 필드 모서리 16px이 만든 새 화면 결함 1건(W10)이다
+- 직접 수정: 없음. 남은 것은 문서 문구와 디자인 판단이 필요한 항목이라 보고만 한다
+- 기존 WARNING: **W6 부분 해소**(컨셉 시트·카피 시트 표는 고쳐졌고 모션 명세 3곳과 카피 시트 1줄이 남음), W7 그대로
+- 검증 방법
+  - 정적: `node --check script.js` 통과, `script.js`·`style.css` 한글 0건. 4차 `static3.py`의 순서 기대값만 새 순서로 바꿔 50/50 PASS(HEAD는 예전 기대값으로 50/50). `static_checks.py`는 4-3 #29 오탐의 줄 번호(931 → 937)만 바뀌었다. `qa6/gallery_static.py`로 슬라이드 15줄을 카피 시트 `gallery_alt` 표, 컨셉 시트 `photos.gallery.order`와 글자 단위로 대조했다. 대비는 `qa6/contrast6.py`(WCAG 2.x 식)
+  - 브라우저: 로컬 서버 `127.0.0.1:8781`(작업 트리)과 `127.0.0.1:8782`(HEAD `9bc0a6a`를 `git archive`로 푼 사본), headless Chrome CDP(DPR 2, 모바일은 터치 에뮬레이션). 모든 실행에서 `*kakao*`, `*formspree*` 요청을 막았다
+  - 통일 규칙 검사 `qa6/unify6.mjs`(새로 씀): 끝까지 스크롤해 reveal을 모두 발동시킨 뒤 섹션 배경·패딩, 텍스트 역할 14종(T1~T14), 화면에 보이는 모든 글자의 색, 면이나 테두리가 있는 모든 요소, 왼쪽 정렬 시작점, 버튼 폭·윤곽선, 쓰인 모서리 반지름 전체, 섹션 안 margin·padding·gap 전체와 블록 간격 36개를 뽑았다. 지도 자리는 감사 문서 0장처럼 `#venue-map`의 `hidden`을 풀어 빈 4:3 카드로 채워 쟀다. 실행: 작업 트리 360x780, 375x667, 375x548, 390x844, 430x932, 1280x900(마우스), 390x844 reduced / HEAD 360x780, 390x844, 1280x900(전후 스크린샷용)
+  - frontend 검사 재현: `fe-unify/check.mjs`를 포트만 바꿔 `qa6/fe/`에서 motion 390, reduced 390, motion 360으로 다시 돌렸다. frontend 결과와 같다
+  - 회귀: 5차 드라이버(`qa.mjs` 13개 시나리오 + `firstscreen`(390x664, 375x548, 390x844) + `widths 1280x900`, `account.mjs` motion·reduced × 4폭, `carousel-check.mjs`)를 HEAD와 작업 트리에 같은 조건으로 돌리고 `qa6/compare6.py`로 비교했다. `carousel-check.mjs`는 순서가 들어간 검사 4개(순서, 첫 요청 3장, 2번으로 갈 때 추가 요청, 4번 lightbox의 이웃 원본)를 `QA_ORDER`로 나눠 HEAD는 예전 순서, 작업 트리는 새 순서로 기대하게 했다
+  - Chrome은 샌드박스 안에서 뜨지 않아 샌드박스를 끄고 실행했다. 끝난 뒤 두 서버와 Chrome을 종료했다(남은 Chrome 프로세스 0, 8781·8782 포트 닫힘). 스크립트·출력·스크린샷은 scratchpad `qa6/`에만 있고 저장소에는 넣지 않았다
+
+### 6-1. 통일 규칙 준수 (감사 1장 현황 → 지금, `getComputedStyle`)
+
+판정은 7개 실행(작업 트리) 모두 같은 값일 때 PASS로 적었다. 수치는 390 기준이고 폭마다 달라지는 값은 따로 적었다.
+
+| # | 규칙 | 감사 1장 (커밋 `9bc0a6a`) | 지금 | 결과 |
+|---|------|------|------|------|
+| 1 | R1 섹션 배경 | guestbook만 surface 밴드 | hero만 면 `rgb(251, 246, 241)`, 나머지 9개 섹션은 배경 투명이라 `.page`의 background가 보인다. HEAD는 guestbook이 `rgb(243, 234, 227)` | PASS |
+| 2 | R1 데스크톱 컬럼 경계 | 1280에서 guestbook 구간만 컬럼 안팎이 같은 surface | 1280에서 guestbook 구간 컬럼 안 background, 바깥 surface(body). 480px 컬럼 경계가 끊기지 않는다(`shots-cur-motion-1280x900/11-desktop-guestbook.png`, HEAD `shots-base-motion-1280x900/11-desktop-guestbook.png`) | PASS |
+| 3 | R1 섹션 패딩 | | greeting `80 24 0`, couple `56 24 80`, gallery `80 16 80`, 나머지 `80 24 80`, share 아래 80 + safe-area. 예외 세 곳 말고 모두 80 | PASS |
+| 4 | R1 보케 | | guestbook 위치에서 `__bokeh.stats().running` `[]`(7개 실행) | PASS |
+| 5 | R2 그릇 | 장소 카드, 지도 카드, 계좌 카드 | 면이나 테두리가 있는 요소를 모두 뽑으면 카드는 계좌 `details.card` 2개와 지도 `#venue-map`(숨김을 풀면 surface, 1px line, 16)뿐이다. 그 밖은 사진 프레임 15개(surface 매트, 4), 입력 2개(`#FFFDFB`, field_border, 16), 버튼, 달력·교통편 구분선이다. `.venue__info`는 배경 투명, 테두리 0, 패딩 0, 가운데 정렬. `.venue__card` 0개 | PASS |
+| 6 | R2·R8 오시는 길 순서 | 카드(이름·주소·복사) → 16 → 지도 → 16 → 버튼 | 장소명 → 4 → 주소 → 16 → 주소 복사 → 24 → 지도 카드 → 16 → 지도 버튼 → 32 → 교통편. 지도가 숨으면 주소 복사 → 16 → 지도 버튼. 지도 카드 360 312x234.5, 375 327x245.8, 390 342x257, 430 382x282, 1280 432x282. 컨셉 시트 `layout_mood` "오시는 길 순서"와 같다 | PASS |
+| 7 | R3 왼쪽 시작점 | 교통편 28, 방명록 24, 계좌 45 | 교통편 라벨·값·맨 위 구분선, 방명록 라벨·필드가 모두 x 24(360/375/390/430), 1280에서 424. 계좌 라벨·계좌번호·예금주는 x 45(1280 445). 두 값 말고는 없다 | PASS |
+| 8 | R4 T1 eyebrow | eyebrow 9개 + 달력 캡션이 같은 모양 | Cormorant 500 13px/16px accent 0.28em(3.64px) 글자는 섹션 머리 eyebrow 8개와 hero eyebrow 1개뿐이다. 섹션마다 1개(share는 0개, "Thank you"가 제목) | PASS |
+| 9 | R4 T13 표 제목 | eyebrow와 같음 | `.cal__caption-en` Cormorant 500 16px/20px text, 0.16em(2.56px), lining. 모든 폭에서 한 줄 | PASS |
+| 10 | R4 T4 섹션의 답 | 일시 400, 장소명 700 | `.calendar__when`, `.venue__name` 모두 Gowun Batang 400 17px/27.2px text. 360~1280에서 둘 다 한 줄 | PASS |
+| 11 | R4 T5 본문 | 줄 높이 1.95 / 1.9 / 1.8, 문단 사이 1.95em / 1em | 본문 11개(인사말 3문단, couple 2줄, D-day 문구, notice, 계좌 안내 2문단, 방명록 안내, 맺음말) 모두 15px/29.25px. 문단 사이는 인사말·계좌 안내 모두 29.25px | PASS |
+| 12 | R4 T6·R5 정보 값 | 주소만 muted, 1.6 | 주소와 교통 안내 3줄 Pretendard 400 14px/23.8px text, 계좌번호 500 15px/22.5px text. 화면에 보이는 muted 글자를 모두 뽑으면 hero 요일 줄·장소 줄, 달력 요일 6개, 갤러리 " / 15", 갤러리 안내, 예금주 줄 2개(접두어 포함), 방명록 맺음뿐이다. 라벨과 값에는 muted가 없다 | PASS |
+| 13 | R5 T7 라벨 색·굵기 | 색 3가지, 굵기 3가지 | 9개(신랑·신부, 지하철·주차·내비게이션, 신랑측·신부측, 성함·남기실 말씀) 모두 Pretendard 600 14px `rgb(91, 106, 70)` | PASS |
+| 14 | R4 T7 라벨 줄 높이 | | couple·교통편 22.4px(1.6), `.account__side` 21px(1.5, `style.css:762`), `.gb-label` 19.6px(1.4, `style.css:813`). 감사 R4 T7과 컨셉 시트 `typography.scale.label`은 1.6이다. 05 요약 13장에 적혀 있고 오케스트레이터가 그대로 두기로 했다. 모두 한 줄이라 글자 모양은 같다 | WARNING (W9) |
+| 15 | R4 T8 보조 안내·값 | | 갤러리 안내·방명록 맺음 14px/22.4px muted, 예금주 줄 14px/21px muted(규칙이 정한 1.5), hero 장소 줄 14px/22px(hero 고정값) | PASS |
+| 16 | R4 T12 숫자 | 갤러리 카운터만 lining | `.hero__date`, `.hero__time`, `.cal__caption-en`, `.dday__count` = `lining-nums`. `.g-counter`(안쪽 span 2개 포함)와 `.lb-counter`(안쪽 `.lb-counter__text` 포함) = `lining-nums tabular-nums`, lightbox를 연 상태에서도 같다. 375x548 압축 규칙은 `font-size`·`line-height`만 바꿔서 hero 날짜(28px/34px)도 lining이 유지된다. 확대 캡처에서 "2027 · 01 · 03"의 01이 더는 "oI"로 보이지 않고 "SUNDAY · 3 PM"의 3이 기준선 위에 선다(`00b-hero-date-x3.png` 전후). Pretendard 데이터 숫자(달력, 계좌, 주소)는 `normal` | PASS |
+| 17 | R6 버튼 폭 | 주소 복사 158px(내용 폭) | 단독 버튼은 담긴 영역 폭과 같다: 주소 복사·남기기·카카오톡·링크 복사 342(360 312, 375 327, 430 382, 1280 432), 계좌 복사 300 = 카드 안쪽 폭(360 270, 430 340). 지도 버튼은 2분할 167 x 2. 내용 폭 버튼 0개. 높이 모두 44 | PASS |
+| 18 | R6 윤곽선 | pill accent, 원형 primary | secondary pill 6개 1px `rgb(142, 85, 88)`. 갤러리 이전·다음 `::before` 1px accent(inset 2, 보이는 원 40, 터치 44x44), BGM 면 1px accent. 아이콘 stroke `#8E5558`. 비활성 opacity 0.3. primary는 남기기·카카오톡 2개 | PASS |
+| 19 | R7 모서리 | 16 / 15 / 999 / 50% / 10 / 4 | 쓰인 반지름 전체: 16(계좌 카드 2, 지도 카드, 입력 2), 15(계좌 summary), 999(pill 버튼, 건너뛰기 링크, 토스트), 50%(원형 버튼, BGM, 달력 예식일 원, lightbox 버튼), 4(사진 프레임). 10px 없음 | PASS |
+| 20 | R8 관계별 간격 | 36 / 32 / 28 / 20 / 18 / 14가 섞임 | 36개 관계가 모두 R8 표 값이다(아래 표). 7개 실행에서 같다 | PASS |
+| 21 | R8 단계 밖 값 | | "8, 12, 16, 20, 24, 32, 40, 56, 80만 쓴다"는 문구 밖의 값이 남아 있다(아래 목록). 모두 감사 문서가 정했거나 고치지 않기로 한 값이고 화면 리듬을 깨지 않는다 | WARNING (W9) |
+| 22 | R7 입력 필드 모서리의 부작용 | 10px | 방명록 textarea의 크기 조절 손잡이(`resize: vertical`, `style.css:836`)가 16px 곡선 테두리 위에 겹쳐 그려진다. 10px일 때는 테두리 안쪽에 있었다(`corner/textarea-corner-{cur,base}-1280.png`, 6배 확대). 데스크톱 Chrome과 모바일 에뮬레이션에서 같다. 휴대폰 실기에서 손잡이가 그려지는지는 이 환경에서 확인하지 못했다 | WARNING (W10) |
+
+R8 관계별 실측(390, 다른 폭도 같다):
+
+| 관계 | 값 | 관계 | 값 |
+|---|---|---|---|
+| 섹션 머리 → 콘텐츠(couple, calendar, gallery, venue, notice, account, guestbook) | 40 | greeting 본문 → sprig | 56 |
+| lights → eyebrow, gallery sprig → eyebrow | 24 / 24 | 일시 → 달력, 달력 → D-day | 32 / 32 |
+| 지도 버튼 → 교통편 | 32 | share sprig → 모노그램 → Thank you, 맺음말 → 버튼 | 32 / 32 / 32 |
+| 제목 → 제목 밑 문장(갤러리, 계좌, 방명록, share) | 20 | eyebrow → 제목 | 10 |
+| 주소 → 주소 복사, 지도 → 지도 버튼, 필드 → 필드, 필드 → 남기기, 교통편 행 안쪽 위 | 16 | couple 행 → 행 | 16 |
+| 계좌 카드 → 카드, 사진 창 → 버튼 줄 | 12 / 12 | 라벨 → 필드, share 버튼 → 버튼, D-day 문구 → 카운터 | 8 / 8 / 8 |
+| 주소 복사 → 지도 카드 | 24 | 장소명 → 주소, 교통편 라벨 → 값 | 4 / 4 |
+
+R8 단계 밖 값(섹션 안 margin·padding·gap 전체를 뽑아 단계 값과 hero를 뺀 나머지):
+
+| 위치 | 값 | 성격 |
+|---|---|---|
+| `style.css:679` `.venue__address` margin-top | 4 | 장소명 → 주소. M5가 정한 값 |
+| `style.css:727` `.venue__route dd` margin-top | 4 | 라벨 → 값. 감사 전부터 있던 값 |
+| `style.css:788` `.account__holder` margin-top | 2 | 계좌번호 → 예금주 |
+| `style.css:207` `.btn` 좌우 padding | 22 | 버튼 안쪽 |
+| `style.css:818` `.gb-input` 좌우 padding | 14 | 입력 안쪽(위아래는 12) |
+| `.g-viewport` padding-block | 4 | 현재 슬라이드 포커스 링 자리(모션 명세 4-1-2). 그래서 사진 아래 끝 → 버튼 줄은 화면에서 16이다 |
+| `.btn` gap 6, 복사 라벨 gap 4, 모노그램 gap 5, `.couple__name` margin-left 2 | 2~6 | 아이콘·글자 사이 |
+
+### 6-2. 대비 (바뀐 색 조합, WCAG 2.x 식)
+
+| # | 전경 / 배경 | 쓰는 곳 | 기준 | 대비 | 결과 |
+|---|------|------|------|------|------|
+| 23 | sage_deep `#5B6A46` / background | 신랑·신부, 지하철·주차·내비게이션, 성함·남기실 말씀(Pretendard 600 14px) | 텍스트 4.5 | 5.44 | PASS |
+| 24 | sage_deep / surface | 신랑측·신부측(계좌 카드 안) | 텍스트 4.5 | 4.92 | PASS |
+| 25 | text `#3B2D2A` / background | 주소(muted 5.17에서 바뀜), 교통 안내, 달력 표 제목 | 텍스트 4.5 | 12.26 | PASS |
+| 26 | text / 보케 상한 섞인 바탕 glow 0.28 `#F7EAD7`, primary 0.18 `#F2E7E2` | 달력 표 제목(보케 구간) | 텍스트 4.5 | 11.10 / 10.85 | PASS |
+| 27 | accent `#8E5558` / background, surface, hover 면(bg + accent 6%) | pill 버튼 글자 | 텍스트 4.5 | 5.45 / 4.93 / 5.02 | PASS |
+| 28 | accent / background, surface | pill 버튼 윤곽선 | 비텍스트 3 | 5.45 / 4.93 | PASS |
+| 29 | accent / background, hover 면 | 갤러리 이전·다음 원 윤곽선(primary 2.17에서 바뀜), chevron | 비텍스트 3 | 5.45 / 5.02 | PASS |
+| 30 | accent / BGM 면(background 0.92)이 흰 바탕 위 `#FBF7F2`, 검은 사진 위 `#E7E2DE` | BGM 원 윤곽선, 음표 | 비텍스트 3 | 5.48 / 4.55 | PASS |
+| 31 | on_accent `#FFFCF8` / accent | 남기기, 카카오톡 | 텍스트 4.5 | 5.72 | PASS |
+| 32 | muted / background, text / background | 방명록 맺음·안내문(밴드가 없어져 surface → background) | 텍스트 4.5 | 5.17 / 12.26 | PASS |
+| 33 | field_border `#958379` / background, 필드 `#FFFDFB` | 입력 경계(바깥이 surface → background) | 비텍스트 3 | 3.37 / 3.57 | PASS |
+
+참고: 끝에서 비활성인 갤러리 버튼(opacity 0.3)의 윤곽선은 background 위 1.52:1이다(예전 primary 윤곽선일 때 1.24). 비활성 컨트롤은 WCAG 1.4.11 대상이 아니다. 지도 카드 테두리 line은 1.32로 장식선이다(카드 안 지도 자체가 내용).
+
+### 6-3. 문서 정합성
+
+| # | 문서 | 확인한 것 | 결과 |
+|---|------|------|------|
+| 34 | 컨셉 시트 갤러리 | `photos.gallery.order` pos n = 파일 n(15/15), 가로 02·15, `layout` 캐러셀, 본문 "순서: 파일 번호순 01 → 15", `defaults_applied`에서 그리드 항목 삭제. 3차에 적은 `:104` 그리드와 `object_position`은 없어졌다 | PASS |
+| 35 | 컨셉 시트 면·그릇·글자 | `palette` 주석(surface는 카드·매트·컬럼 바깥, 섹션 밴드 금지), `layout_mood`(면·그릇·오시는 길 순서·정렬·모서리·버튼·여백), `hero_layout` BGM 윤곽선 accent, 보케 안내의 guestbook, `typography.scale`(key_line, info, label 색·굵기, table_title, figures)이 6-1 실측과 같다. 다른 곳은 label 줄 높이 1.6 하나(6-1 #14, W9) | PASS |
+| 36 | 카피 시트 | `gallery_alt` 표 # = 파일 번호(01~15), 15행의 alt가 HTML img alt, 버튼 이름 "사진 n / 15 크게 보기: {alt}", lightbox 슬라이드 alt와 글자 단위로 같다. `directions` 장소 2줄 = `.venue__name`, `#venue-address`. 남은 것: `02_copy-writer_copy.md:160` "그리드 버튼 접근성 이름"(W6 잔여, 낱말만) | PASS |
+| 37 | 모션 명세 갱신분 | 4-1 머리말(`:430`), 4-1-1(`:447`), 이전/다음 버튼 행(`:462`), 4-1-11 CSS(`:702`), BGM 면(`:962`)이 새 순서·accent 윤곽선과 같다 | PASS |
+| 38 | 모션 명세 남은 예전 순서 | `04_motion-designer_motion-spec.md:557` 예산 "02, 01, 08", `:566-576` 4-1-8 마크업 예시의 첫 슬라이드가 02 가로 + "사진 1 / 15", `:879` QA 확인값 "02, 01, 08만 요청". 실제 첫 요청은 01, thumb/02, 03이다(6-4 #43) | WARNING (W6 잔여) |
+| 39 | 모션 명세 남은 예전 면·그릇 | `:55` "surface(guestbook, 카드)", `:336` venue reveal 그룹 "② 정보 카드 + 주소 복사", `:337` "surface 위 구간이라 보케 없음"(venue·account·guestbook 모두 이제 background이고, 보케가 없는 이유는 보케 구간이 아니어서다) | WARNING (W8) |
+| 40 | 05 요약 | 2장 섹션 표(venue: surface 카드는 지도만, guestbook: background), 갤러리 순서 문단, 4장 순서 행, 6장 실패 안내, 12장 배포 후 확인 문구, 13장 표·수치가 실측과 같다(13장의 계산 스타일 값, 첫 화면 y, 갤러리 순서·lightbox 왕복을 같은 방법으로 재현). 12장 본문(`:360, 386, 394`)의 "장소 카드"는 그날 기록이라 그대로 둬도 된다. `:9`의 줄 수(454/1,099/1,442)는 지금 458/1,160/1,525다(참고) | PASS |
+
+**W6 판정: 부분 해소.** 3차에 적은 다섯 곳 중 카피 시트 `gallery_alt` 표, 컨셉 시트 그리드·순서·`object_position`, 모션 명세 `:430`·`:447`이 고쳐졌다. 모션 명세 `:557`, `:566-576`, `:879`와 카피 시트 `:160`의 "그리드" 낱말이 남았다. 지금 페이지와 어긋나는 것은 모션 명세 세 곳의 순서다.
+
+### 6-4. 갤러리 (순서·번호·alt, 미리 받기, 끝까지 넘기기, lightbox 왕복, 가로 사진 매트)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 41 | 순서·번호·alt | 정적: n번째 슬라이드의 `data-full`·`src`·`srcset` 두 항목이 모두 `n.jpg`, 버튼 이름 "사진 n / 15 크게 보기: {카피 시트 alt}", img alt = 카피 시트 문장, `g-slide--landscape`는 2번·15번만, `data-w`·`data-h` = img `width`·`height` = 실제 픽셀(14번 1067x1600, 02 1600x1194, 15 1600x1066, thumb 804w·900w 포함). 실행(360/390, motion·reduced): 불일치 0건, lightbox 슬라이드 15장 alt 순서 같음 | PASS |
+| 42 | 화면 넘김 순서 | 다음 버튼 14번에 02 → 15 순서대로 한 장씩. 카운터와 현재 파일 번호가 늘 같다 | PASS |
+| 43 | 첫 화면 미리 받기 | hero에 머무는 동안 갤러리 사진 요청 0건. 갤러리 가까이에서 `01.jpg`, `thumb/02.jpg`, `03.jpg` 3건만(390x664, DPR 2). 처음 `loading="eager"`는 1·2·3번. 2번으로 넘기면 `04.jpg`가 더해진다. HEAD는 같은 검사에서 01, thumb/02, 08 | PASS |
+| 44 | 끝까지 넘기기 | "15 / 15"에서 다음 버튼 `aria-disabled="true"`, opacity 0.3, 한 번 더 눌러도 그대로, 포커스는 다음 버튼에 남는다. 15에서 왼쪽으로 쓸어도 그대로(끝에서 돌아가지 않음). 끝까지 넘긴 뒤 15장 모두 eager. 이전 버튼으로 1까지 돌아오면 이전 버튼 비활성 | PASS |
+| 45 | lightbox 왕복 | ① 15번에서 열기 "15 / 15"(15.jpg alt) → ← 두 번 "13 / 15"(13.jpg alt) → Esc → 캐러셀 "13 / 15", 포커스 "사진 13 / 15 크게 보기…" ② 1번에서 열기 → lightbox 다음 버튼 두 번 "3 / 15"(03.jpg alt) → 닫기 버튼 → 캐러셀 "3 / 15", `html.lb-open` 해제 ③ 4번에서 열기(04.jpg, 이웃 03·05 원본) → → 두 번 + 쓸기 한 번 "7 / 15" → 닫기 → 캐러셀 "7 / 15", 포커스 7번 버튼. ①②는 motion 360·390과 reduced 390, ③은 `carousel-check`(390x664) | PASS |
+| 46 | 가로 사진 02·15 매트 | 두 장 모두 `object-fit: contain`, 프레임 면 surface `rgb(243, 234, 227)`, 모서리 4, 사진 로드 완료·opacity 1, 좌우 매트 0. 위아래 매트(02 / 15): 360 118 / 130, 375 123.3 / 136.3, 390 128.6 / 142.5, 430 144 / 159.5, 1280 163 / 180. 390 값이 모션 명세 4-1-1의 129 / 143과 같다. 세로 13장은 `cover`(`12b-gallery-02-landscape.png`, `12c-gallery-15-landscape.png`) | PASS |
+| 47 | 캐러셀 종합 | `carousel-check.mjs` 작업 트리 110/110 PASS (HEAD는 예전 순서 기대값으로 110/110) | PASS |
+
+### 6-5. 회귀 (HEAD `9bc0a6a` ↔ 작업 트리, 같은 드라이버)
+
+섹션 높이는 의도한 만큼만 바뀌었다(390, HEAD → 작업 트리): couple 314 → 318(행 간격 16, 줄 높이 1.95), calendar 840 → 842(표 제목 20px 줄, 블록 32·장식 24, D-day 문구 1.95), venue 850 → 761(카드 패딩·테두리 제거, 교통편 32·들여쓰기 0), account 565 → 580(문단 사이 1em → 1.95em), guestbook 744 → 738(폼 gap 18 → 16 세 곳), share 631 → 629. 360·375는 venue 850 → 785(주차 안내가 세 줄), 430은 826 → 761.
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 48 | hero 보케 | 구간별 동시 최대 hero 8 / calendar 6 / share 6(상한 8), 합성 최대 glow 0.279 / 0.266 / 0.269(상한 0.28), primary 0.178 / 0.151 / 0.168(상한 0.18), 제외 영역 alpha 0. greeting 위치에서 hero만, gallery·venue·notice·account·guestbook에서 `running []`, 화면 밖 전구 paused, guestbook에서 무한 애니메이션 0. `zonecap`의 차이는 무작위 보유 수(상한 안)뿐 | PASS |
+| 49 | 첫 화면 | `firstscreen` 390x664 / 375x548 / 390x844에서 날짜·사진·이름·일시·장소가 모두 화면 안이고 HEAD와 같은 좌표다(375x548 장소 아래 끝 501, 스크롤 큐 숨김). 4폭에서 BGM 토글이 eyebrow·날짜와 겹치지 않는다 | PASS |
+| 50 | couple 정렬 | `copyedit2` 4폭에서 행·줄·"아들/딸" 칸·이름의 left/right/width가 HEAD와 같다. 다른 것은 세로 위치와 줄 상자 개수(3 → 2, 측정 스크립트가 반올림한 top 개수. 줄 높이 1.95에서 "아들" 칸과 이름의 top이 같아졌다. 화면은 두 행 모두 한 줄 그대로) | PASS |
+| 51 | notice | `reducednotice`와 `copyedit2`의 notice 항목(2줄, 간격, reduced 상태, notice에서 보케 정지)이 HEAD와 같다 | PASS |
+| 52 | 오시는 길 지도 자리 | 6-1 #6. 카카오 요청을 막은 회귀 실행에서는 지도가 실패 경로로 숨고 주소 복사 → 지도 버튼 16 | PASS |
+| 53 | 계좌 접기·복사 토스트 | `account` motion·reduced × 4폭: 실제 클립보드 계좌번호(`110-335-546640`, `298702-04-213005`), 접기·키보드·접근성·토스트 결과가 HEAD와 같다. 다른 것은 페이드 샘플 ±1ms와 BGM 토글이 화살표를 덮는 면적 비율 ±2%p(위 섹션 높이가 바뀐 영향, 누름 판정은 같다). 작업 트리 motion 첫 실행은 Chrome이 응답하지 않아 400초 제한에 걸렸고, 같은 명령을 다시 돌려 1분 47초에 정상으로 끝났다 | PASS |
+| 54 | D-day | `dday` 고정 시각 6개 결과가 HEAD와 같다. 오늘(2026-10-12) "D - 83 / 인혁 · 유민의 결혼식까지 83일 남았습니다." | PASS |
+| 55 | BGM | `bgmnet` 같음. `interact`: 탭 전 음원 요청 0(`preload="none"`, autoplay 없음), 탭 뒤 재생·volume 0.60·링, 끄기, 음원 오류 복구 문구. reduced에서 링 0.8 정지. 윤곽선만 accent로 바뀌었다 | PASS |
+| 56 | 방명록 검증 | `interact`: 빈 성함 → "성함을 적어 주세요."·`aria-invalid`·포커스 이동, 빈 말씀 → "남기실 말씀을 적어 주세요.", 501 응답과 전송 실패 → 실패 문구·입력 유지·버튼 복구. HEAD와 같다. 실제 Formspree 전송은 0건 | PASS |
+| 57 | 카카오 공유 폴백 | SDK 요청을 막으면 클립보드 = og:url `https://ihbang.github.io/wedding-letter/`, 안내 "카카오톡 공유를 열 수 없어 링크를 복사했습니다. 대화방에 붙여 넣어 주세요.". 링크 복사 "청첩장 링크를 복사했습니다." HEAD와 같다 | PASS |
+| 58 | 주소 복사 | 실제 클립보드 "서울 송파구 송파대로 155", execCommand 폴백, 둘 다 실패하면 주소 선택 + 실패 라벨. 전체 폭이 된 버튼에서도 라벨 전환·토스트가 같다 | PASS |
+| 59 | 가로 스크롤 | 360/375/390/430/1280에서 `scrollWidth` = 화면 폭(계좌 펼침·갤러리 끝·상호작용 뒤에도). 화면 밖 요소 0, 14px 미만 한글 0 | PASS |
+| 60 | 콘솔 오류 | 페이지 코드의 오류·예외 0건. 회귀 드라이버의 콘솔 줄이 HEAD와 완전히 같다(QA가 일부러 넣은 501·404, QA 픽셀 측정 때문인 Canvas2D 경고). `unify6`·frontend 검사 실행 10회도 콘솔 0건 | PASS |
+| 61 | heading·접근성 트리 | h1 1개 + h2 9개, main 1 + region 9, 이름 없는 컨트롤 0, alt 없는 img 0, 장식 svg·canvas 노출 0, `lang="ko"`, viewport 메타 그대로. HEAD와 같다 | PASS |
+| 62 | 숨은 reveal | 7개 `unify6` 실행과 4폭 `widths`에서 끝까지 스크롤한 뒤 0 / 25, 안 그려진 디바이더 0 | PASS |
+| 63 | reduced-motion | 로드 직후·스크롤 뒤 숨은 reveal 0, 실행 중 애니메이션 0, 보케는 hero 정지 점만(최대 alpha 0.255), calendar·share 캔버스 숨김, 전구 1, BGM 링 정지. 런타임 전환 결과는 보케 무작위 값 말고 HEAD와 같다 | PASS |
+| 64 | JS 비활성 | `nojs`가 HEAD와 같다(reveal 보임, D-day 숨김, 지도 상자 없음, notice·couple·달력 캡션·주소 글자 그대로) | PASS |
+| 65 | lightbox | `lightbox`·`lbkeys`(핀치 3배 제한, 더블탭, 팬 제한, 키보드, 포커스 순환, 스크롤 잠금, 뒤로가기, 끌어 닫기) 결과가 같다. 5번째 사진이 09 → 05로 바뀐 것(순서 변경)만 다르다 | PASS |
+| 66 | 외부 요청 | 글꼴 하위 집합만 바뀌었다: Pretendard SemiBold 82번이 늘고 Pretendard Medium 82번과 Gowun Batang 112번이 빠졌다(라벨 500 → 600, 장소명 700 → 400으로 쓰는 글자 묶음이 바뀐 결과). 모두 https, 새 도메인 없음 | PASS |
+| 67 | 코드 검사 | `node --check script.js` 통과, `script.js`·`style.css` 한글 0건, static3 50/50, static_checks는 오탐 줄 번호만 바뀜 | PASS |
+
+### 6차 직접 수정
+
+없음. 페이지 코드에서 고칠 결함이 나오지 않았고, W9·W10은 규칙 문구나 디자인 판단이 필요하다.
+
+### 기존 WARNING 현황
+
+- W6: **부분 해소**(6-3). 남은 곳: `04_motion-designer_motion-spec.md:557, 566-576, 879`, `02_copy-writer_copy.md:160`
+- W7: 그대로. 위치 `script.js:755-767`(가로 휠 450ms 잠금, `GAL.WHEEL_LOCK` `:24`)
+
+### 6차에서 나온 이슈와 수정 제안
+
+- [ ] **W6 잔여 (문서, 페이지 영향 없음)** → motion-designer가 아래처럼 고친다
+  - `04_motion-designer_motion-spec.md:557` "현재 + 이웃 + 미리 받기 = 02, 01, 08" → "= 01, 02, 03"
+  - `:566-576` 4-1-8 예시의 첫 슬라이드를 01 세로(`data-full="images/photos/01.jpg" data-w="1066" data-h="1600"`, `g-slide--landscape` 없음, srcset `thumb/01.jpg 600w, 01.jpg 1066w`)로 바꾸고, 주석 "14 more slides in concept order"는 "in file-number order (02 and 15 carry --landscape)"로
+  - `:879` "갤러리 근처에서 02, 01, 08만 요청" → "01, 02(썸네일), 03만 요청"
+  - `02_copy-writer_copy.md:160` "그리드 버튼 접근성 이름" → "슬라이드 버튼 접근성 이름"(카피 시트는 사용자가 직접 고치는 파일이라 QA가 손대지 않았다)
+- [ ] **W8 (문서, 페이지 영향 없음) 모션 명세의 예전 면·그릇 표현** → motion-designer가 고친다
+  - `04_motion-designer_motion-spec.md:55` "surface(guestbook, 카드)" → "surface(카드, 사진 매트)"
+  - `:336` venue 그룹 "② 정보 카드 + 주소 복사" → "② 장소명·주소 + 주소 복사 + 지도 + 지도 버튼"(지금 `.venue__main` 한 덩어리) "③ 교통편"
+  - `:337` "surface 위 구간이라 보케 없음" → "보케 구간이 아니라 보케 없음"
+- [ ] **W9 (규칙 문구 ↔ 구현) 예외가 문서에 없다** → concept-director가 둘 중 하나를 고른다
+  - 라벨 줄 높이: 컨셉 시트 `typography.scale.label`과 감사 R4 T7은 1.6인데 `style.css:762` `.account__side` 1.5, `:813` `.gb-label` 1.4다. ⓐ 문서에 "한 줄 라벨이라 줄 높이는 자리에 따라 1.4~1.6"을 적거나 ⓑ 두 줄을 `/1.6`으로 바꾼다. ⓑ에서 `.account__side`는 summary가 높이 56px로 가운데 정렬이라 화면이 그대로이고, `.gb-label`은 줄 상자가 19.6 → 22.4px가 되어 라벨 글자가 1.4px 내려가고 아래 필드가 2.8px씩 내려간다. 참고로 05 요약 마지막 줄의 "couple 행의 세로 정렬에 영향" 걱정은 해당하지 않는다. `.couple__role`은 이미 1.6이다
+  - R8 "8 … 80만 쓴다": 6-1의 단계 밖 값 표(붙은 두 줄 4·2, 버튼·입력 안쪽 22·14, 포커스 링 자리 4, 아이콘 간격 2~6)를 예외로 한 줄 적는다. 코드는 바꾸지 않아도 된다
+- [ ] **W10 (화면, 데스크톱에서 확인) `style.css:815-836` 방명록 textarea 손잡이가 16px 곡선 테두리 위에 겹친다** → concept-director와 frontend가 정한다. 선택지: ⓐ `.gb-textarea { resize: none; }`(크기 조절을 없앤다. 500자 제한이라 안쪽 스크롤로 충분하다) ⓑ R7의 예외로 textarea 오른쪽 아래 모서리만 작게(예: `border-bottom-right-radius: 10px`) ⓒ 그대로 둔다(데스크톱 마우스 사용자만 보는 작은 흠). QA 추천은 ⓐ다. 바꾸면 QA가 같은 캡처(`corner6.mjs`)로 다시 본다
+
+### 참고 (판정 대상 아님)
+
+- 사진 창 → 버튼 줄은 R8 표의 12지만, 창 안쪽 위아래 4px(포커스 링 자리) 때문에 사진 아래 끝 → 버튼 원은 화면에서 16이다. 감사 전과 같고 모션 명세 4-1-2가 "프레임 아래 12px(뷰포트 패딩 포함 16px)"로 적었다
+- 360·375에서 주차 안내 둘째 줄은 "…연계 주차장으로 / 안내해 드립니다."로 끊긴다(`text-wrap: pretty`, 한 어절만 떨어지지 않음). 390·430·1280은 한 줄이다
+- `05_frontend-developer_summary.md:9`의 파일 줄 수는 캐러셀 반영 때 값이다
+
+### 전후 비교 스크린샷 (scratchpad, 저장소에 넣지 않음)
+
+`/private/tmp/claude-501/-Users-inhyeok-Workspace-wedding-letter/cc1402ba-2bf0-4475-9039-e013d45393f0/scratchpad/qa6/` 아래. `shots-base-*`는 HEAD `9bc0a6a`, `shots-cur-*`는 작업 트리다.
+
+| 대상 | 전 (HEAD) | 후 (작업 트리) |
+|---|---|---|
+| 오시는 길(지도 자리 표시) | `shots-base-motion-390x844/06b-venue-map-placeholder.png` | `shots-cur-motion-390x844/06b-venue-map-placeholder.png` (360: `shots-*-motion-360x780/06b-…`) |
+| 방명록(계좌에서 이어지는 구간) | `shots-base-motion-390x844/08c-account-to-guestbook.png` | `shots-cur-motion-390x844/08c-account-to-guestbook.png` |
+| 방명록 데스크톱 컬럼 경계 | `shots-base-motion-1280x900/11-desktop-guestbook.png` | `shots-cur-motion-1280x900/11-desktop-guestbook.png` |
+| hero 날짜(3배 확대) | `shots-base-motion-390x844/00b-hero-date-x3.png` | `shots-cur-motion-390x844/00b-hero-date-x3.png` (첫 화면 전체 `00-first-screen.png`) |
+| 계좌(펼침) | `shots-base-motion-390x844/08b-account-expanded.png` | `shots-cur-motion-390x844/08b-account-expanded.png` (접힘 `08-account.png`) |
+| 그 밖 | 달력 `04-calendar.png`, couple `03-couple.png`, share `10-share.png`, 갤러리 `12a~12d`, 전체 `full.png` | 같은 이름. 375x548 첫 화면 `shots-cur-motion-375x548/00-first-screen.png`, reduced `shots-cur-reduced-390x844/` |
+| textarea 모서리(W10, 6배) | `corner/textarea-corner-base-1280.png` | `corner/textarea-corner-cur-1280.png` |

@@ -52,7 +52,7 @@ concept_alignment:
 |---|---|
 | 방식 | 구간 섹션마다 `<canvas class="bokeh" aria-hidden="true">` 1개. 섹션 `position: relative; isolation: isolate`, 캔버스 `position: absolute; inset: 0; z-index: 0; pointer-events: none`, 섹션의 나머지 자식은 `position: relative; z-index: 1` |
 | 구간 | `data-bokeh="hero"`, `data-bokeh="calendar"`, `data-bokeh="share"` 세 섹션만. 다른 섹션에는 캔버스를 두지 않는다 |
-| 이 구조를 고른 이유 | 캔버스가 섹션 안에 갇혀서 ① 다른 섹션·surface(guestbook, 카드)·데스크톱 컬럼 바깥 면에 보케가 나갈 수 없고 ② hero 사진(불투명 JPEG, z-index 1)이 항상 보케 앞에 온다. fixed 전체 화면 캔버스는 구간 경계 계산과 마스킹이 따로 필요하다 |
+| 이 구조를 고른 이유 | 캔버스가 섹션 안에 갇혀서 ① 다른 섹션·surface(카드, 사진 매트)·데스크톱 컬럼 바깥 면에 보케가 나갈 수 없고 ② hero 사진(불투명 JPEG, z-index 1)이 항상 보케 앞에 온다. fixed 전체 화면 캔버스는 구간 경계 계산과 마스킹이 따로 필요하다 |
 | 해상도 | `canvas.width = section.clientWidth`, `canvas.height = section.clientHeight` (DPR 1 고정). 390x664 hero 기준 약 1.0MB 메모리 |
 | 그리기 | 색별 스프라이트 2장(128x128 오프스크린 캔버스, 방사형 그라데이션)을 미리 만들고 매 프레임 `drawImage`로 크기만 바꿔 찍는다. 프레임마다 `createRadialGradient`를 만들지 않는다 |
 | 프레임 | rAF 루프에서 33ms 미만 간격의 프레임은 건너뛴다(30fps). 8px/s 이하 이동이라 30fps에서도 프레임당 0.27px 이하로 매끄럽다 |
@@ -333,8 +333,8 @@ function step(zone, dt, sprites, canSpawn) {
 
 ### 2-6. Venue / Account / Guestbook
 
-- 공통 reveal, 섹션당 최대 3그룹. 예: venue ① 헤더 ② 정보 카드 + 주소 복사 ③ 길찾기 버튼·교통편 / account ① 헤더 ② 신랑측 ③ 신부측 / guestbook ① 헤더 ② 폼 ③ 안내.
-- surface 위 구간이라 보케 없음.
+- 공통 reveal, 섹션당 최대 3그룹. 예: venue ① 헤더 ② 장소명·주소·주소 복사(2026-10-12 카드 없음) ③ 지도·길찾기 버튼·교통편 / account ① 헤더 ② 신랑측 ③ 신부측 / guestbook ① 헤더 ② 폼 ③ 안내.
+- 보케 구간(hero, calendar, share)이 아니라 보케 없음.
 - **reduced-motion**: 즉시 표시.
 
 ### 2-7. Share (보케 구간, 마지막 섹션)
@@ -427,7 +427,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 
 ### 4-1. 갤러리 캐러셀 (Must: 구조·스와이프·버튼·접근성·lightbox 연결·로딩 창 / Should: 이미지 로드 페이드·이웃 탭 / Nice: 전환 중 잡기·트랙패드 가로 휠) (2026-10-10 갤러리 캐러셀로 변경)
 
-3x5 썸네일 그리드를 대체한다. 이 결정은 컨셉 시트의 갤러리 그리드 명세(3열, 2:3 셀, 행 단위 챕터)보다 우선한다. 사진 순서(02 01 08 / 03 09 12 / 07 13 05 / 11 06 14 / 10 04 15), alt, 슬라이드 버튼 이름("사진 {n} / 15 크게 보기: {alt}", 카피 시트 gallery_controls)은 그대로 쓴다. 한 화면에 사진 1장, 좌우 스와이프와 이전/다음 버튼으로 넘긴다. 썸네일 목록 없음, 자동 넘김 없음.
+3x5 썸네일 그리드를 대체한다. 이 결정은 컨셉 시트의 갤러리 그리드 명세(3열, 2:3 셀, 행 단위 챕터)보다 우선한다. 사진 순서(2026-10-12부터 파일 번호순 01~15, `_workspace/00_user-input.md` "갤러리 순서를 파일 번호순으로"), alt, 슬라이드 버튼 이름("사진 {n} / 15 크게 보기: {alt}", 카피 시트 gallery_controls)은 그대로 쓴다. 한 화면에 사진 1장, 좌우 스와이프와 이전/다음 버튼으로 넘긴다. 썸네일 목록 없음, 자동 넘김 없음.
 
 #### 4-1-1. 프레임 비율
 
@@ -444,7 +444,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 - 15장 중 13장이 정확히 2:3이라 프레임을 2:3으로 두면 대부분이 잘림·여백 없이 프레임을 채운다. 가로 2장은 자르지 않고 매트 위에 올린다. hero가 가로 사진을 위아래 여백과 함께 보여 주는 "액자 속 사진 한 장" 구도와 같은 방식이다.
 - 세로 사진은 `object-fit: cover`. 1066x1600(0.66625)과 2:3(0.6667)의 차이는 342px 프레임에서 0.2px라 잘림이 보이지 않고, contain이면 생길 수 있는 매트 머리카락선이 생기지 않는다.
 - 가로 사진(02, 15)은 `object-fit: contain`(슬라이드에 `.g-slide--landscape`). 기존 `object-position`(70% 50%, 54% 50%)은 쓰지 않는다.
-- 순서상 첫 장이 가로(02)라서 갤러리 첫 화면은 매트 위의 사진 한 장으로 시작한다. 순서는 사용자 결정이라 바꾸지 않는다.
+- (2026-10-12) 순서가 파일 번호순(01~15)으로 바뀌어 첫 장은 세로 사진 01이다. 가로 사진은 2번(02)과 15번(15)이다.
 
 #### 4-1-2. 레이아웃과 치수
 
@@ -459,7 +459,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 | peek를 두는 이유 | "옆으로 넘긴다"는 단서를 글 없이 준다. 16px는 한 장이 주인공이라는 인상을 해치지 않는 폭이다 |
 | 세로 패딩 | 뷰포트 `padding-block: 4px`. 현재 슬라이드 포커스 링(2px + offset 2px)이 뷰포트 클립에 잘리지 않게 한다. 헤더와 캐러셀 사이 간격은 기존 헤더-그리드 간격을 그대로 쓴다 |
 | 버튼 줄 | 프레임 아래 12px(뷰포트 패딩 포함 16px). 가운데 정렬 한 덩어리: [이전] 8px [카운터] 8px [다음], 높이 44px. 한 손 엄지가 닿는 가운데에 모은다 |
-| 이전/다음 버튼 | 터치 영역 44x44. 보이는 원 지름 40px(`::before`, inset 2px), 1px primary `#C9A09F` 테두리(장식, BGM 토글과 같은 모양), 면 투명. 아이콘은 lightbox와 같은 chevron 인라인 SVG(`M15 5l-7 7 7 7` / `M9 5l7 7-7 7`, viewBox 24) 20px, stroke accent `#8E5558` 1.4px(bg 대비 5.45, 비텍스트 3:1 충족), `aria-hidden="true"` |
+| 이전/다음 버튼 | 터치 영역 44x44. 보이는 원 지름 40px(`::before`, inset 2px), 1px accent `#8E5558` 테두리(2026-10-12 디자인 통일: 원형 버튼 윤곽선은 accent, BGM 토글과 같은 모양), 면 투명. 아이콘은 lightbox와 같은 chevron 인라인 SVG(`M15 5l-7 7 7 7` / `M9 5l7 7-7 7`, viewBox 24) 20px, stroke accent `#8E5558` 1.4px(bg 대비 5.45, 비텍스트 3:1 충족), `aria-hidden="true"` |
 | 사진 위 버튼 금지 | 좌우 화살표를 사진 위에 얹지 않는다. 컨셉이 사진 위 글자·버튼·그라데이션을 금지한다 |
 | 끝에서 버튼 | 1번의 이전, 15번의 다음: `aria-disabled="true"`, opacity 0.3, `cursor: default`, 누름 scale 없음. `disabled` 속성은 쓰지 않는다(누르던 버튼이 비활성되며 포커스가 body로 빠지는 것을 막는다) |
 | 카운터 | "3 / 15". Cormorant Garamond 400 16px, letter-spacing 0.1em, line-height 1(lightbox 카운터와 같은 글꼴·크기). 현재 번호 text `#3B2D2A`(12.26), " / 15" muted `#75655E`(5.17). `font-variant-numeric: lining-nums tabular-nums`, `min-width: 4.5em`, 가운데 정렬(1자리↔2자리로 바뀌어도 버튼이 움직이지 않게). `lang="en"`, `aria-hidden="true"`(낭독은 `.g-status`가 맡는다) |
@@ -554,7 +554,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 | 로딩 창 (JS) | 캐러셀이 화면 한 개 거리 안에 처음 들어오면(`IntersectionObserver`, `rootMargin: '100% 0px'`, 1회) 그때부터, 그리고 `goTo` 때마다 `index − 1` ~ `index + 2` 슬라이드 img의 `loading`을 `'eager'`로 바꾼다(앞으로 2장, 뒤로 1장). 바꾼 값은 되돌리지 않는다. 나머지는 `lazy`로 둔다. IO 미지원이면 처음부터 창을 채운다 |
 | `data-src`를 쓰지 않는 이유 | JS 꺼짐 폴백(4-1-9)에서도 모든 사진이 보여야 한다. 클립된 뷰포트 밖 lazy 이미지를 언제 받을지는 브라우저마다 달라서, 다음 장은 `eager` 전환으로 확실히 미리 받는다. `eager` 전환으로 로딩이 시작되지 않는 브라우저도 다음 장이 peek로 보이는 순간 받기 시작하므로, 최악의 경우에도 한 장 늦게 뜨는 정도다 |
 | 로드 페이드 (Should) | 슬라이드 img가 `complete`가 아니면 `.is-loading`(opacity 0)에서 시작해 `load`(또는 `error`)에 opacity 1, 300ms(`--dur-base`) `--ease-out`. 로딩 중에는 프레임 surface 면만 보인다. 스피너 없음. 기존 `initThumbs`의 대상 선택자만 슬라이드 img로 바꿔 쓰면 된다 |
-| 예산 | 갤러리 첫 화면(현재 + 이웃 + 미리 받기 = 02, 01, 08)은 DPR 3에서 약 1.0MB, DPR 2에서 약 0.8MB. 15장을 끝까지 넘기면 원본 합계 약 3.7MB. 썸네일 15장(1.48MB)을 한꺼번에 받던 그리드보다 첫 비용은 낮고, 끝까지 보는 하객만 더 받는다 |
+| 예산 | 갤러리 첫 화면(현재 + 이웃 + 미리 받기 = 01, 02, 03, 2026-10-12 파일 번호순)은 DPR 3에서 약 1.0MB, DPR 2에서 약 0.8MB. 15장을 끝까지 넘기면 원본 합계 약 3.7MB. 썸네일 15장(1.48MB)을 한꺼번에 받던 그리드보다 첫 비용은 낮고, 끝까지 보는 하객만 더 받는다 |
 | 레이어 | 트랙은 15장 너비(약 5,250px)지만 디코딩된 이미지는 로딩 창 안의 4장 남짓이다. 브라우저는 큰 레이어를 타일로 나눠 보이는 부분만 래스터한다 |
 
 #### 4-1-8. 접근성 구조
@@ -563,17 +563,17 @@ html.lb-open .bulb { animation-play-state: paused; }
 <div class="g-carousel reveal" role="group" aria-roledescription="슬라이드" aria-label="웨딩 사진 15장">
   <div class="g-viewport">
     <div class="g-track" id="g-track">
-      <div class="g-slide g-slide--landscape">
+      <div class="g-slide">
         <button type="button" class="g-open" aria-haspopup="dialog"
-                data-full="images/photos/02.jpg" data-w="1600" data-h="1194"
+                data-full="images/photos/01.jpg" data-w="1066" data-h="1600"
                 aria-label="사진 1 / 15 크게 보기: {alt}">
-          <img src="images/photos/02.jpg"
-               srcset="images/photos/thumb/02.jpg 804w, images/photos/02.jpg 1600w"
+          <img src="images/photos/01.jpg"
+               srcset="images/photos/thumb/01.jpg 600w, images/photos/01.jpg 1066w"
                sizes="(min-width: 480px) 432px, calc(100vw - 48px)"
-               width="1600" height="1194" loading="lazy" decoding="async" draggable="false" alt="{alt}">
+               width="1066" height="1600" loading="lazy" decoding="async" draggable="false" alt="{alt}">
         </button>
       </div>
-      <!-- 14 more slides in concept order; portrait slides have no --landscape modifier -->
+      <!-- 14 more slides in file-number order (01-15); landscape slides 02 and 15 add the g-slide--landscape modifier -->
     </div>
   </div>
   <div class="g-controls">
@@ -699,7 +699,7 @@ html:not(.js) .g-controls { display: none; }
   content: "";
   position: absolute;
   inset: 2px;
-  border: 1px solid var(--color-primary);
+  border: 1px solid var(--color-accent); /* 2026-10-12 design unification */
   border-radius: 50%;
 }
 .g-nav[aria-disabled="true"] { opacity: 0.3; cursor: default; }
@@ -876,7 +876,7 @@ function initCarousel() {
 QA 확인값:
 - 390px 폭 창에서 프레임 342x513, 이웃 peek 16px.
 - 다음 버튼 14번 → 카운터 "15 / 15", 다음 버튼 `aria-disabled="true"`, 포커스는 다음 버튼에 남는다.
-- 네트워크: hero에 머무는 동안 갤러리 사진 요청 0건. 갤러리 근처에서 02, 01, 08만 요청(DPR에 따라 원본 또는 썸네일). 4번째 이후는 넘기기 전까지 요청되지 않는다. 브라우저가 클립 밖 lazy 이미지를 더 일찍 받으면 1~2장 더 보일 수 있으며 FAIL로 보지 않는다.
+- 네트워크: hero에 머무는 동안 갤러리 사진 요청 0건. 갤러리 근처에서 01, 02, 03만 요청(DPR에 따라 원본 또는 썸네일). 4번째 이후는 넘기기 전까지 요청되지 않는다. 브라우저가 클립 밖 lazy 이미지를 더 일찍 받으면 1~2장 더 보일 수 있으며 FAIL로 보지 않는다.
 - 4번째 슬라이드에서 lightbox를 열어 7번째까지 넘기고 닫으면 카운터 "7 / 15", `document.activeElement`가 7번째 슬라이드 버튼.
 - 세로로 쓸어 올리면 캐러셀 위에서 시작해도 페이지가 스크롤되고 트랙은 움직이지 않는다.
 
@@ -959,7 +959,7 @@ QA 확인값:
 | 자동재생 | **하지 않는다.** 로드 시 `play()` 호출 없음. 첫 스크롤·첫 탭으로 시작하는 것도 하지 않는다. 토글 버튼으로만 켠다 |
 | 위치 | `position: fixed; top: max(16px, env(safe-area-inset-top)); right: max(16px, calc((100vw - 480px) / 2 + 16px)); z-index: 50`. 데스크톱에서도 480px 컬럼 안 우상단에 머문다 |
 | 크기 | 시각 원 40px, 터치 영역 44x44(`::before`로 사방 2px 확장) |
-| 면 | 배경 `rgb(251 246 241 / 0.92)`, 1px primary `#C9A09F` 테두리(장식). 그림자·backdrop-filter 없음 |
+| 면 | 배경 `rgb(251 246 241 / 0.92)`, 1px accent `#8E5558` 테두리(2026-10-12 디자인 통일). 그림자·backdrop-filter 없음 |
 | 꺼짐 아이콘 | 음표 + 대각선 사선(왼쪽 위 → 오른쪽 아래). 인라인 SVG, stroke accent `#8E5558` 1.4px, 18px |
 | 켜짐 아이콘 | 음표(사선 없음) + glow 링 |
 | 아이콘 전환 | 두 아이콘을 겹쳐 두고 opacity 크로스페이드 200ms(`--dur-fast`) |

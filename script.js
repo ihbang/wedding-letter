@@ -1373,7 +1373,7 @@
   /* ---------- Venue map (spec 4-7) ---------- */
 
   // Static Kakao map with one marker: no drag, zoom, tap or animation. Any failure (SDK load, 401/403 auth,
-  // address lookup, a loader that never calls back) hides the box; the venue card and map buttons stay.
+  // address lookup, a loader that never calls back) hides the box; the venue info and map buttons stay.
   function initVenueMap() {
     const box = document.getElementById('venue-map');
     if (!box) return;
