@@ -3,6 +3,7 @@
 - 작성일: 2026-10-10
 - 갱신: 2026-10-10, 사용자 카피 수정 반영(9장). 바뀐 부분만 고쳤다.
 - 갱신: 2026-10-11, 갤러리를 3x5 그리드에서 한 장씩 넘기는 캐러셀로 바꾸고 사진 1·2번 순서를 맞바꿨다(10장). 갤러리와 lightbox 연결 부분만 고쳤다.
+- 갱신: 2026-10-12, 오시는 길에 카카오맵 고정 지도를 넣고 카카오 키를 `<head>` 메타 태그 한 곳으로 옮겼다(12장). venue 섹션과 카카오 공유의 키 읽는 줄만 고쳤다.
 - 입력: `00_user-input.md`, `01_concept-director_concept-sheet.md`, `02_copy-writer_copy.md`, `03_image-artist_manifest.md`, `04_motion-designer_motion-spec.md`
 - 산출물: `index.html`(454줄), `style.css`(1,099줄), `script.js`(1,442줄). 줄 수와 3장의 `파일:줄`은 캐러셀 반영 후 기준이다. 어제의 "Warm Paper & Ink" 파일을 전부 새로 썼다.
 - 이전 컨셉 자산(`jo--*`, `op1789048062-*`, `divider-hairline.svg`, `og-thumbnail.jpg`, `monogram-iy.svg`, `floral-*`, `gallery-placeholder-*`, `hero-illustration.png`)은 세 파일 어디에서도 참조하지 않는다(grep 0건). 파일 자체는 지우지 않았다.
@@ -14,8 +15,9 @@
 | Google Fonts 1회 요청: Gowun Batang 400/700, Cormorant Garamond 300/400/500 + 400 italic, Allura 400 (`display=swap`) | 본문·제목, 영문 날짜·eyebrow, '&'·Thank you | `<head>` |
 | Pretendard v1.3.9 dynamic-subset (jsDelivr) | 주소·계좌·버튼·폼 | `<head>` |
 | Kakao JS SDK 2.7.2 (`t1.kakaocdn.net`) | 카카오톡 공유 | 키가 설정된 경우에만, 버튼을 처음 누를 때 동적 로드 |
+| 카카오맵 JavaScript API (`dapi.kakao.com/v2/maps/sdk.js?autoload=false&libraries=services`, 이어서 `t1.kakaocdn.net/mapjsapi`의 본체·services) | 오시는 길 고정 지도 + 주소 검색 | 지도 상자가 한 화면 거리 안에 들어올 때 1회 동적 로드(2026-10-12) |
 
-애니메이션 라이브러리, jQuery, 지도 SDK는 쓰지 않았다. 모션은 Canvas 2D, CSS, rAF로 구현했다.
+애니메이션 라이브러리와 jQuery는 쓰지 않았다. 모션은 Canvas 2D, CSS, rAF로 구현했다.
 
 ## 2. 섹션 구조
 
@@ -26,7 +28,7 @@
 | 3 | couple-intro (`#couple`) | background | ① 헤더 ② 신랑·신부 두 줄("아들"/"딸"은 같은 폭 칸 `.couple__rel`) | 없음 |
 | 4 | calendar (`#calendar[data-bokeh=calendar]`) | background | ① string-lights + 헤더 ② 한글 일시 + 달력(caption "JANUARY 2027") ③ D-day | 보케, 전구 점등·호흡 |
 | 5 | gallery (`#gallery`) | background | ① 헤더 + 안내 ② 캐러셀 전체(`.g-carousel`: 사진 창 + 이전·카운터·다음 줄). 슬라이드 개별 등장 없음 | 헤더 위 sprig-divider ②, 캐러셀 트랙 전환(350ms) |
-| 6 | venue (`#venue`) | background + surface 카드 | ① 헤더 ② 정보 카드 + 주소 복사 + 지도 버튼 ③ 교통편 | 없음 |
+| 6 | venue (`#venue`) | background + surface 카드 | ① 헤더 ② 정보 카드 + 주소 복사 + 카카오맵 고정 지도(2026-10-12) + 지도 버튼 ③ 교통편 | 없음 (지도 위 모션 없음) |
 | 7 | notice (`#notice`) | background | ① 헤더(NOTICE / 축하 화환 안내) ② 본문 2행 | 없음 (보케 구간 아님) |
 | 8 | account (`#account`) | background + surface 카드 | ① 헤더 + 안내문 ② 신랑측 카드 ③ 신부측 카드. 카드는 `details.card.account__card.reveal`이고 기본으로 접혀 있다(2026-10-11) | 계좌 접기: summary 화살표 회전 200ms, 펼친 내용 opacity 250ms |
 | 9 | guestbook (`#guestbook`) | surface 밴드 | ① 헤더 + 안내 ② 폼 ③ 전달 안내 | 없음 |
@@ -73,7 +75,8 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 4-2 아래로 끌어 닫기(80px, scrim 0.96→최저 0.4), Android 뒤로가기(`pushState`/`popstate`, 이중 닫기 방지) | 구현 | script.js:923-969, 1032, 1152 |
 | 4-4 계좌 접기 | 구현(2026-10-11 사용자 피드백). `<details>/<summary>`, 기본 접힘, 높이 애니메이션 없음. 화살표 `rotate(0→180deg)` `--dur-fast` 200ms `--ease-standard`, 열린 내용 `opacity 0→1` `--dur-modal` 250ms `--ease-out`(`::details-content`에 걸고, 이 의사 요소가 없는 엔진은 `.account__body`에 건다). reduced-motion은 토큰 0ms로 즉시. JS가 꺼져도 `<details>` 기본 동작으로 접고 편다 | index.html:297-334, style.css:719-757 |
 | 4-6 카카오 공유 + 링크 복사 폴백 | 구현 | script.js:1312 |
-| 4-7 길찾기 버튼 | 네이버 지도, 카카오맵 2개. 티맵은 미구현(아래 4장) | index.html:259-262 |
+| 4-7 길찾기 버튼 | 네이버 지도, 카카오맵 2개. 티맵은 미구현(아래 4장) | index.html:263-266 |
+| 4-7 지도 임베드(지연 로딩, 지도 위 모션 없음) | 구현(2026-10-12). 카카오맵 고정 지도, 12장 | index.html:258-262, style.css:681-696, script.js:1373-1443 |
 | 4-8 방명록 상태 문구(200ms 페이드), 제출 중 비활성 | 구현 | script.js:1364 |
 | 4-9 스크롤 큐(1700ms 등장, 2400ms 루프, 첫 스크롤 후 제거, 압축 화면 숨김) | 구현 | style.css:406-437, 1055-1059; script.js:534-543 |
 | 1-7 `window.__bokeh = { config, stats() }` | 구현 | script.js:1441 |
@@ -146,10 +149,15 @@ placeholder(`[[TODO:...]]`)는 모두 채워졌고(2026-10-11), placeholder를 �
 | 교통편 | `.venue__routes` | 지하철, 주차, 내비게이션 3줄. 버스 안내는 없다 |
 | 계좌 | `#groom-account`, `#bride-account`와 앞의 은행명 | 신한은행 110-335-546640(방인혁), 국민은행 298702-04-213005(손유민) |
 | 방명록 접수 주소 | `.gb-form`의 `action` | Formspree |
-| 카카오 JavaScript 키 | `#share-kakao`의 `data-kakao-key` | 카카오 디벨로퍼스 앱 키 |
+| 카카오 JavaScript 키 | `<head>`의 `<meta name="kakao-js-key">` (2026-10-12까지는 `#share-kakao`의 `data-kakao-key`) | 카카오 디벨로퍼스 앱 키. 카카오 공유와 오시는 길 지도가 같이 읽는다 |
+| 지도 주소 | `#venue-address`의 글자 | "서울 송파구 송파대로 155". 주소 복사 버튼과 지도 주소 검색이 같은 글자를 쓴다. 좌표는 코드에 없다 |
+| 지도 확대 수준·로딩 | script.js 맨 위 `MAP` 상수 | `LEVEL: 4`(CSS 1px당 약 2m), `NEAR_MARGIN: '100% 0px'`(한 화면 앞에서 로드), `TIMEOUT: 10000`(10초 안에 마커까지 못 그리면 숨김) |
+| 지도 접근성 이름 | `#venue-map`의 `aria-label` | "더컨벤션 송파문정 위치 지도" |
+| 카카오 디벨로퍼스 설정(사용자) | 카카오 디벨로퍼스 앱 | 카카오맵 사용 설정 켜기, [플랫폼 > Web]에 `https://ihbang.github.io` 등록. 로컬에서 지도를 보려면 `http://localhost:8000`도 등록 |
 
 - 링크 복사와 카카오 공유 링크는 `og:url`을 쓴다. 로컬 미리보기에서도 배포 주소가 복사된다.
 - 카카오 SDK 로드나 공유 호출이 실패하면 링크를 복사하고 카카오 폴백 문구를 띄운다.
+- 카카오맵 SDK 로드·인증(401/403)·주소 검색이 실패하면 지도 상자를 숨긴다. 장소 카드와 지도 버튼은 그대로 남는다.
 
 ## 7. 화면 확인 결과
 
@@ -177,7 +185,7 @@ placeholder(`[[TODO:...]]`)는 모두 채워졌고(2026-10-11), placeholder를 �
 
 1. 설정값은 모두 채워져 있다(6장). 배포 주소, 계좌, 접수 주소, 카카오 키가 바뀌면 6장의 위치를 고친다.
 2. GitHub Pages: 저장소 루트를 그대로 배포한다. `.nojekyll`이 있으므로 Jekyll 처리 없이 정적 파일로 나간다.
-3. 카카오 공유를 쓰면 카카오 디벨로퍼스 앱의 [플랫폼 > Web]에 배포 도메인을 등록한다. SDK 로드나 공유가 실패하면 버튼은 링크 복사로 동작한다.
+3. 카카오 공유를 쓰면 카카오 디벨로퍼스 앱의 [플랫폼 > Web]에 배포 도메인을 등록한다. SDK 로드나 공유가 실패하면 버튼은 링크 복사로 동작한다. 오시는 길 지도는 같은 앱에서 카카오맵 사용 설정도 켜야 나온다. 둘 중 하나라도 빠지면 지도 상자만 숨겨진다(12장).
 4. 카카오톡 미리보기 캐시: 공유 미리보기가 예전 이미지로 보이면 카카오 공유 디버거에서 URL 캐시를 초기화한다(og 이미지는 새 파일명 `og-garden.jpg`를 쓴다).
 5. 배포 후 휴대폰에서 확인할 것: 첫 화면(날짜·사진·이름·장소), BGM 토글, 갤러리 캐러셀 스와이프(가로로 넘김, 세로로는 페이지 스크롤)와 이전/다음 버튼, 라이트박스 스와이프·핀치와 닫은 뒤 캐러셀 번호, 계좌 복사, 방명록 전송 1회, 카카오 공유 미리보기.
 6. 쓰지 않는 예전 자산(`images/divider-hairline.svg`, `images/monogram-iy.svg`, `images/og-thumbnail.*`, `images/floral-*.png`, `images/gallery-placeholder-*.png`, `images/hero-illustration.png`, `images/photos/thumb/hero.jpg`)은 페이지에서 참조하지 않는다. 지울지는 사용자가 정한다.
@@ -339,3 +347,64 @@ notice의 배경과 간격: 컨셉 시트 `layout_mood`가 면을 background와 
 - 토스트 + 버튼 체크: `motion-390-toast.png`, `motion-360-toast.png`
 - 포커스 링(닫힘·열림): `motion-390-focus.png`, `motion-390-focus-open.png`
 - reduced-motion: `reduced-390-*.png`, `reduced-360-*.png`
+
+## 12. 오시는 길 지도 추가 (2026-10-12)
+
+`00_user-input.md` 맨 아래 "오시는 길 지도 추가"만 반영했다. venue 섹션 밖에서는 카카오 키 위치와 공유 코드의 키 읽는 줄 하나만 바뀌었다.
+
+### 바꾼 범위
+
+| 파일 | 바꾼 것 |
+|---|---|
+| index.html | `<head>`에 `<meta name="kakao-js-key">`를 두고 `#share-kakao`의 `data-kakao-key`를 지웠다. 장소 카드와 지도 버튼 사이에 `div.card.venue__map#venue-map[role=img][aria-label="더컨벤션 송파문정 위치 지도"]` > `div.venue__map-canvas[inert]`를 넣었다 |
+| style.css | `.venue__map`: 위 여백 16px, `overflow: hidden`, `isolation: isolate`, `user-select: none`(5차 QA 추가: PC에서 지도를 더블클릭하면 가까운 버튼 글자가 선택되던 문제). 테두리·모서리·surface 면은 `.card` 그대로 쓴다. `.venue__map-canvas`: `width: 100%`, `aspect-ratio: 4 / 3`, `max-height: 280px`, `pointer-events: none`. `html:not(.js) .venue__map { display: none }` |
+| script.js | `KAKAO_MAP_SDK_URL`, `MAP` 상수, `kakaoKey()`(공유와 지도가 같이 씀), `initVenueMap()`, 부팅 줄 `safe('venue-map', ...)`. `initKakao`는 키를 `kakaoKey()`로 읽는다 |
+
+### 동작
+
+- 로딩: IntersectionObserver(`rootMargin: 100% 0px`)로 지도 상자가 한 화면 거리 안에 들어오면 `sdk.js?appkey=…&autoload=false&libraries=services`를 한 번 붙이고 `kakao.maps.load` 뒤에 `services.Geocoder().addressSearch(#venue-address 글자)`로 위치를 찾는다. 그 전에는 `dapi.kakao.com` 요청이 없다. 로딩 중에는 `.card`의 surface 빈 면이 보인다.
+- 지도: `level 4`, `draggable: false`, `scrollwheel: false`, `disableDoubleClickZoom: true`, `keyboardShortcuts: false`, `tileAnimation: false`, 컨트롤 없음, 예식장 마커 1개. 크기가 바뀌면(화면 회전) `relayout()` 뒤 `setCenter()`로 즉시 가운데를 맞춘다. `panTo`는 쓰지 않는다. reduced-motion에서도 따로 분기할 것이 없다.
+- 실패: `sdk.js` 오류(401/403 포함), `kakao.maps.load` 없음, 주소 검색 결과 없음, 지도 생성 예외, 10초 안에 마커까지 못 그림 중 하나면 `#venue-map`에 `hidden`을 건다. 숨기면 카드와 지도 버튼 사이가 원래 16px로 돌아간다. 실패는 예상된 상태라 콘솔에 남기지 않는다.
+- 확대 수준 근거: 카카오맵 4.5.28 본체의 정적 지도 코드가 `SCALE = 0.3125 * 2^level`(WCONG/px, 1 WCONG = 0.4m)이다. level 3은 1px당 약 1m라 390px 화면 지도(340 x 255)의 세로 반폭이 약 128m로 도보 3분 거리의 문정역이 빠질 수 있다. level 4는 약 2m/px로 약 680 x 510m를 보여 준다. 실제 화면에서 역이 안 보이거나 너무 멀어 보이면 `MAP.LEVEL`만 고친다.
+
+### 실제 카카오맵 코드에서 확인한 것
+
+- 4.5.28 본체는 지도 안쪽에 전체 크기의 판을 깔고 `touch-action:none`을 준다. `draggable: false`여도 그 판 위에서 쓸면 페이지가 스크롤되지 않는다. 로고는 `<a href="http://map.kakao.com/" target="_blank">`, 마커는 `<area href="javascript:void(0)">`라 키보드 포커스를 받는다.
+- 그래서 지도를 그리는 `.venue__map-canvas`에 `inert`를 걸었다. inert 하위는 hit-test가 `pointer-events: none`처럼 동작해서 손가락이 바깥 `.venue__map`(touch-action auto)에 닿고, 포커스와 접근성 트리에서도 빠진다. `role="img"`와 이름은 바깥 상자가 가진다. inert를 지원하지 않는 브라우저를 위해 CSS `pointer-events: none`도 같이 뒀다.
+- 로고·저작권 줄은 지도 왼쪽 아래(absolute, bottom 0, 바깥 여백 6px + 안쪽 여백 4px)에 붙는다. 16px 모서리 안쪽에 들어와 가려지지 않는다(재현 스텁 확대 캡처로 확인).
+- `127.0.0.1`에서는 `sdk.js`가 `401 {"errorType":"AccessDeniedError","message":"domain mismatched! ..."}`를 돌려준다. Chrome은 이 JSON 응답을 ORB(`net::ERR_BLOCKED_BY_ORB`)로 막고 script `error` 이벤트를 낸다. 콘솔 오류 줄은 생기지 않았다.
+
+### 확인 (headless Chrome CDP, DPR 2, 터치 에뮬레이션)
+
+로컬 서버 `python3 -m http.server 8776 --bind 127.0.0.1`. Chrome이 Bash 샌드박스 안에서는 뜨지 않아 샌드박스를 끄고 실행했다. 성공 경로는 CDP `Fetch`로 `dapi.kakao.com`과 공유 SDK를 가로채 가짜 `kakao.maps`(load, LatLng, Map, Marker, services.Geocoder)와 가짜 `Kakao`를 돌려주고 확인했다. 가짜 지도는 위의 실제 동작(전체 크기 `touch-action:none` 판, `preventDefault`하는 non-passive 터치 리스너, 포커스 받는 로고·마커 링크)을 그대로 흉내 낸다. 검사 스크립트·결과·스크린샷은 scratchpad `fe-map/`에만 있다. 방명록(`*formspree*`) 요청은 모든 실행에서 막았다.
+
+| 항목 | 결과 |
+|---|---|
+| 요청 시점 | hero 1.5초 동안 `dapi.kakao.com` 0건. 지도 상자 위쪽이 화면 아래 끝에서 971px(390x844) 떨어져 있을 때 0건, 721px일 때 1건. 이후에도 1건, `script[src*=dapi]` 1개 |
+| 지도 생성 값 | level 4, draggable·scrollwheel false, disableDoubleClickZoom true, keyboardShortcuts false, tileAnimation false, 컨트롤 0, `panTo` 0. 주소 검색어 "서울 송파구 송파대로 155", 마커 1개 = 지도 중심 = 검색 결과 |
+| 크기·배치 | 상자 = 컬럼 폭, 캔버스 = 상자 안쪽 폭. 360: 312 x 234.5, 390: 342 x 257, 430: 382 x 282(캔버스 280에서 멈춤). 카드 → 16px → 지도 → 16px → 버튼. 모서리 16px, 1px line 테두리, surface 면 |
+| 세로 쓸기 | 지도 위로 160px 쓸어 올리면 페이지가 약 200px 스크롤, 가짜 지도의 터치 리스너 호출 0회 |
+| 대조 실험 | 같은 페이지에서 inert와 pointer-events를 잠시 풀면 같은 쓸기에 스크롤 0px, 터치 리스너 13회, Tab이 로고 링크로 들어간다. 검사가 실제 차이를 잡는다는 뜻이다 |
+| 탭 | 지도 가운데·로고 위치를 눌러도 지도 click 0, 로고 click 0, 주소 그대로. 포커스는 글자를 눌렀을 때와 같이 `<main tabindex="-1">` |
+| 키보드·접근성 | 주소 복사 버튼에서 Tab → 네이버 지도(지도 건너뜀). 접근성 트리 role image, 이름 "더컨벤션 송파문정 위치 지도" |
+| 회전 | 390 → 430 폭 변경 시 `relayout`·`setCenter` 각 1회 더, 캔버스 380px |
+| reduced-motion | 지도 값 동일, 지도 안 애니메이션 0개, 상자 transition 0s |
+| 카카오 공유 | 두 번 눌러도 공유 SDK 요청 1건·태그 1개, `Kakao.init` 1회(메타 키), `sendDefault` 2회(제목 og:title), 폴백 문구 없음. 지도 SDK는 다시 불리지 않음. 공유 SDK를 막은 회귀 실행에서는 예전처럼 링크 복사 폴백 |
+| 실패 경로 | 실제 네트워크(401 → ORB) 360·390, 403 응답, 연결 거부, 주소 검색 결과 없음, 지도 생성 예외, `load` 무응답(9.8초에 숨김) 모두: 상자 `hidden`·높이 0, 카드와 지도 버튼 그대로, 카드 → 버튼 16px |
+| JS 꺼짐 | 상자 `display: none`, `dapi.kakao.com` 0건 |
+| 공통 | 모든 실행에서 가로 스크롤 없음(360/390/430), 끝까지 스크롤 후 숨은 reveal 0개, 페이지 코드의 콘솔 오류·경고·예외 0건. 기존 `fill-check/check.mjs` 사본으로 계좌·주소·링크 복사 회귀 통과. `node --check script.js` 통과 |
+
+### 배포 후 사용자가 확인할 것
+
+- 실제 지도 타일, 마커 모양, 로고·저작권 위치는 `127.0.0.1`에서 인증이 막혀 볼 수 없었다. 배포 주소에서 휴대폰으로 지도가 나오는지, 예식장 주변 길과 문정역이 함께 보이는지 본다.
+- 지도 위를 손가락으로 위아래로 쓸었을 때 페이지가 스크롤되는지, 지도를 눌러도 아무 일이 없는지 본다.
+- 지도가 안 나오고 장소 카드 바로 아래 지도 버튼이 붙어 있으면 카카오 디벨로퍼스에서 카카오맵 사용 설정과 Web 도메인 등록을 확인한다.
+
+### 스크린샷 (scratchpad, 저장소에 넣지 않음)
+
+`/private/tmp/claude-501/-Users-inhyeok-Workspace-wedding-letter/cc1402ba-2bf0-4475-9039-e013d45393f0/scratchpad/fe-map/`
+
+- 성공(가짜 지도, 화면에 "STUB MAP" 표시): `venue-success-390.png`, `venue-success-360.png`, `venue-success-430.png`, `venue-success-390-reduced.png`
+- 로고 모서리 4배 확대: `venue-success-{360,390,430}-logo-corner-x4.png`
+- 실패: `venue-real-390.png`, `venue-real-360.png`(실제 401), `venue-fail-{403,net,zero,throw,hang}-390.png`
+- JS 꺼짐: `venue-nojs-390.png`

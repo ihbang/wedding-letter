@@ -5,6 +5,7 @@
   'use strict';
 
   const KAKAO_SDK_URL = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
+  const KAKAO_MAP_SDK_URL = 'https://dapi.kakao.com/v2/maps/sdk.js';
 
   const HERO_SEQ = Object.freeze({ FONT_WAIT: 500, PHOTO: 300, BOKEH: 600, BOTTOM: 900, CUE: 1700 }); // ms, spec 2-1
   const SCROLL_CUE_HIDE_Y = 24;   // spec 4-9
@@ -21,6 +22,9 @@
   });
   // Gallery carousel (spec 4-1). Swipe thresholds are shared with the lightbox via LB.
   const GAL = Object.freeze({ BEHIND: 1, AHEAD: 2, NEAR_MARGIN: '100% 0px', WHEEL_STEP: 40, WHEEL_LOCK: 450 });
+  // Venue map (spec 4-7). Level 4 is about 2 m per CSS px, so a 340 x 255 map spans about 680 x 510 m:
+  // the streets around the venue and Munjeong station (3 minutes on foot). SDK fetch starts one screen ahead.
+  const MAP = Object.freeze({ LEVEL: 4, NEAR_MARGIN: '100% 0px', TIMEOUT: 10000 });
 
   const root = document.documentElement;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -74,6 +78,7 @@
 
   const metaContent = (selector) => document.querySelector(selector)?.getAttribute('content') || '';
   const siteUrl = () => metaContent('meta[property="og:url"]');
+  const kakaoKey = () => metaContent('meta[name="kakao-js-key"]');
 
   /* ---------- Live region + toast (spec 4-4) ---------- */
 
@@ -1319,7 +1324,7 @@
   function initKakao() {
     const btn = document.getElementById('share-kakao');
     if (!btn) return;
-    const key = btn.dataset.kakaoKey;
+    const key = kakaoKey();
     let sdk = null;
 
     const loadSdk = () => {
@@ -1363,6 +1368,78 @@
         fallback();
       }
     });
+  }
+
+  /* ---------- Venue map (spec 4-7) ---------- */
+
+  // Static Kakao map with one marker: no drag, zoom, tap or animation. Any failure (SDK load, 401/403 auth,
+  // address lookup, a loader that never calls back) hides the box; the venue card and map buttons stay.
+  function initVenueMap() {
+    const box = document.getElementById('venue-map');
+    if (!box) return;
+    const canvas = box.querySelector('.venue__map-canvas');
+    const address = document.getElementById('venue-address')?.textContent.trim();
+    const key = kakaoKey();
+    let settled = false;
+    let timer = 0;
+
+    const fail = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      box.hidden = true;
+    };
+    if (!canvas || !address || !key) { fail(); return; }
+
+    function draw(maps) {
+      new maps.services.Geocoder().addressSearch(address, (result, status) => {
+        if (settled) return;
+        try {
+          if (status !== maps.services.Status.OK || !result.length) throw new Error(`Address lookup: ${status}`);
+          const center = new maps.LatLng(result[0].y, result[0].x);
+          const map = new maps.Map(canvas, {
+            center,
+            level: MAP.LEVEL,
+            draggable: false,
+            scrollwheel: false,
+            disableDoubleClickZoom: true,
+            keyboardShortcuts: false,
+            tileAnimation: false,
+          });
+          new maps.Marker({ map, position: center });
+          settled = true;
+          clearTimeout(timer);
+          // Kakao relayouts only on window resize; keep the venue centred whenever the box size changes (no animation).
+          if ('ResizeObserver' in window) new ResizeObserver(() => { map.relayout(); map.setCenter(center); }).observe(canvas);
+        } catch (err) {
+          fail();
+        }
+      });
+    }
+
+    function load() {
+      timer = setTimeout(fail, MAP.TIMEOUT);
+      const s = document.createElement('script');
+      s.src = `${KAKAO_MAP_SDK_URL}?appkey=${encodeURIComponent(key)}&autoload=false&libraries=services`;
+      s.async = true;
+      s.onerror = fail; // dapi.kakao.com answers 401/403 when the domain is not registered or Kakao Map is off
+      s.onload = () => {
+        if (typeof window.kakao?.maps?.load !== 'function') { fail(); return; }
+        window.kakao.maps.load(() => {
+          if (settled) return;
+          try { draw(window.kakao.maps); } catch (err) { fail(); }
+        });
+      };
+      document.head.append(s);
+    }
+
+    if (!('IntersectionObserver' in window)) { load(); return; }
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      load();
+    }, { rootMargin: MAP.NEAR_MARGIN });
+    io.observe(box);
   }
 
   /* ---------- Guestbook (spec 4-8) ---------- */
@@ -1429,6 +1506,7 @@
   safe('bgm', initBgm);
   safe('copy', initCopyButtons);
   safe('kakao', initKakao);
+  safe('venue-map', initVenueMap);
   safe('guestbook', initGuestbook);
 
   // Runtime switch of the OS setting: no reload, so BGM keeps playing (spec 1-6).

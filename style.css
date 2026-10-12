@@ -678,6 +678,24 @@ html:not(.js) .g-status { display: none; }
   font: 400 14px/1.6 var(--font-ko-sans);
 }
 .venue__card .copy-btn { margin-top: 18px; }
+/* Kakao map (motion spec 4-7: no motion on the map). .card gives the surface face shown while it loads.
+   isolation keeps Kakao's z-indexed layers inside the box, under the fixed BGM toggle and toast.
+   The canvas is inert in the markup; pointer-events repeats that for browsers without inert,
+   so a swipe lands on the box (touch-action auto) instead of Kakao's touch-action: none pane. */
+.venue__map {
+  margin-top: 16px;
+  overflow: hidden;
+  isolation: isolate;
+  -webkit-user-select: none;  /* a desktop double click on the map would select the nearest page word */
+  user-select: none;
+}
+.venue__map-canvas {
+  width: 100%;          /* explicit, or max-height would narrow it through the ratio */
+  aspect-ratio: 4 / 3;
+  max-height: 280px;
+  pointer-events: none;
+}
+html:not(.js) .venue__map { display: none; }
 .venue__maps {
   display: flex;
   gap: 8px;

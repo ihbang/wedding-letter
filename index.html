@@ -18,6 +18,8 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="분홍 꽃가지 장식 아래 창가 벤치에 나란히 앉아 서로 바라보며 웃는 방인혁과 손유민">
   <meta name="twitter:card" content="summary_large_image">
+  <!-- Kakao JavaScript key, read by script.js for the Kakao share button and the venue map. -->
+  <meta name="kakao-js-key" content="5c503e2afc05ed84b3c650f91f8c7bc3">
 
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
   <link rel="preload" as="image" href="images/photos/hero.jpg" fetchpriority="high">
@@ -253,6 +255,11 @@
             </span>
           </button>
         </div>
+        <!-- Static Kakao map, drawn by script.js once the section is near. Hidden without JS and when the SDK, auth or address lookup fails.
+             The canvas is inert: the map takes no taps, focus or swipes, so a swipe over it scrolls the page. -->
+        <div class="card venue__map" id="venue-map" role="img" aria-label="더컨벤션 송파문정 위치 지도">
+          <div class="venue__map-canvas" inert></div>
+        </div>
         <div class="venue__maps">
           <a class="btn btn--secondary" href="https://map.naver.com/p/search/%EB%8D%94%EC%BB%A8%EB%B2%A4%EC%85%98%20%EC%86%A1%ED%8C%8C%EB%AC%B8%EC%A0%95" target="_blank" rel="noopener" aria-label="네이버 지도에서 예식장 위치 보기 (새 창)">네이버 지도</a>
           <a class="btn btn--secondary" href="https://map.kakao.com/link/search/%EB%8D%94%EC%BB%A8%EB%B2%A4%EC%85%98%20%EC%86%A1%ED%8C%8C%EB%AC%B8%EC%A0%95" target="_blank" rel="noopener" aria-label="카카오맵에서 예식장 위치 보기 (새 창)">카카오맵</a>
@@ -389,7 +396,7 @@
         <p class="share__closing">끝까지 봐 주셔서 감사합니다.<br>그날, 반갑게 뵙겠습니다.</p>
       </div>
       <div class="share__buttons reveal">
-        <button type="button" class="btn btn--primary" id="share-kakao" data-kakao-key="5c503e2afc05ed84b3c650f91f8c7bc3">카카오톡으로 공유하기</button>
+        <button type="button" class="btn btn--primary" id="share-kakao">카카오톡으로 공유하기</button>
         <button type="button" class="btn btn--secondary copy-btn" data-copy-kind="link">
           <span class="copy-btn__labels">
             <span class="copy-btn__label copy-btn__label--idle">링크 복사하기</span>
