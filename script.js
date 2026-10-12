@@ -32,7 +32,6 @@
   const rand = (a, b) => a + Math.random() * (b - a);
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const later = (ms) => (isReduced() ? 0 : ms);
-  const isPlaceholder = (value) => !value || value.trim().startsWith('[[TODO');
 
   // Reads a duration token from :root (already 0ms under reduced motion), so CSS and JS share one value.
   const token = (name) => parseFloat(getComputedStyle(root).getPropertyValue(name)) || 0;
@@ -74,10 +73,7 @@
   }
 
   const metaContent = (selector) => document.querySelector(selector)?.getAttribute('content') || '';
-  function siteUrl() {
-    const og = metaContent('meta[property="og:url"]');
-    return isPlaceholder(og) ? location.href.split('#')[0] : og;
-  }
+  const siteUrl = () => metaContent('meta[property="og:url"]');
 
   /* ---------- Live region + toast (spec 4-4) ---------- */
 
@@ -1301,7 +1297,6 @@
         const kind = btn.dataset.copyKind;
         const source = btn.dataset.copyTarget ? document.querySelector(btn.dataset.copyTarget) : null;
         const value = kind === 'link' ? siteUrl() : (source ? source.textContent.trim() : '');
-        if (isPlaceholder(value)) { notify(text('copy-pending')); return; }
 
         const ok = await writeClipboard(value);
         btn.classList.toggle('is-copied', ok);
@@ -1349,7 +1344,6 @@
     }
 
     btn.addEventListener('click', async () => {
-      if (isPlaceholder(key)) { fallback(); return; }
       try {
         const Kakao = await loadSdk();
         if (!Kakao.isInitialized()) Kakao.init(key);
@@ -1400,7 +1394,6 @@
         return;
       }
       const endpoint = form.getAttribute('action');
-      if (isPlaceholder(endpoint)) { say('gb-unconfigured'); return; }
 
       submit.disabled = true;
       submit.textContent = text('gb-sending');

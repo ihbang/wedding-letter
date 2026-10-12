@@ -7,37 +7,14 @@
 - 줄바꿈: 본문 블록의 각 행은 `<br>` 한 번, 빈 줄은 문단 구분이다. 한 행은 16자(공백 포함) 이내로 맞췄다.
 - 영문 표기: `’`(U+2019)는 굽은 아포스트로피로 쓴다. 영문 문자열(eyebrow, hero 영문 날짜, Thank you, I & Y)에는 `lang="en"`을 붙인다.
 
-## placeholder 규칙
-
-사용자가 아직 주지 않은 정보는 모두 `[[TODO:<KEY>]]` 형식으로 둔다.
-frontend는 이 문자열을 마크업·스크립트에 그대로 넣고, 배포 전 `grep -n '\[\[TODO:' index.html`로 남은 항목을 확인한다.
-
-| KEY | 채울 내용 | 형식 예 | 쓰이는 곳 |
-|-----|----------|---------|----------|
-| `GROOM_BANK` | 신랑측 은행명 | 국민은행 | account |
-| `GROOM_ACCOUNT` | 신랑측 계좌번호 | 000-0000-0000 | account |
-| `BRIDE_BANK` | 신부측 은행명 | 신한은행 | account |
-| `BRIDE_ACCOUNT` | 신부측 계좌번호 | 000-000-000000 | account |
-| `SUBWAY` | 지하철 안내 (확인 필요) | 8호선 ○○역 ○번 출구, 도보 ○분 | venue |
-| `BUS` | 버스 안내 (확인 필요) | ○○○ 정류장 하차 / 간선 000, 지선 0000 | venue |
-| `PARKING` | 주차 안내 (확인 필요) | 건물 지하 주차장, 하객 ○시간 무료 | venue |
-| `GUESTBOOK_ENDPOINT` | 방명록 접수 주소 (POST를 받는 폼 서비스 URL) | https://formspree.io/f/xxxx | guestbook form `action` |
-| `SITE_URL` | 배포 주소 (끝에 `/` 없이) | https://example.github.io/wedding-letter | og:url, og:image, 공유 링크 |
-| `KAKAO_JS_KEY` | 카카오 JavaScript 키 | (카카오 디벨로퍼스 앱 키) | 카카오톡 공유 버튼 |
-
-- 교통편 3종은 사용자가 주지 않았고, 카피라이터가 임의로 쓰지 않았다(역·노선을 추측하면 하객이 잘못 찾아갈 수 있다).
-- `SITE_URL`과 `KAKAO_JS_KEY`는 화면 카피가 아니라 설정값이다. 공유 문구가 이 값에 기대므로 함께 적었다.
-
----
-
 ## meta
 
 - title: 인혁 ♡ 유민, 우리 결혼합니다
 - description: 2027년 1월 3일 일요일 오후 3시, 더컨벤션 송파문정 13층 아모르홀
 - og:title: 인혁 ♡ 유민, 우리 결혼합니다
 - og:description: 2027년 1월 3일 일요일 오후 3시, 더컨벤션 송파문정 13층 아모르홀
-- og:url: `[[TODO:SITE_URL]]/`
-- og:image: `[[TODO:SITE_URL]]/images/og-garden.jpg` (1200x630)
+- og:url: `https://ihbang.github.io/wedding-letter/`
+- og:image: `https://ihbang.github.io/wedding-letter/images/og-garden.jpg` (1200x630)
 - og:image:alt: 분홍 꽃가지 장식 아래 창가 벤치에 나란히 앉아 서로 바라보며 웃는 방인혁과 손유민
 - 글자 수: og:title 26자(40자 이내), og:description 41자(90자 이내)
 - 속성값 안의 `&`는 `&amp;`로 쓴다.
@@ -262,7 +239,7 @@ D - {n}
 ### guestbook_note
 남겨 주신 글은 두 사람에게만 전해집니다.
 
-- 폼이 `GUESTBOOK_ENDPOINT`로 보내기만 하고 페이지에 글 목록을 보여 주지 않는 구조일 때 쓰는 문구다. 목록을 공개하는 구조로 바꾸면 이 줄을 뺀다.
+- 폼이 접수 주소(Formspree)로 보내기만 하고 페이지에 글 목록을 보여 주지 않는 구조일 때 쓰는 문구다. 목록을 공개하는 구조로 바꾸면 이 줄을 뺀다.
 
 ## guestbook_placeholder
 두 사람에게 전하고 싶은 이야기를 적어 주세요.
@@ -276,7 +253,6 @@ D - {n}
 - 말씀 비었을 때: 남기실 말씀을 적어 주세요.
 - 전송 성공: 소중한 말씀이 잘 전달되었습니다. 감사합니다.
 - 전송 실패: 말씀을 보내지 못했습니다. 잠시 후 다시 눌러 주세요.
-- 접수 주소 미설정(`[[TODO:GUESTBOOK_ENDPOINT]]` 그대로일 때): 지금은 방명록을 받을 수 없습니다. 축하의 말씀은 두 사람에게 직접 전해 주세요.
 - 메일 제목(hidden `_subject`): [청첩장] 인혁 · 유민 방명록
 
 ---
@@ -307,9 +283,9 @@ Thank you
 - 카카오 공유를 열 수 없을 때(키 미설정·SDK 실패, 링크 복사로 대신함): 카카오톡 공유를 열 수 없어 링크를 복사했습니다. 대화방에 붙여 넣어 주세요.
 
 ## kakao_share
-- title: 방인혁 & 손유민, 부부가 되는 날에 초대합니다
+- title: 인혁 ♡ 유민, 우리 결혼합니다
 - description: 2027년 1월 3일 일요일 오후 3시, 더컨벤션 송파문정 13층 아모르홀
-- imageUrl: `[[TODO:SITE_URL]]/images/og-garden.jpg` (1200x630)
+- imageUrl: `https://ihbang.github.io/wedding-letter/images/og-garden.jpg` (1200x630)
 - button: 청첩장 보기
 
 ---

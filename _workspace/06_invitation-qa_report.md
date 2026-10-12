@@ -7,6 +7,8 @@
 > 3차 QA(갤러리 캐러셀, 2026-10-11) 결과는 문서 맨 끝 "3차 QA" 절에 있다: PASS 67 / FAIL 0 / WARNING 2(새로 생긴 W6·W7). W4는 해소됐고 W1·W2·W3·W5는 그대로다.
 >
 > 4차 QA(계좌 접기·복사 토스트, 2026-10-11) 결과는 문서 맨 끝 "4차 QA" 절에 있다: PASS 48 / FAIL 1 / 새 WARNING 0. 계좌 접기·복사 토스트 변경분은 FAIL 0이다. FAIL 1건(F1)은 카피 시트에서 바뀐 dday_message가 페이지에 반영되지 않은 것이다. W1·W2·W3은 해소됐고 W5·W6·W7은 그대로다.
+>
+> placeholder 정리(2026-10-12): `[[TODO:...]]` 값이 모두 채워져 W1·W2·W3은 닫혔다. placeholder를 판별하던 코드(`isPlaceholder`, 계좌 "준비 중" 토스트, 방명록 "접수 주소 미설정" 안내)를 지웠으므로, 1~4차 표에 있는 placeholder 보호 관련 행은 당시 기록으로만 남는다. F1도 해소됐다(4차 절 끝).
 
 ## 요약
 
@@ -180,10 +182,10 @@
 
 FAIL은 없다. WARNING 4건은 모두 페이지 코드가 아니라 배포 전 처리 사항이다.
 
-- [ ] **W1 (배포 전 필수) `index.html:18-19, 254, 258, 262, 285, 300`** 교통편 3줄과 계좌 은행·번호 4개가 `[[TODO:...]]`로 화면에 보이고, og:url·og:image가 절대 URL이 아니어서 카카오톡·SNS 미리보기 이미지가 나오지 않는다. 카카오 키만 채우고 SITE_URL을 비워 두면 공유 카드 `imageUrl`도 깨진다(script.js:1186) → SITE_URL(끝 `/` 없이), 계좌 4개, 확인된 교통편을 채운 뒤 `grep -n '\[\[TODO:' index.html`로 남은 항목이 의도한 것(방명록·카카오 키를 미룰 경우 그 둘)뿐인지 확인
-- [ ] **W2 `index.html:371`, `script.js:1176`** 카카오 JavaScript 키가 없어 "카카오톡으로 공유하기"가 링크 복사로 대신 동작한다(안내 토스트 있음) → 카카오 디벨로퍼스 앱 키를 넣고 [플랫폼 > Web]에 배포 도메인 등록. 키를 쓰지 않을 경우 선택 개선: 폴백 전에 `navigator.share?.({ title, text, url })`(모바일 공유 시트)를 먼저 시도
-- [ ] **W3 `index.html:322`, `script.js:1227`** 접수 주소가 없으면 하객이 글을 다 쓴 뒤에야 "지금은 방명록을 받을 수 없습니다…"를 본다. JS가 꺼진 환경에서는 `[[TODO:GUESTBOOK_ENDPOINT]]` 상대 경로로 POST되어 오류 페이지로 이동한다 → 배포 전에 Formspree 등 POST + JSON 응답 주소를 채운다. 채우지 않고 배포할 거라면 placeholder일 때 `#guestbook` 섹션을 `hidden` 처리하도록 frontend에 요청
-- [ ] **W4 (커밋 시 필수) git 작업 트리** 페이지가 참조하는 새 자산이 untracked이고, 예전 사진 31개 삭제만 staged 상태다. staged 변경만 커밋하면 배포 페이지에서 hero·갤러리·장식·og 이미지 34개 참조가 모두 깨진다 → 커밋할 때 `git add images/photos images/deco images/favicon.svg images/og-garden.jpg index.html style.css script.js`(와 저장소 관례에 따라 `_workspace/`)를 포함하고, `git ls-files`로 이 리포트 1장의 참조 36개가 모두 추적되는지 확인
+- [x] **(해소 2026-10-11)** **W1 (배포 전 필수) `index.html:18-19, 254, 258, 262, 285, 300`** 교통편 3줄과 계좌 은행·번호 4개가 `[[TODO:...]]`로 화면에 보이고, og:url·og:image가 절대 URL이 아니어서 카카오톡·SNS 미리보기 이미지가 나오지 않는다. 카카오 키만 채우고 SITE_URL을 비워 두면 공유 카드 `imageUrl`도 깨진다(script.js:1186) → SITE_URL(끝 `/` 없이), 계좌 4개, 확인된 교통편을 채운 뒤 `grep -n '\[\[TODO:' index.html`로 남은 항목이 의도한 것(방명록·카카오 키를 미룰 경우 그 둘)뿐인지 확인
+- [x] **(해소 2026-10-11)** **W2 `index.html:371`, `script.js:1176`** 카카오 JavaScript 키가 없어 "카카오톡으로 공유하기"가 링크 복사로 대신 동작한다(안내 토스트 있음) → 카카오 디벨로퍼스 앱 키를 넣고 [플랫폼 > Web]에 배포 도메인 등록. 키를 쓰지 않을 경우 선택 개선: 폴백 전에 `navigator.share?.({ title, text, url })`(모바일 공유 시트)를 먼저 시도
+- [x] **(해소 2026-10-11)** **W3 `index.html:322`, `script.js:1227`** 접수 주소가 없으면 하객이 글을 다 쓴 뒤에야 "지금은 방명록을 받을 수 없습니다…"를 본다. JS가 꺼진 환경에서는 `[[TODO:GUESTBOOK_ENDPOINT]]` 상대 경로로 POST되어 오류 페이지로 이동한다 → 배포 전에 Formspree 등 POST + JSON 응답 주소를 채운다. 채우지 않고 배포할 거라면 placeholder일 때 `#guestbook` 섹션을 `hidden` 처리하도록 frontend에 요청
+- [x] **(해소 3차)** **W4 (커밋 시 필수) git 작업 트리** 페이지가 참조하는 새 자산이 untracked이고, 예전 사진 31개 삭제만 staged 상태다. staged 변경만 커밋하면 배포 페이지에서 hero·갤러리·장식·og 이미지 34개 참조가 모두 깨진다 → 커밋할 때 `git add images/photos images/deco images/favicon.svg images/og-garden.jpg index.html style.css script.js`(와 저장소 관례에 따라 `_workspace/`)를 포함하고, `git ls-files`로 이 리포트 1장의 참조 36개가 모두 추적되는지 확인
 
 ### 참고 (판정 대상 아님, 선택 개선)
 

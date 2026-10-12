@@ -71,7 +71,6 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 4-1 슬라이드 이미지 로드 페이드(300ms `--dur-base`, 스피너 없음) | 구현. 예전 `initThumbs`의 대상만 `.g-open img`로 바꾸고 이름을 `initPhotoFade`로 고쳤다 | script.js:771-782, style.css:609 |
 | 4-1 이웃(peek) 탭으로 한 장 이동 + 뒤따르는 click 1회 억제 | 구현 | script.js:715-731 |
 | 4-2 아래로 끌어 닫기(80px, scrim 0.96→최저 0.4), Android 뒤로가기(`pushState`/`popstate`, 이중 닫기 방지) | 구현 | script.js:923-969, 1032, 1152 |
-| 4-4 placeholder 보호(`[[TODO`면 복사 대신 안내 토스트) | 구현 | script.js:1292 |
 | 4-4 계좌 접기 | 구현(2026-10-11 사용자 피드백). `<details>/<summary>`, 기본 접힘, 높이 애니메이션 없음. 화살표 `rotate(0→180deg)` `--dur-fast` 200ms `--ease-standard`, 열린 내용 `opacity 0→1` `--dur-modal` 250ms `--ease-out`(`::details-content`에 걸고, 이 의사 요소가 없는 엔진은 `.account__body`에 건다). reduced-motion은 토큰 0ms로 즉시. JS가 꺼져도 `<details>` 기본 동작으로 접고 편다 | index.html:297-334, style.css:719-757 |
 | 4-6 카카오 공유 + 링크 복사 폴백 | 구현 | script.js:1312 |
 | 4-7 길찾기 버튼 | 네이버 지도, 카카오맵 2개. 티맵은 미구현(아래 4장) | index.html:259-262 |
@@ -131,42 +130,26 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 
 | 문구 | 위치 | 출처 |
 |---|---|---|
-| 계좌번호를 준비하고 있습니다 | 계좌 복사 버튼, placeholder 상태일 때 토스트·낭독 | 모션 명세 4-4 (카피 시트에 없음) |
 | 웨딩 사진 15장 | 캐러셀 묶음 `aria-label` (index.html:208) | 모션 명세 4-1-8 기본값. 카피 시트에 같은 항목이 생기면 그쪽을 쓴다 |
 | 슬라이드 | 캐러셀 `aria-roledescription` (index.html:208) | 모션 명세 4-1-8 기본값 |
 | "15장 중 n번째 사진, {alt}" | 캐러셀 `.g-status` 낭독. 앞부분은 기존 카피 키 `lb-counter`(`<template id="ui-text">`), 쉼표와 alt는 JS가 이어 붙임 | 모션 명세 4-1-8 기본 조합 |
 
 캐러셀 이전/다음 버튼 이름("이전 사진", "다음 사진")과 슬라이드 버튼 이름("사진 n / 15 크게 보기: {alt}")은 카피 시트 `gallery_controls` 문구 그대로다. 나머지 화면·낭독 문구는 모두 카피 시트에서 가져왔다. 메타 태그 중 `og:locale`(`ko_KR`)과 `theme-color`(`#FBF6F1`)는 설정값이다.
 
-## 6. placeholder 위치
+## 6. 설정값
 
-`grep -n '\[\[TODO:' index.html` 결과(주석 줄 포함). `script.js`와 `style.css`에는 placeholder 값이 없다(`script.js`의 `'[[TODO'`는 placeholder 판별용 문자열).
+placeholder(`[[TODO:...]]`)는 모두 채워졌고(2026-10-11), placeholder를 판별하던 코드(`isPlaceholder`, 계좌 "준비 중" 안내, 방명록 "접수 주소 미설정" 안내)도 지웠다. 값은 모두 `index.html`에 있다.
 
-```
-12:       TODO(user): replace [[TODO:SITE_URL]] with the deployed origin without a trailing slash,
-18:  <meta property="og:url" content="[[TODO:SITE_URL]]/">
-19:  <meta property="og:image" content="[[TODO:SITE_URL]]/images/og-garden.jpg">
-264:      <!-- TODO(user): replace [[TODO:SUBWAY]], [[TODO:BUS]], [[TODO:PARKING]] with confirmed directions. -->
-268:          <dd>[[TODO:SUBWAY]]</dd>
-272:          <dd>[[TODO:BUS]]</dd>
-276:          <dd>[[TODO:PARKING]]</dd>
-307:          <!-- TODO(user): fill [[TODO:GROOM_BANK]] and [[TODO:GROOM_ACCOUNT]]; the copy button copies #groom-account. -->
-308:          <p class="account__number"><span>[[TODO:GROOM_BANK]]</span> <span id="groom-account">[[TODO:GROOM_ACCOUNT]]</span></p>
-322:          <!-- TODO(user): fill [[TODO:BRIDE_BANK]] and [[TODO:BRIDE_ACCOUNT]]; the copy button copies #bride-account. -->
-323:          <p class="account__number"><span>[[TODO:BRIDE_BANK]]</span> <span id="bride-account">[[TODO:BRIDE_ACCOUNT]]</span></p>
-343:      <!-- TODO(user): replace [[TODO:GUESTBOOK_ENDPOINT]] with a form endpoint that accepts POST
-345:      <form class="gb-form reveal" action="[[TODO:GUESTBOOK_ENDPOINT]]" method="POST" novalidate>
-393:        <!-- TODO(user): replace [[TODO:KAKAO_JS_KEY]] with the Kakao JavaScript key. Until then the button copies the link. -->
-394:        <button type="button" class="btn btn--primary" id="share-kakao" data-kakao-key="[[TODO:KAKAO_JS_KEY]]">카카오톡으로 공유하기</button>
-```
+| 항목 | 위치 | 값 |
+|---|---|---|
+| 배포 주소 | `og:url`, `og:image` | `https://ihbang.github.io/wedding-letter/` |
+| 교통편 | `.venue__routes` | 지하철, 주차, 내비게이션 3줄. 버스 안내는 없다 |
+| 계좌 | `#groom-account`, `#bride-account`와 앞의 은행명 | 신한은행 110-335-546640(방인혁), 국민은행 298702-04-213005(손유민) |
+| 방명록 접수 주소 | `.gb-form`의 `action` | Formspree |
+| 카카오 JavaScript 키 | `#share-kakao`의 `data-kakao-key` | 카카오 디벨로퍼스 앱 키 |
 
-placeholder가 남아 있을 때의 동작:
-
-- `SITE_URL`: 링크 복사와 카카오 공유 링크는 현재 주소(`location.href`)를 쓴다. og 미리보기는 절대 URL이 필요하므로 배포 전에 반드시 채워야 한다.
-- 계좌: 복사 버튼이 placeholder를 복사하지 않고 "계좌번호를 준비하고 있습니다"를 띄운다.
-- `GUESTBOOK_ENDPOINT`: 전송하지 않고 "지금은 방명록을 받을 수 없습니다…" 안내를 띄우며 입력값은 유지한다.
-- `KAKAO_JS_KEY`: SDK를 부르지 않고 링크를 복사한 뒤 카카오 폴백 문구를 띄운다.
-- BGM: `audio/bgm.mp3`는 이미 있으므로 placeholder가 아니다.
+- 링크 복사와 카카오 공유 링크는 `og:url`을 쓴다. 로컬 미리보기에서도 배포 주소가 복사된다.
+- 카카오 SDK 로드나 공유 호출이 실패하면 링크를 복사하고 카카오 폴백 문구를 띄운다.
 
 ## 7. 화면 확인 결과
 
@@ -184,7 +167,7 @@ placeholder가 남아 있을 때의 동작:
 | 스크롤 완주 후 | 숨은 reveal 0개, 안 그려진 디바이더 0개, D-day "D-85 / 인혁과 유민의 결혼식까지 85일 남았습니다." |
 | 라이트박스 | 2번 셀 탭 → 2/15로 열림, 첫 포커스 닫기 버튼, `html.lb-open`, 원본 01.jpg 로드, → 키 3/15, 왼쪽 스와이프 4/15, 더블탭 2배 / 다시 더블탭 1배, 핀치 3배에서 clamp, Esc 닫기 후 2번 셀로 포커스 복귀·history 원복, 아래로 끌어 닫기 동작 |
 | reduced-motion | 모든 섹션 즉시 표시, hero 사진 opacity 1, 디바이더 완성, 전구 opacity 1·animation none, calendar·share 캔버스 `display: none`, hero에 정지 점 5개. 런타임에 설정을 되돌리면 새로고침 없이 hero 보케 재개 |
-| 복사·폼·공유 | 계좌 placeholder 보호 토스트, 주소 복사 라벨 "✓ 복사했습니다", 방명록 빈 값 검증(`aria-invalid`), 접수 주소 미설정 안내, 카카오 폴백 문구 |
+| 복사·폼·공유 | 주소 복사 라벨 "✓ 복사했습니다", 방명록 빈 값 검증(`aria-invalid`), 카카오 폴백 문구 |
 | BGM | 탭 전 `bgm.mp3` 요청 없음. 탭 후 재생, volume 0.60, 링 표시. 다시 탭하면 정지 |
 | 콘솔 | 모든 시나리오에서 오류·예외 0건 |
 
@@ -192,11 +175,9 @@ placeholder가 남아 있을 때의 동작:
 
 ## 8. 배포 가이드
 
-1. placeholder를 채운다: `grep -n '\[\[TODO:' index.html`로 남은 항목을 확인한다.
-   - `SITE_URL`: 끝에 `/` 없이 배포 주소(예: `https://<계정>.github.io/wedding-letter`). `og:url`, `og:image` 두 곳.
-   - 계좌 4개, 교통편 3개(확인된 정보만), 방명록 접수 주소(Formspree 등 POST + JSON 응답을 주는 서비스), 카카오 JavaScript 키.
+1. 설정값은 모두 채워져 있다(6장). 배포 주소, 계좌, 접수 주소, 카카오 키가 바뀌면 6장의 위치를 고친다.
 2. GitHub Pages: 저장소 루트를 그대로 배포한다. `.nojekyll`이 있으므로 Jekyll 처리 없이 정적 파일로 나간다.
-3. 카카오 공유를 쓰면 카카오 디벨로퍼스 앱의 [플랫폼 > Web]에 배포 도메인을 등록한다. 키가 없으면 버튼은 링크 복사로 동작한다.
+3. 카카오 공유를 쓰면 카카오 디벨로퍼스 앱의 [플랫폼 > Web]에 배포 도메인을 등록한다. SDK 로드나 공유가 실패하면 버튼은 링크 복사로 동작한다.
 4. 카카오톡 미리보기 캐시: 공유 미리보기가 예전 이미지로 보이면 카카오 공유 디버거에서 URL 캐시를 초기화한다(og 이미지는 새 파일명 `og-garden.jpg`를 쓴다).
 5. 배포 후 휴대폰에서 확인할 것: 첫 화면(날짜·사진·이름·장소), BGM 토글, 갤러리 캐러셀 스와이프(가로로 넘김, 세로로는 페이지 스크롤)와 이전/다음 버튼, 라이트박스 스와이프·핀치와 닫은 뒤 캐러셀 번호, 계좌 복사, 방명록 전송 1회, 카카오 공유 미리보기.
 6. 쓰지 않는 예전 자산(`images/divider-hairline.svg`, `images/monogram-iy.svg`, `images/og-thumbnail.*`, `images/floral-*.png`, `images/gallery-placeholder-*.png`, `images/hero-illustration.png`, `images/photos/thumb/hero.jpg`)은 페이지에서 참조하지 않는다. 지울지는 사용자가 정한다.
@@ -324,7 +305,7 @@ notice의 배경과 간격: 컨셉 시트 `layout_mood`가 면을 background와 
 |---|---|
 | index.html | 계좌 카드 2개를 `div.card.account__card.reveal`에서 `details.card.account__card.reveal`로 바꿨다. `summary.account__summary` 안에 기존 라벨(`span.account__side` 신랑측·신부측)과 아래 화살표 SVG(`aria-hidden`)가 있고, `.account__body` 안에 계좌번호 줄·예금주 줄·`복사하기` 버튼이 그대로 있다. `#groom-account`·`#bride-account`, `data-copy-target`, 버튼 `aria-label`은 바뀌지 않았다. 토스트는 `svg.toast__check` + `span.toast__text`로 나눴다. `copy-done-account` 문구는 "계좌번호가 복사되었습니다."로 바꿨다 |
 | style.css | `.account__card` 패딩을 summary(최소 높이 56px, 좌우 20px)와 body(좌우 20px, 위 16px·아래 20px, 위쪽 line 구분선)로 나눴다. 기본 삼각형은 `list-style: none` + `::-webkit-details-marker`로 숨겼다. summary 모서리를 카드에 맞춰 포커스 링(기존 전역 `:focus-visible`)이 카드를 따라 돈다. 화살표 회전과 내용 페이드는 위 "계좌 접기" 행에 적었다. 토스트를 flex로 바꾸고, 체크는 `.toast.is-done`일 때만 보인다(`--color-secondary` #A2AA92, 토스트 면 대비 5.46:1). 버튼 체크 `.copy-btn__check`는 `--color-sage-deep` #5B6A46(surface 대비 4.92:1)이고 라벨 글자 색은 accent 그대로다. 새 색 변수는 없다(둘 다 기존 변수) |
-| script.js | `notify(message, done = false)`: 글자는 `.toast__text`에 넣고 `done`이면 `is-done`을 붙인다. 복사 성공(계좌·주소·링크)만 `done = true`. 복사 실패, placeholder 보호, 카카오 폴백 안내에는 체크가 없다 |
+| script.js | `notify(message, done = false)`: 글자는 `.toast__text`에 넣고 `done`이면 `is-done`을 붙인다. 복사 성공(계좌·주소·링크)만 `done = true`. 복사 실패, 카카오 폴백 안내에는 체크가 없다 |
 
 `::details-content`에 페이드를 건 이유: Chrome은 닫힌 `<details>`의 내용을 `content-visibility: hidden`으로 숨겨 그 안을 다시 스타일하지 않는다. `.account__body`에 애니메이션을 걸면 처음 펼칠 때만 페이드가 나오고 두 번째부터는 나오지 않았다(실측). 의사 요소 쪽은 매번 다시 스타일된다.
 
@@ -343,7 +324,7 @@ notice의 배경과 간격: 컨셉 시트 `layout_mood`가 면을 background와 
 | JS 꺼짐 | `html.js` 없음, 탭으로 열고 닫힘 |
 | 접근성 | summary 역할 DisclosureTriangle, 이름 "신랑측", expanded false. Tab으로 summary에 오면 `:focus-visible` 2px accent 링, offset 2px, Enter로 열림 |
 | 복사 | 클립보드에 `110-335-546640`, `298702-04-213005`(주소·링크도 그대로) |
-| 토스트 | 계좌 성공 "계좌번호가 복사되었습니다." 앞에 16px 체크 rgb(162,170,146), `role="status"` 낭독 같은 문구, 시각 토스트 `aria-hidden="true"`. 주소·링크 성공에도 체크. placeholder 보호·복사 실패·카카오 폴백에는 체크 없음 |
+| 토스트 | 계좌 성공 "계좌번호가 복사되었습니다." 앞에 16px 체크 rgb(162,170,146), `role="status"` 낭독 같은 문구, 시각 토스트 `aria-hidden="true"`. 주소·링크 성공에도 체크. 복사 실패·카카오 폴백에는 체크 없음 |
 | 버튼 체크 | 성공 라벨 체크 stroke rgb(91,106,70), 라벨 글자 rgb(142,85,88) 그대로 |
 | 그 밖 | 가로 스크롤 없음(scrollWidth = 화면 폭), 끝까지 스크롤 후 숨은 reveal 0개, account reveal 그룹 3개(헤더, 신랑측 details, 신부측 details), 콘솔 오류 0건. `node --check script.js` 통과 |
 

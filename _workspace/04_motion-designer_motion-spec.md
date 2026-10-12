@@ -985,7 +985,6 @@ QA 확인값:
 | 낭독 | 시각 토스트는 `aria-hidden="true"`. 페이지에 시각적으로 숨긴 `<p class="sr-only" role="status" aria-live="polite">` 1개를 처음부터 두고 같은 문구를 넣는다. 같은 문구를 연속으로 넣을 때는 비웠다가 50ms 뒤 다시 넣어 재낭독되게 한다 |
 | 햅틱 | 성공 시 `navigator.vibrate?.(12)`. iOS Safari는 미지원이라 조용히 무시된다 |
 | 실패 폴백 | 두 방식 모두 실패하면 토스트·낭독 "복사하지 못했습니다. 길게 눌러 직접 복사해 주세요" + 해당 텍스트 노드를 `Selection`으로 선택해 둔다 |
-| placeholder 보호 (Should) | 값이 `[[TODO`로 시작하면 복사하지 않고 "계좌번호를 준비하고 있습니다" 토스트. 미완성 페이지가 배포돼도 하객이 placeholder를 복사하지 않게 |
 | 계좌 접기 | 신랑측/신부측 접기를 쓰면 `<details>/<summary>`. 높이 애니메이션 금지. 열린 내용 `opacity 0→1` 250ms, summary 화살표 `rotate(0→180deg)` 200ms |
 | reduced-motion | 라벨·토스트·펼침 즉시 표시/숨김(위치 이동 없음), 화살표 회전 즉시 |
 
@@ -1013,7 +1012,7 @@ QA 확인값:
 
 | 항목 | 값 |
 |---|---|
-| 카카오 | Kakao JS SDK `Kakao.Share.sendDefault`(feed). 앱 키가 placeholder이거나 SDK 로드 실패면 SDK를 부르지 않고 4-4 링크 복사(kakao 폴백 문구)로 동작 |
+| 카카오 | Kakao JS SDK `Kakao.Share.sendDefault`(feed). SDK 로드나 공유 호출이 실패하면 4-4 링크 복사(kakao 폴백 문구)로 동작 |
 | 링크 복사 | 4-4 그대로 |
 | 모션 | 5장 버튼 공통 누름 상태만 |
 | reduced-motion | 누름 scale 없음(`opacity: 0.85` 즉시). 링크 복사 피드백은 4-4 reduced 규칙 |
@@ -1159,7 +1158,7 @@ QA 확인값:
 | Should | 4-3 BGM glow 링, 볼륨 페이드 |
 | Should | 4-1 슬라이드 이미지 로드 페이드, 이웃(peek) 탭으로 이동 (2026-10-10 갤러리 캐러셀로 변경) |
 | Should | 4-2 아래로 끌어 닫기, Android 뒤로가기 닫기 |
-| Should | 4-4 placeholder 보호, 계좌 접기 |
+| Should | 4-4 계좌 접기 |
 | Should | 4-6 카카오 공유 폴백, 4-7 길찾기, 4-8 방명록 상태 문구 |
 | Should | 4-9 hero 스크롤 큐 |
 | Should | 1-7 `window.__bokeh` QA 훅 |
