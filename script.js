@@ -109,88 +109,125 @@
 
   /* ---------- Bokeh background (spec 1) ---------- */
 
-  // Bokeh background for zones: hero, calendar, closing.
+  // Small garden lights for zones: hero, calendar, closing (spec 1, option B 2026-10-12).
   const BOKEH = Object.freeze({
-    ZONES: { hero: 8, calendar: 6, closing: 6 },        // living-particle slots per zone (<= 8)
+    ZONES: { hero: 8, calendar: 8, closing: 8 },        // living-light slots per zone (<= 8)
     MAX_TOTAL_MOBILE: 12, MAX_TOTAL_WIDE: 16,            // wide = (min-width: 768px)
-    D_MIN: 12, D_MAX: 56,
-    SIZE_MIX: [[0.50, 12, 24], [0.35, 24, 40], [0.15, 40, 56]], // [share, min, max]
-    CENTER_D_MAX: 28, EDGE_BIAS: 0.75, EDGE_BAND: 0.28,
-    GLOW_RATIO: 0.7,
-    RGB: { glow: '235,203,148', primary: '201,160,159' },
-    ALPHA: { glow: [0.28, 0.18], primary: [0.18, 0.10] }, // [at D_MIN, at D_MAX]
-    RISE: [3, 8], SWAY: [4, 12], SWAY_PERIOD: [8, 14],   // px/s, px, s
-    BREATH: [5, 9], GAP: [0.6, 2.4],                     // s
-    BOX_GAP: 6, EXCLUDE_MARGIN: 12, TRIES: 10, STILL_AFTER: 5, RETRY: 0.4,
-    FPS: 30, DPR: 1, ZONE_FADE: 600, INTRO_FADE: 1200, INTRO_DELAY: 600,
+    SIZE_MIX: [[0.50, 5, 6], [0.35, 6, 7.5], [0.15, 7.5, 9]], // [share, min, max] core diameter px
+    HALO: 3.6,                                           // halo radius / core radius
+    RGB: { core: '255,252,248', glow: '235,203,148' },   // on_accent #FFFCF8, glow #EBCB94
+    // Radial profile [radius in core radii, color, alpha]; gradient offset = radius / HALO.
+    PROFILE: [[0, 'core', 1], [0.75, 'core', 1], [1.1, 'glow', 0.9], [1.6, 'glow', 0.5],
+              [1.98, 'glow', 0.2], [2.88, 'glow', 0.06], [3.6, 'glow', 0]],
+    LIFE: [9, 16], FADE: 1.2, GAP: [0.4, 1.6],           // s
+    TWINKLE_DEPTH: 0.5, TWINKLE_PERIOD: [2.4, 4.8],      // brightness 1 <-> 0.5, s (<= 0.42 Hz)
+    RISE: [0, 3], SWAY: [2, 5], SWAY_PERIOD: [6, 10],    // px/s, px, s
+    BOX_GAP: 10, EXCLUDE_MARGIN: 8, TRIES: 14, STILL_AFTER: 8, RETRY: 0.4,
+    FPS: 30, DPR_MAX: 2, ZONE_FADE: 600, INTRO_FADE: 1200, INTRO_DELAY: 600, SETTLE_DEBOUNCE: 100,
+    STATIC_COUNT: 7, STATIC_SEED: 5, STATIC_ALPHA: 0.85, // reduced-motion still picture (hero)
   });
-
-  // Reduced-motion replacement: five still dots in the hero margins (spec 1-6).
-  // [band, x (width ratio), y (band height ratio), diameter px, color, alpha]
-  const BOKEH_STATIC = Object.freeze([
-    ['top', 0.12, 0.42, 44, 'glow', 0.24],
-    ['top', 0.88, 0.62, 28, 'primary', 0.16],
-    ['bottom', 0.10, 0.66, 36, 'primary', 0.15],
-    ['bottom', 0.90, 0.30, 52, 'glow', 0.22],
-    ['bottom', 0.80, 0.80, 20, 'glow', 0.26],
-  ]);
+  const BOKEH_DPR = Math.min(window.devicePixelRatio || 1, BOKEH.DPR_MAX);
 
   const overlaps = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
 
-  function makeSprite(rgb) {
+  // Seeded PRNG: the reduced-motion picture is the same on every load at the same layout.
+  function mulberry32(seed) {
+    return () => {
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // One sprite (core + halo) per core diameter rounded to 0.1px, rendered at the canvas DPR.
+  const bokehSprites = new Map();
+  function makeSprite(d) {
+    const key = Math.round(d * 10) / 10;
+    let s = bokehSprites.get(key);
+    if (s) return s;
+    const R = (key / 2) * BOKEH.HALO;
+    const px = Math.ceil(R * 2 * BOKEH_DPR) + 2;
     const c = document.createElement('canvas');
-    c.width = c.height = 128;
+    c.width = c.height = px;
     const ctx = c.getContext('2d');
-    const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-    g.addColorStop(0, `rgba(${rgb},1)`);
-    g.addColorStop(0.35, `rgba(${rgb},0.85)`);
-    g.addColorStop(0.7, `rgba(${rgb},0.35)`);
-    g.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.translate(px / 2, px / 2);
+    ctx.scale(BOKEH_DPR, BOKEH_DPR);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+    BOKEH.PROFILE.forEach(([k, color, a]) => g.addColorStop(k / BOKEH.HALO, `rgba(${BOKEH.RGB[color]},${a})`));
     ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 128, 128);
-    return c;
+    ctx.beginPath();
+    ctx.arc(0, 0, R, 0, Math.PI * 2);
+    ctx.fill();
+    s = { c, size: px / BOKEH_DPR };
+    bokehSprites.set(key, s);
+    return s;
   }
 
-  function pickDiameter(center) {
-    let r = Math.random();
-    let d = rand(12, 24);
+  function pickDiameter(rng) {
+    let x = rng();
     for (const [share, lo, hi] of BOKEH.SIZE_MIX) {
-      if ((r -= share) <= 0) { d = rand(lo, hi); break; }
+      if ((x -= share) <= 0) return lo + rng() * (hi - lo);
     }
-    return center ? Math.min(d, BOKEH.CENTER_D_MAX) : d;
+    const [, lo, hi] = BOKEH.SIZE_MIX[BOKEH.SIZE_MIX.length - 1];
+    return lo + rng() * (hi - lo);
   }
 
-  function spawn(zone, preseed) {
+  // A light's whole-life path box (sway, rise, halo, half gap) must fit the canvas and miss
+  // exclusions and every other living light's box. rng is seeded only for the still picture.
+  function spawn(zone, preseed, rng = Math.random) {
     const { W, H } = zone;
+    const rr = (a, b) => a + rng() * (b - a);
     const half = BOKEH.BOX_GAP / 2;
     for (let k = 0; k < BOKEH.TRIES; k++) {
-      const edge = Math.random() < BOKEH.EDGE_BIAS;
-      const d = pickDiameter(!edge);
-      const r = d / 2;
-      const A = rand(...BOKEH.SWAY);
-      const T = rand(...BOKEH.BREATH);
-      const v = k >= BOKEH.STILL_AFTER ? 0 : rand(...BOKEH.RISE);
-      const band = BOKEH.EDGE_BAND * W;
-      const x0 = edge
-        ? (Math.random() < 0.5 ? rand(r + A, Math.max(r + A, band)) : rand(Math.min(W - r - A, W - band), W - r - A))
-        : rand(band, W - band);
-      const y0 = rand(r + v * T + half, H - r - half);
-      const box = { l: x0 - A - r - half, r: x0 + A + r + half, t: y0 - v * T - r - half, b: y0 + r + half };
+      const d = pickDiameter(rng);
+      const R = (d / 2) * BOKEH.HALO;
+      const A = rr(...BOKEH.SWAY);
+      const T = rr(...BOKEH.LIFE);
+      const v = k >= BOKEH.STILL_AFTER ? 0 : rr(...BOKEH.RISE);
+      const x0 = rr(R + A + half, W - R - A - half);
+      const y0 = rr(R + v * T + half, H - R - half);
+      const box = { l: x0 - A - R - half, r: x0 + A + R + half, t: y0 - v * T - R - half, b: y0 + R + half };
       if (box.l < 0 || box.r > W || box.t < 0 || box.b > H) continue;
       if (zone.excludes.some((e) => overlaps(box, e))) continue;
       if (zone.particles.some((p) => p && overlaps(box, p.box))) continue;
-      const color = Math.random() < BOKEH.GLOW_RATIO ? 'glow' : 'primary';
-      const [hi, lo] = BOKEH.ALPHA[color];
-      const peak = hi - (hi - lo) * (d - BOKEH.D_MIN) / (BOKEH.D_MAX - BOKEH.D_MIN);
-      return { x0, y0, d, r, A, v, T, P: rand(...BOKEH.SWAY_PERIOD), phi: rand(0, Math.PI * 2),
-               color, peak, box, age: preseed ? rand(0, T) : 0 };
+      return {
+        x0, y0, d, R, A, v, T, box, sprite: makeSprite(d),
+        P: rr(...BOKEH.SWAY_PERIOD), phi: rr(0, Math.PI * 2),
+        tw: rr(...BOKEH.TWINKLE_PERIOD), tphi: rr(0, Math.PI * 2),
+        age: preseed ? rr(0, T) : 0,
+      };
     }
     return null;
   }
 
-  function step(zone, dt, sprites, canSpawn) {
+  // Fade in, hold, fade out (smoothstep over FADE), times a twinkle between 1 and 1 - TWINKLE_DEPTH.
+  function brightness(p) {
+    const f = BOKEH.FADE;
+    const e = p.age < f ? p.age / f : p.age > p.T - f ? (p.T - p.age) / f : 1;
+    const tw = 1 - BOKEH.TWINKLE_DEPTH * (0.5 - 0.5 * Math.cos((2 * Math.PI * p.age) / p.tw + p.tphi));
+    return e * e * (3 - 2 * e) * tw;
+  }
+  const lightX = (p) => p.x0 + p.A * Math.sin((2 * Math.PI * p.age) / p.P + p.phi);
+  const lightY = (p) => p.y0 - p.v * p.age;
+
+  function drawLight(zone, sprite, x, y, alpha) {
+    const s = sprite.size;
+    zone.ctx.globalAlpha = alpha;
+    zone.ctx.drawImage(sprite.c, x - s / 2, y - s / 2, s, s);
+    zone.dirty.push([x - s / 2 - 1, y - s / 2 - 1, s + 2, s + 2]);
+  }
+
+  function clearAll(zone) {
+    zone.ctx.clearRect(0, 0, zone.W, zone.H);
+    zone.dirty.length = 0;
+    zone.still = [];
+  }
+
+  function step(zone, dt, canSpawn) {
     const { ctx } = zone;
-    ctx.clearRect(0, 0, zone.W, zone.H);
+    zone.dirty.forEach(([x, y, w, h]) => ctx.clearRect(x, y, w, h)); // only last frame's sprites
+    zone.dirty.length = 0;
     zone.particles.forEach((p, i) => {
       if (!p) {
         zone.wait[i] -= dt;
@@ -202,11 +239,7 @@
       }
       p.age += dt;
       if (p.age >= p.T) { zone.particles[i] = null; zone.wait[i] = rand(...BOKEH.GAP); return; }
-      const s = Math.sin(Math.PI * p.age / p.T);
-      const x = p.x0 + p.A * Math.sin((Math.PI * 2 * p.age) / p.P + p.phi);
-      const y = p.y0 - p.v * p.age;
-      ctx.globalAlpha = p.peak * s * s;   // never exceeds peak (<= 0.28 glow / 0.18 primary)
-      ctx.drawImage(sprites[p.color], x - p.r, y - p.r, p.d, p.d);
+      drawLight(zone, p.sprite, lightX(p), lightY(p), brightness(p));
     });
     ctx.globalAlpha = 1;
   }
@@ -220,11 +253,32 @@
     return new DOMMatrixReadOnly(t).m42;
   }
 
+  // Exclusion boxes in zone coordinates, before the margin. data-bokeh-exclude="text": one box per
+  // rendered text line; no value: the element box. Hero only: the fixed BGM toggle where it sits at scroll 0.
+  function excludeRects(zone) {
+    const base = zone.el.getBoundingClientRect();
+    const rects = [];
+    const push = (r, dy) => rects.push({ l: r.left - base.left, r: r.right - base.left, t: r.top - base.top - dy, b: r.bottom - base.top - dy });
+    const range = document.createRange();
+    zone.el.querySelectorAll('[data-bokeh-exclude]').forEach((ex) => {
+      const dy = pendingShift(ex);
+      if (ex.dataset.bokehExclude !== 'text') { push(ex.getBoundingClientRect(), dy); return; }
+      const walker = document.createTreeWalker(ex, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        if (!n.textContent.trim() || n.parentElement.closest('.sr-only')) continue;
+        range.selectNodeContents(n);
+        [...range.getClientRects()].forEach((r) => { if (r.width && r.height) push(r, dy); });
+      }
+    });
+    const bgm = zone.name === 'hero' && document.querySelector('.bgm-toggle');
+    if (bgm) push(bgm.getBoundingClientRect(), window.scrollY);
+    return rects;
+  }
+
   function initBokeh() {
     const els = [...document.querySelectorAll('[data-bokeh]')];
     if (!els.length || !('IntersectionObserver' in window)) return null;
 
-    const sprites = { glow: makeSprite(BOKEH.RGB.glow), primary: makeSprite(BOKEH.RGB.primary) };
     const wide = matchMedia('(min-width: 768px)');
     const pauses = new Set();          // 'hidden' | 'lightbox'
     const frameMs = 1000 / BOKEH.FPS - 1; // 30fps gate with 1ms tolerance for vsync jitter
@@ -238,9 +292,9 @@
       const slots = BOKEH.ZONES[name] || 0;
       return {
         name, el, canvas, ctx: canvas.getContext('2d'),
-        W: 0, H: 0, excludes: [],
+        W: 0, H: 0, excludes: [], dirty: [], still: [],
         particles: new Array(slots).fill(null), wait: new Array(slots).fill(0),
-        inBand: false, live: false, offTimer: 0, roTimer: 0,
+        inBand: false, live: false, offTimer: 0, roTimer: 0, settleTimer: 0,
       };
     });
     const heroZone = zones.find((z) => z.name === 'hero');
@@ -259,17 +313,16 @@
     }
 
     function measureExcludes(zone) {
-      const base = zone.el.getBoundingClientRect();
       const m = BOKEH.EXCLUDE_MARGIN;
-      zone.excludes = [...zone.el.querySelectorAll('[data-bokeh-exclude]')].map((ex) => {
-        const r = ex.getBoundingClientRect();
-        const dy = pendingShift(ex);
-        return {
-          l: r.left - base.left - m,
-          r: r.right - base.left + m,
-          t: r.top - base.top - dy - m,
-          b: r.bottom - base.top - dy + m,
-        };
+      zone.excludes = excludeRects(zone).map((r) => ({ l: r.l - m, r: r.r + m, t: r.t - m, b: r.b + m }));
+    }
+
+    // After a layout change: drop lights whose path box now leaves the canvas or meets an exclusion.
+    function dropBlocked(zone) {
+      zone.particles.forEach((p, i) => {
+        if (!p || (p.box.r <= zone.W && p.box.b <= zone.H && !zone.excludes.some((e) => overlaps(p.box, e)))) return;
+        zone.particles[i] = null;
+        zone.wait[i] = BOKEH.RETRY;
       });
     }
 
@@ -283,24 +336,18 @@
       if (zone.live) trimToCap(zone);
     }
 
+    // Reduced motion (spec 1-6): STATIC_COUNT still lights, same placement rules, fixed seed.
     function drawStatic(zone) {
-      const photo = zone.el.querySelector('.hero__photo');
-      const { ctx, W, H } = zone;
-      ctx.clearRect(0, 0, W, H);
-      if (!photo) return;
-      const base = zone.el.getBoundingClientRect();
-      const pr = photo.getBoundingClientRect();
-      const gap = BOKEH.EXCLUDE_MARGIN;
-      const bands = { top: [0, pr.top - base.top - gap], bottom: [pr.bottom - base.top + gap, H] };
-      BOKEH_STATIC.forEach(([band, fx, fy, d, color, alpha]) => {
-        const [t, b] = bands[band];
-        const r = d / 2;
-        const x = clamp(fx * W, r, W - r);
-        const y = clamp(t + fy * (b - t), t + r, b - r);
-        ctx.globalAlpha = alpha;
-        ctx.drawImage(sprites[color], x - r, y - r, d, d);
-      });
-      ctx.globalAlpha = 1;
+      clearAll(zone);
+      const rng = mulberry32(BOKEH.STATIC_SEED);
+      const scratch = { W: zone.W, H: zone.H, excludes: zone.excludes, particles: [] };
+      for (let i = 0; i < BOKEH.STATIC_COUNT * 3 && scratch.particles.length < BOKEH.STATIC_COUNT; i++) {
+        const p = spawn(scratch, false, rng);
+        if (p) scratch.particles.push(p);
+      }
+      zone.still = scratch.particles;
+      zone.still.forEach((p) => drawLight(zone, p.sprite, p.x0, p.y0, BOKEH.STATIC_ALPHA));
+      zone.ctx.globalAlpha = 1;
     }
 
     function resize(zone, force) {
@@ -309,11 +356,15 @@
       const reseed = force || W !== zone.W || Math.abs(H - zone.H) > 40;
       zone.W = W;
       zone.H = H;
-      if (zone.canvas.width !== W * BOKEH.DPR) zone.canvas.width = W * BOKEH.DPR;
-      if (zone.canvas.height !== H * BOKEH.DPR) zone.canvas.height = H * BOKEH.DPR;
+      const cw = Math.round(W * BOKEH_DPR);
+      const ch = Math.round(H * BOKEH_DPR);
+      if (zone.canvas.width !== cw) zone.canvas.width = cw;
+      if (zone.canvas.height !== ch) zone.canvas.height = ch;
+      zone.ctx.setTransform(BOKEH_DPR, 0, 0, BOKEH_DPR, 0, 0);
+      clearAll(zone);
       measureExcludes(zone);
       if (reseed) seed(zone);
-      else zone.particles.forEach((p, i) => { if (p && p.box.b > H) zone.particles[i] = null; });
+      else dropBlocked(zone);
       if (isReduced() && zone === heroZone) drawStatic(zone);
     }
 
@@ -322,7 +373,7 @@
       if (now - last < frameMs) return;
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
-      zones.forEach((z) => { if (z.live) step(z, dt, sprites, canSpawn); });
+      zones.forEach((z) => { if (z.live) step(z, dt, canSpawn); });
     }
 
     function kick() {
@@ -380,13 +431,20 @@
       zones.forEach((z) => ro.observe(z.el));
     }
 
+    // Boxes move with font swaps, the hero photo load and every reveal or scale-in (scroll cue).
     const remeasure = (zone) => {
       measureExcludes(zone);
+      dropBlocked(zone);
       if (isReduced() && zone === heroZone) drawStatic(zone);
     };
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => zones.forEach(remeasure));
     const heroPhoto = heroZone && heroZone.el.querySelector('.hero__photo');
     if (heroPhoto && !heroPhoto.complete) heroPhoto.addEventListener('load', () => remeasure(heroZone), { once: true });
+    zones.forEach((z) => z.el.addEventListener('transitionend', (e) => {
+      if (e.propertyName !== 'transform' || !e.target.matches('.reveal, [data-bokeh-exclude]')) return;
+      clearTimeout(z.settleTimer);
+      z.settleTimer = setTimeout(() => remeasure(z), BOKEH.SETTLE_DEBOUNCE);
+    }));
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) pauses.add('hidden');
@@ -402,7 +460,7 @@
         z.live = false;
         z.canvas.classList.remove('is-intro');
         z.canvas.classList.toggle('is-on', z === heroZone);
-        z.ctx.clearRect(0, 0, z.W, z.H);
+        clearAll(z);
       });
       kick();
       if (heroZone) drawStatic(heroZone);
@@ -410,7 +468,7 @@
 
     function toLive() {
       zones.forEach((z) => {
-        z.ctx.clearRect(0, 0, z.W, z.H);
+        clearAll(z);
         z.canvas.classList.remove('is-on');
         refresh(z);
       });
@@ -431,20 +489,31 @@
       },
       toStatic,
       toLive,
+      // QA (spec 1-7): drawn squares (center +- R) of running and still lights against freshly measured exclusions.
       stats() {
-        const perZone = {};
-        const maxPeak = { glow: 0, primary: 0 };
-        zones.forEach((z) => {
-          perZone[z.name] = livingIn(z);
-          if (!z.live) return;
-          z.particles.forEach((p) => { if (p) maxPeak[p.color] = Math.max(maxPeak[p.color], p.peak); });
-        });
-        return {
-          living: livingTotal(),
-          zones: perZone,
-          maxPeak,
+        const out = {
+          living: livingTotal(), zones: {}, still: 0,
           running: rafId ? zones.filter((z) => z.live).map((z) => z.name) : [],
+          excludeHits: 0, pairHits: 0, minExcludeGap: null,
         };
+        zones.forEach((z) => {
+          out.zones[z.name] = livingIn(z);
+          out.still += z.still.length;
+          const lights = (z.live ? z.particles.filter(Boolean).map((p) => [lightX(p), lightY(p), p.R]) : [])
+            .concat(z.still.map((p) => [p.x0, p.y0, p.R]))
+            .map(([x, y, R]) => ({ l: x - R, r: x + R, t: y - R, b: y + R }));
+          const raw = excludeRects(z);
+          lights.forEach((a, i) => {
+            raw.forEach((e) => {
+              if (overlaps(a, e)) out.excludeHits++;
+              const gap = Math.hypot(Math.max(e.l - a.r, a.l - e.r, 0), Math.max(e.t - a.b, a.t - e.b, 0));
+              out.minExcludeGap = out.minExcludeGap === null ? gap : Math.min(out.minExcludeGap, gap);
+            });
+            lights.slice(i + 1).forEach((b) => { if (overlaps(a, b)) out.pairHits++; });
+          });
+        });
+        if (out.minExcludeGap !== null) out.minExcludeGap = Math.round(out.minExcludeGap * 10) / 10;
+        return out;
       },
     };
   }

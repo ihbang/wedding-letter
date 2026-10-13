@@ -61,7 +61,7 @@ WE’RE GETTING MARRIED
 - account: WITH HEART / 마음 전하실 곳
 - guestbook: GUESTBOOK / 방명록
 - share: SHARE / 공유하기
-- closing: 별도 eyebrow·한글 제목 없음. Allura `Thank you`가 제목 자리를 맡는다(아래 `share` 참고).
+- closing: 별도 eyebrow·한글 제목 없음. Allura `Thank you`가 제목 자리를 맡는다(아래 `closing` 참고).
 
 ---
 

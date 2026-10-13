@@ -11,6 +11,8 @@
 > placeholder 정리(2026-10-12): `[[TODO:...]]` 값이 모두 채워져 W1·W2·W3은 닫혔다. placeholder를 판별하던 코드(`isPlaceholder`, 계좌 "준비 중" 토스트, 방명록 "접수 주소 미설정" 안내)를 지웠으므로, 1~4차 표에 있는 placeholder 보호 관련 행은 당시 기록으로만 남는다. F1도 해소됐다(4차 절 끝).
 >
 > 5차 QA(오시는 길 카카오맵, 2026-10-12) 결과는 문서 맨 끝 "5차 QA" 절에 있다: PASS 38 / FAIL 0 / 새 WARNING 0. 검증 중 찾은 데스크톱 더블클릭 글자 선택 1건은 `style.css`에서 직접 고쳤다. W5는 해소됐고 W6·W7은 그대로다.
+>
+> 7차 QA(인사말·섹션 분리·보케 B안, 2026-10-13) 결과는 문서 맨 끝 "7차 QA" 절에 있다: PASS 52 / FAIL 0 / WARNING 3(새로 생긴 W11·W12·W13, 모두 문서). W6·W8·W9·W10은 해소됐고 W7은 그대로다.
 
 ## 요약
 
@@ -882,3 +884,147 @@ R8 단계 밖 값(섹션 안 margin·padding·gap 전체를 뽑아 단계 값과
 | 계좌(펼침) | `shots-base-motion-390x844/08b-account-expanded.png` | `shots-cur-motion-390x844/08b-account-expanded.png` (접힘 `08-account.png`) |
 | 그 밖 | 달력 `04-calendar.png`, couple `03-couple.png`, share `10-share.png`, 갤러리 `12a~12d`, 전체 `full.png` | 같은 이름. 375x548 첫 화면 `shots-cur-motion-375x548/00-first-screen.png`, reduced `shots-cur-reduced-390x844/` |
 | textarea 모서리(W10, 6배) | `corner/textarea-corner-base-1280.png` | `corner/textarea-corner-cur-1280.png` |
+
+## 7차 QA (인사말·섹션 분리·보케 B안) — 2026-10-13
+
+6차(커밋 `463319a` 시점) 뒤 바뀐 것은 세 가지다. ① 인사말을 종이 청첩장 문장으로 바꾸고 연 구분을 4행 + 5행으로 했다(커밋 `9fb976b`, 연 구분은 `c6d4bdd`). ② 마지막 share 섹션을 공유하기(`#share`)와 맺음(`#closing`)으로 나누고 보케 구간을 맺음으로 옮겼다(커밋 `c6d4bdd`). ③ 보케를 B안 "작은 전구 불빛"으로 바꾸고 글자 영역을 피하게 했다(작업 트리, 미커밋. `script.js` 보케 블록, `index.html`의 `data-bokeh-exclude` 8개 추가·1개 이동). 결정 기록은 `00_user-input.md` 맨 아래 두 절, 명세는 `04_motion-designer_motion-spec.md` 1장·10장, frontend 반영 내역은 `05_frontend-developer_summary.md` 14·15장이다.
+
+### 요약
+
+- 전체 결과: **PASS** (FAIL 0)
+- 7차 판정 55항목: PASS 52 / FAIL 0 / WARNING 3 (새 W11·W12·W13, 모두 문서 표기)
+- **보케 B안: 명세 10장 자동 확인 9항목 모두 PASS.** frontend 결과와 `__bokeh.stats()`(코드가 스스로 내는 값)를 믿지 않고, 캔버스 픽셀을 직접 읽어 불빛을 찾고 피할 영역도 처음부터 다시 쟀다. 5개 화면, 1,200개 표본에서 글자·사진·장식·BGM 자리 안에 칠해진 픽셀은 0개, 불빛 픽셀에서 피할 영역까지 최소 13.1px, 불빛끼리 최소 11.5px이다
+- **"디스플레이가 눌린 자국" 해소.** 화면 픽셀로 쟀을 때 이전 보케는 가장 밝은 점도 바탕과 같은 L\* 97.1이고 나머지는 모두 바탕보다 어두웠다(최저 93.6). B안은 불빛 심이 L\* 98.1~99.1로 바탕(97.1)보다 밝고, 둘레 후광만 금빛(L\* 85~91)이다. 5배 확대에서도 흰 심 + 금빛 테두리의 작은 전구로 읽힌다(아래 대표 스크린샷)
+- 공유하기·맺음 분리와 인사말은 카피 시트와 글자 단위로 같고, 규칙(R1·R4·R6·R8) 값도 모두 맞다. 맺음 이름은 실제 이탤릭 글꼴(`CormorantGaramondLight-Italic`, 가짜 기울임 아님), 날짜는 lining 숫자다
+- 직접 수정 1건: 감사 문서 R4 표에 맺음 날짜·이름 선택자를 넣었다(아래 "7차 직접 수정")
+- 기존 WARNING: **W6·W8·W9·W10 해소**(6차 뒤 커밋 `463319a`에서 고쳐졌다), W7 그대로
+- 검증 방법
+  - 정적: `qa7/static7.py`(카피 시트 ↔ `index.html` 글자 단위 대조 30/30 PASS), 명세 1-7 코드 블록과 `script.js` 보케 블록 diff, `node --check script.js`, 한글 문자 수 검사, 문서 grep
+  - 브라우저: 로컬 서버 `127.0.0.1:8787`(작업 트리). 이전 보케와 비교할 때만 HEAD `c6d4bdd`를 `git archive`로 푼 사본을 `127.0.0.1:8788`에 따로 띄웠다. headless Chrome CDP, 모바일은 터치 에뮬레이션. 모든 실행에서 `*kakao*`, `*formspree*` 요청을 막았다
+  - 보케 독립 측정(`qa7/bokeh7.mjs`, `probe.mjs`): 표본마다 구간 캔버스의 `getImageData`로 칠해진 픽셀의 연결 성분(= 불빛)을 찾고, 피할 영역은 코드의 `data-bokeh-exclude`와 상관없이 구간 안 **모든** 글자 줄 상자(`Range.getClientRects`), 모든 img·svg·table·스크롤 큐 상자, hero 스크롤 0의 BGM 버튼으로 새로 만든다. 프레임 수는 rAF를 감싸 보케 캔버스에 그린 콜백만 셌다. reveal을 기다리는 요소(`.reveal:not(.is-visible)`, 아직 12px 아래에 있고 opacity 0)는 독립 측정에서 뺐다. 처음 실행에서 이것을 빼지 않아 calendar D-day 줄과 9.3px로 나온 것은 측정 쪽 문제였고, 다시 잰 값이 아래 표다. 명세 순서(섹션 머리로 스크롤) 실행과, 먼저 끝까지 스크롤해 모든 reveal을 끝낸 뒤 재는 실행을 둘 다 했다
+  - reduced(`reduced7.mjs`): 같은 브라우저에서 두 번 + 새 프로필 브라우저에서 한 번 로드해 hero 캔버스 전체 버퍼의 SHA-256을 비교했다
+  - 회귀: 6차 드라이버(`qa.mjs` 12개 시나리오 + `firstscreen` + `widths 1280x900`, `account.mjs` motion·reduced × 4폭, `carousel-check.mjs`)를 작업 트리에 돌리고 6차 작업 트리 결과(`qa6/cur/`)와 `qa7/compare7.py`로 비교했다. `qa.mjs`의 `zonecap`은 `share` → `closing`으로만 고쳤고, `maxPeak`를 읽는 `bokeh` 시나리오는 위 독립 측정으로 바꿨다
+  - 공유하기·맺음·인사말(`layout7.mjs`, `extra7.mjs`): 320x568, 360x780, 375x667, 390x844, 430x932, 1280x900에서 `getComputedStyle`·상자 간격·줄 수, `CSS.getPlatformFontsForNode`로 실제 렌더 글꼴, JS 꺼짐·reduced 상태
+  - Chrome은 샌드박스 안에서 뜨지 않아 샌드박스를 끄고 실행했다. 끝난 뒤 두 서버와 QA용 Chrome을 모두 종료했다(8787·8788 포트 닫힘, QA 프로필 Chrome 0개). 스크립트·출력·스크린샷은 scratchpad `qa7/`에만 있고 저장소에는 넣지 않았다
+
+### 7-1. 보케 B안 (모션 명세 10장 자동 확인 + 독립 측정)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 1 | 10-1 구간별 상한·회피 (`stats()`) | 5개 화면(390x664 DPR 3, 375x548 DPR 2, 360x700 DPR 3, 430x750 DPR 3, 1280x900 DPR 1), 명세 순서 실행 3회(390x664, 375x548, 1280x900)와 reveal을 모두 끝낸 뒤 재는 실행 7회, 10회 × 3구간 × 40표본. 구간별 최대 8, `living` 최대 8(상한 12 / 데스크톱 16), `excludeHits` 0, `pairHits` 0, `minExcludeGap` 최소 13.0(375x548 hero), `running`은 늘 그 구간 하나 | PASS |
+| 2 | 10-1 독립 픽셀 측정 | 같은 1,200표본. 피할 영역 안 칠해진 픽셀 **0개**, 불빛 픽셀 → 피할 영역 최소 **13.1px**(375x548 hero 사진), 불빛끼리 최소 11.5px(겹친 불빛이 한 덩어리로 보인 적 없음, 불빛 크기 최대 32px·DPR 1에서 34px = 후광 지름 32.4px), 캔버스 경계에 닿은 불빛 0, 한 번에 보이는 캔버스 1개·보이는 불빛 최대 8개. 화면별 최소 간격(픽셀): 390x664 14.7 / 375x548 13.1 / 360x700 15.3 / 430x750 14.3 / 1280x900 14.7 | PASS |
+| 3 | 10-2 멈춤 위치 | gallery·venue·notice·account·guestbook 머리와 머리 + 200px(10회 실행 모두): `running` `[]`이고 800ms 동안 보케 캔버스에 그린 프레임 0. couple → `["calendar"]`, 공유하기 → `["closing"]`(800ms에 24프레임 = 30fps), 1280x900의 greeting + 200 → `["calendar"]`. 모두 명세 1-4가 적은 의도한 동작. greeting 머리는 `[]` | PASS |
+| 4 | 10-3 탭 숨김·lightbox (hero) | 숨김(`visibilitychange`) 동안 `[]`, 1.5초 프레임 0, 다시 보이면 `["hero"]`·1초 30프레임. lightbox 연 동안 `[]`·1.5초 프레임 0, 닫으면 `["hero"]`·30프레임, scrollY 0 그대로(10회 모두) | PASS |
+| 5 | 10-4 캔버스 크기·메모리 | 모든 화면에서 `round(섹션 크기 × min(dpr, 2))`와 같다. 390x664: 780x1328 / 780x1684 / 780x986 = 11.89MB, 375x548: 750x1096 / 750x1684 / 750x986 = 10.78MB, 360x700 11.19MB, 430x750 13.67MB, 1280x900 480x900 / 480x842 / 480x493 = 4.09MB. 모두 14MB 이하, 명세 1-8 표와 같다 | PASS |
+| 6 | 10-5 reduced 정지 불빛 | 390x664·375x548·1280x900: `still` 7, 픽셀로 센 불빛도 7개, 피할 영역 안 픽셀 0, 최소 간격 13.1 / 14.1 / 25.1px(`stats` 13.2 / 13.9 / 24.7), 최대 알파 217/255 = 0.85(`STATIC_ALPHA`), 1초 동안 그린 프레임 0, calendar·closing 캔버스 `display: none`, hero 캔버스 opacity 1 | PASS |
+| 7 | 10-6 새로고침해도 같은 그림 | 세 화면 모두 세 번(같은 브라우저 2회 + 새 프로필 1회) hero 캔버스 SHA-256이 같다: 390x664 `d915e02d57427360`(칠해진 픽셀 10,648), 375x548 `da071a6c18eb0f14`(8,608), 1280x900 `2b06d801deaffab8`(3,128) | PASS |
+| 8 | 10-7 런타임 전환 + BGM | 실제 탭으로 BGM을 켠 뒤 reduce → no-preference: `running ["hero"]`, `still` 0, 1초 30프레임, 캔버스가 바뀜. 다시 reduce: `still` 7, 프레임 0, SHA-256이 7번과 같다. BGM은 내내 `paused: false`, `currentTime` 1.31 → 3.84 → 5.65초(세 화면 모두 같은 양상) | PASS |
+| 9 | 10-8 설정값 대조 | 실행 중 `__bokeh.config`(29개 키)가 명세 1-7 `BOKEH` 객체를 평가한 값과 JSON으로 같다. `script.js` 보케 블록(110-520행)은 명세 1-7 코드 블록과 끝 빈 줄 하나 말고 같고, `git diff`는 이 블록 밖을 건드리지 않았다. 없어진 키(`D_MIN`, `D_MAX`, `CENTER_D_MAX`, `EDGE_BIAS`, `EDGE_BAND`, `GLOW_RATIO`, `BREATH`, `DPR`), `BOKEH_STATIC`, `maxPeak`, `primary`, `ctx.filter`, `shadowBlur` 0건. CSS에 캔버스 `filter` 없음 | PASS |
+| 10 | 10-9 30fps·스크립트 시간 | 390x664 DPR 3·375x548 DPR 2, 구간마다 5초: 모두 150프레임(30.0fps). 보케 rAF 콜백 최대 0.2~0.3ms(1x), 0.6~0.7ms(4x). 첫 실행(원자료는 다음 실행에 덮어써짐)의 4x hero에서 1.0ms가 한 번 나왔다(기준 1ms 이하) | PASS |
+| 11 | 3Hz 미만 | 설정값: 반짝임 주기 최소 2.4초(0.42Hz), 페이드 1.2초. 픽셀(`flicker7.mjs`, 390x664 DPR 1, 구간마다 20초, 33ms마다 캔버스를 읽어 불빛 17개씩 추적): 밝기 0.1 이상 오르내림 사이 최단 617ms, 1초 안의 반전 최대 2회(= 깜빡임 1회/초), 33ms당 밝기 변화 최대 0.076 | PASS |
+| 12 | 제외 속성 12개 | 정적·실행 모두 `"text"` 6개(`.hero__top`, `.hero__bottom`, calendar `.section-head`, `.calendar__when`, `.dday`, `.closing__thanks`), 값 없음 6개(`.hero__photo`, `.scroll-cue`, `.lights`, `.cal`, closing `.sprig`, `.monogram`), wreath `<img>`에 없음, 구간 밖 속성 0 | PASS |
+| 13 | "눌린 자국" 해소 (화면 픽셀) | 390x844 DPR 3 화면 캡처를 디코드해 불빛마다 반지름 18px 안 가장 밝은·어두운 픽셀을 쟀다. **B안**: 밝기 0.4 이상인 불빛의 심 `(253~255, 249~252, 243~248)` L\* 98.1~99.1 > 바탕 `(251, 246, 241)` L\* 97.1, 후광 최저 L\* 85.4~91.6(밝은 불빛일수록 진함). 막 켜지거나 꺼지는 불빛도 심 L\* 97.2~97.5로 바탕보다 밝다. **이전(HEAD)**: 모든 빛망울의 최댓값이 바탕과 같은 L\* 97.1, 최저 93.6~96.1. 캔버스 심 픽셀도 `(255, 252, 248)`로 명세 on_accent와 같다. 확대 캡처에서 이전은 가장자리 없는 어두운 얼룩, B안은 흰 심과 금빛 테두리가 또렷한 작은 전구다 | PASS |
+| 14 | reveal 전환 중 회피 (calendar D-day) | D-day 줄이 아직 reveal 전일 때 calendar에 불빛이 산 상태에서 D-day를 드러냈다(390x664 8회, 375x548 2회, 50ms 표본). 피할 영역 안 픽셀은 늘 0. 800ms 전환 동안 글자가 아직 아래(최대 +12px)에 있어 불빛까지 간격이 2회에서 5px·9px까지 줄었다(그때 글자 opacity 0.18). 표본을 파일로 남긴 6회에서 전환이 끝난 뒤 최소 간격은 15.5px | PASS |
+| 15 | 코드 품질 | `node --check script.js` 통과, `script.js`·`style.css` 한글 0자, `style.css`는 이번 변경 없음 | PASS |
+
+참고(판정 대상 아님)
+- 명세 1-3의 "13px 이상"은 그려진 정사각형(중심 ± R) 기준이고, 실제로 칠해진 픽셀은 원이라 늘 그보다 멀다. 이번 측정의 최솟값은 정사각형 13.0px / 픽셀 13.1px로 기준에 딱 붙어 있다. `05` 요약 7장(`:174`)의 "제외 상자까지 최소 14.4px 이상"은 그날 표본의 값이지 보장값이 아니다(보장값은 13)
+- #14의 전환 중 간격은 명세가 정한 "최종 위치 기준" 회피의 자연스러운 결과다. 글자가 흐린 동안 잠깐이고 겹침은 없어 고칠 필요는 없다
+
+### 7-2. 공유하기·맺음 분리
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 16 | 섹션 순서 | hero, greeting, couple, calendar, gallery, venue, notice, account, guestbook, **share, closing**(360·390·1280). `main`의 마지막은 `.reveal-sentinel` | PASS |
+| 17 | heading·랜드마크 | h1 1개(방인혁&손유민, 접근성 이름 "방인혁과 손유민"), h2 10개(… 방명록, 공유하기, Thank you). `aria-labelledby` 10개 섹션 모두 자기 안의 h2를 가리킨다. 접근성 트리 region 10개(… "공유하기", "Thank you") | PASS |
+| 18 | 카피 대조: 공유하기 | eyebrow "SHARE" / 제목 "공유하기", 문구 2행 "저희의 소식을 / 가까운 분들께도 함께 나눠 주세요.", 버튼 "카카오톡으로 공유하기"·"링크 복사하기", 성공·폴백 상태 문구, kakao_share title·description = og 메타, 버튼 "청첩장 보기". `02` `## share`와 글자 단위로 같다 | PASS |
+| 19 | 카피 대조: 맺음 | 모노그램 "I & Y"(접근성 이름 "인혁과 유민의 이니셜"), h2 "Thank you"(`lang="en"`), "2027.01.03", "Inhyeok & Yumin". 예전 맺음말 2행 없음, eyebrow·한글 제목 없음. `02` `## closing`과 같다 | PASS |
+| 20 | 이름 글꼴 | `.closing__names` 계산값 Cormorant Garamond italic 400 22px/30.8px text. 실제 렌더 글꼴 `CormorantGaramondLight-Italic`(웹 글꼴, 이탤릭 면 파일. Google Fonts 가변 글꼴이라 이름에 Light가 붙는다), `document.fonts.check('italic 400 22px "Cormorant Garamond"')` true, 이탤릭 latin 면 `loaded`. 가짜 기울임이 아니다(`shots/closing-names.png`) | PASS |
+| 21 | 날짜 lining 숫자 | `.closing__date` Cormorant Garamond 500 16px/20px, 자간 2.56px(0.16em), `lining-nums`, 왼쪽 패딩 2.56px. 같은 글자를 `font-variant-numeric: normal`로 바꿔 찍으면 old-style(0·1·2가 x높이이고 3·7이 기준선 아래로 내려감)이 되고, 지금은 모든 숫자가 대문자 높이다(`shots/closing-date-{lining,default}.png`). 실제 렌더 `CormorantGaramond-Medium` | PASS |
+| 22 | R4 역할별 스타일 | 공유하기 eyebrow·제목은 venue의 eyebrow·제목과 계산값이 같다(Cormorant 500 13/16 accent 0.28em / Gowun Batang 700 20/30 text). 문구 = notice 본문(Gowun Batang 400 15/29.25 text). 맺음 날짜 = 달력 표 제목 T13(정렬 값만 caption 안이라 `-webkit-center`). Allura는 hero `&`, 모노그램 `&`, Thank you(48px accent) 3곳뿐 | PASS |
+| 23 | R8 여백 | 공유하기: 패딩 80 / eyebrow → 제목 10 / 제목 → 문구 20 / 머리 → 버튼 40 / 버튼 사이 8 / 80. 맺음: 80 / sprig → 모노그램 24 / 모노그램 → Thank you 32 / Thank you → 날짜 20 / 날짜 → 이름 8 / 이름 → 섹션 끝 80(+ safe-area). guestbook → share → closing 사이 0(섹션 패딩끼리 160). 360·390·1280 같다. 모두 R8 단계 값이다 | PASS |
+| 24 | R1 패딩·R6 버튼 | 두 버튼 모두 컬럼 폭(360 312, 390 342, 1280 432) × 44, 모서리 999. 카카오톡 primary(accent 면, on_accent 글자), 링크 복사 secondary(1px accent 윤곽, accent 글자). 맺음 아래 패딩 `calc(80px + safe-area)` | PASS |
+| 25 | 구성 | 공유하기에 캔버스·sprig·모노그램·`data-bokeh-exclude`·`data-bokeh` 0개. reveal 그룹은 공유하기 2개(머리, 버튼), 맺음 2개(모노그램, Thank you 묶음). sprig는 stroke-draw로만 등장 | PASS |
+| 26 | 링크 복사·카카오 폴백 회귀 | 실제 탭: 링크 복사 → 클립보드 `https://ihbang.github.io/wedding-letter/`, 토스트·상태 "청첩장 링크를 복사했습니다.". 카카오(SDK 차단) → 같은 주소 복사, "카카오톡 공유를 열 수 없어 링크를 복사했습니다. 대화방에 붙여 넣어 주세요.". 6차와 결과가 같다 | PASS |
+| 27 | JS 꺼짐·reduced | JS 꺼짐: 공유하기·맺음 reveal 4개 opacity 1, 맺음 sprig dashoffset 0·점 1, 내용 그대로. reduced: 로드 직후 숨은 reveal 0, 맺음 sprig 완성, calendar·closing 캔버스 숨김, 실행 중 애니메이션 0 | PASS |
+| 28 | 감사 문서 R4·R8 기재 | 구현은 컨셉 시트 `table_title`·`closing_names`를 따르는데 감사 문서 R4 표에는 `.closing__date`·`.closing__names`가 없었다 → R4는 직접 고쳤다(아래). R8 관계표에는 맺음의 "장식 → 모노그램 24"와 "날짜 → 이름 8"이 어느 관계인지 없다. 값은 단계 안이고 화면 리듬도 맞다 | WARNING (W11) |
+
+### 7-3. 인사말
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 29 | 카피 대조 | `.greeting__body` 두 문단을 `<br>`로 나눈 9행이 `02` `## greeting` 9행과 글자 단위로 같다. `00` 원문 블록과 낱말도 같다(원문 블록은 6 + 3 연이고, 4 + 5는 같은 문서 "공유하기와 맺음 섹션 분리" 절의 사용자 결정) | PASS |
+| 30 | 연 구분 | 4행 + 5행. 가장 긴 행 16자("새해의 시작과 함께 부부로서의"), 카피 시트 "한 행 16자 이내"와 맞다 | PASS |
+| 31 | 의도하지 않은 줄바꿈 | 320, 360, 375, 390, 430, 1280에서 두 문단의 줄 상자 수가 4, 5로 `<br>` 행 수와 같다. 공유하기 문구(2행), 맺음 세 줄(각 1행), notice·계좌·방명록 안내도 모두 같다 | PASS |
+
+### 7-4. 문서 정합성
+
+| # | 문서 | 확인한 것 | 결과 |
+|---|------|------|------|
+| 32 | 보케 상한·기준 | 동시 표시 모바일 12 / 768px 이상 16 / 구간 8, 심 5~9px `#FFFCF8`, 후광 3.6r, 알파 0.9 → 0.5 → 0.2 → 0, 상승 0~3px/s, 흔들림 2~5px, 반짝임 2.4~4.8초, 수명 9~16초, 페이드 1.2초, 구간 hero·calendar·closing, DPR 상한 2, reduced 정지 불빛 7개가 컨셉 시트 `motion_direction`, 모션 명세 frontmatter·1장, `05` 15장, 코드에서 모두 같다. 컨셉 시트 `palette.primary`·`glow`·`on_accent` 주석, 톤앤매너, 대비 표도 B안으로 바뀌었다 | PASS |
+| 33 | 모션 명세 1·10장 ↔ 코드 | 1-1~1-6 표의 동작(30fps, 직전 자리만 지우기, `pauses` Set, `transitionend` 재측정, 고정 시드)이 1-7 코드와 같고, 10장 확인값이 7-1 실측과 맞는다. 2-7·2-8(공유하기 보케 없음, 맺음 보케 구간), 3-1(sprig 3곳 중 맺음), 8장, 11장도 맞다 | PASS |
+| 34 | share/closing 표기 | 컨셉 시트 `sections_order`·`layout_mood`·`decor_assets` usage·`typography.scale`·"공유하기와 맺음" 절, 모션 명세, 감사 문서 R1·R2·R4 T2·T5·M15, `05` 2장·14장이 구현과 같다. 감사 문서 1장과 `05` 14장 "명세 문서와 어긋나는 곳"의 `share` 표기는 당시 기록이다(`05` 15장이 해소를 적었다) | PASS |
+| 35 | 카피 시트 | 인사말 메모(9행 2연 4 + 5, "첫걸음" 표기, D-day 문구와 겹침은 의도), share·closing 문구가 구현과 같다. 다만 `02_copy-writer_copy.md:64` section_titles의 closing 줄이 "(아래 `share` 참고)"로 남았다. Thank you 설명은 지금 `## closing` 아래에 있다 | WARNING (W12) |
+| 36 | 컨셉 시트 영문 이름 | `01_concept-director_concept-sheet.md:6-7, 253`은 영문 표기 Inhyeok / Yumin을 "사용자 미확인" 기본값으로 적고 있다. 이 표기는 이제 맺음에 크게 나오고, `00` "공유하기와 맺음 섹션 분리" 절에 사용자가 "Inhyeok & Yumin" 미리보기를 골랐다고 적혀 있다 | WARNING (W13) |
+| 37 | `05` 요약 14·15장 | 바꾼 범위, 블록 밖 코드를 그대로 둔 근거(줄 번호 `script.js:587, 1009, 1033, 1586, 1588, 1593` 확인), 확인 9항목의 수치 범위가 7-1 실측과 맞는다. 3장 보케 행의 `파일:줄`도 지금 코드와 같다. 참고: `:11` 파일 줄 수(454/1,099/1,442)는 지금 467/1,175/1,594이고, 3장의 보케 아닌 행 줄 번호가 69씩 밀린 것은 15장에 적혀 있다 | PASS |
+| 38 | 이전 WARNING | W6(모션 명세 갤러리 예전 순서, 카피 시트 "그리드"), W8(모션 명세 예전 면·그릇 표현), W9(라벨 줄 높이 1.6 통일, R8 예외 문장), W10(`style.css:836` textarea `resize: none`) 모두 고쳐진 것을 grep과 계산값으로 확인했다 | PASS |
+
+참고: 컨셉 시트 대비 표 후광 0.5 행(`:310` `#F3E0C2`, muted 4.30)과 모션 명세 1-3(`:138` `#F3E1C3`, 4.32)은 섞은 색을 내림·반올림한 차이다. 반올림한 `#F3E1C3`이 맞고, 둘 다 "4.5 미달이라 회피로 지킨다"는 결론은 같다.
+
+### 7-5. 공통 회귀 (6차 작업 트리 결과 `qa6/cur/` ↔ 지금, 같은 드라이버)
+
+섹션 높이는 의도한 만큼만 바뀌었다(390): greeting 516 → 546(인사말 9행), guestbook 738 → 744(W9 라벨 줄 높이 1.6), share 629 → share 431 + closing 493. 나머지 섹션 높이·패딩은 같다. couple의 좌우 위치·폭은 같고 세로 위치만 greeting만큼 내려갔다.
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 39 | hero 첫 화면 | `firstscreen` 390x664 / 375x548 / 390x844 결과가 6차와 같다(375x548 장소 아래 끝 501, 스크롤 큐 숨김). 4폭 모두 BGM 토글이 eyebrow·날짜와 겹치지 않는다 | PASS |
+| 40 | 갤러리 캐러셀 | `carousel-check.mjs` 110/110 PASS, 검사 이름 목록이 6차와 같다. 이 드라이버는 6차까지 `*formspree*`만 막고 있어 `*kakao*`도 막도록 고쳐 다시 돌렸고 결과가 같다(`qa7/cur-carousel-kb/`) | PASS |
+| 41 | lightbox | `lightbox`·`lbkeys` 결과가 6차와 같다(핀치 3배 제한, 더블탭, 팬 제한, 키보드, 포커스 순환, 스크롤 잠금, 뒤로가기, 끌어 닫기, lightbox 동안 보케 `[]`) | PASS |
+| 42 | couple | `copyedit2` 4폭 행·줄·"아들/딸" 칸·이름의 left/right/width가 6차와 같다 | PASS |
+| 43 | notice | `copyedit2` notice 항목, `reducednotice`가 6차와 같다 | PASS |
+| 44 | 오시는 길 지도 자리 | 카카오 차단 시 `#venue-map` 숨김, 주소 복사 → 지도 버튼 16, 지도 버튼 → 교통편 32(6차와 같음) | PASS |
+| 45 | 계좌 접기·복사 토스트 | `account` motion·reduced × 4폭: 실제 클립보드 `110-335-546640`·`298702-04-213005`, 토스트 "계좌번호가 복사되었습니다.", 접기·키보드·접근성 결과가 6차와 같다. 다른 것은 페이드 샘플 ±1ms와 BGM 토글이 화살표를 덮는 비율 ±2%p(위 섹션 높이 변화) | PASS |
+| 46 | D-day | 고정 시각 6개 결과가 6차와 같다. 오늘(2026-10-13) "D - 82 / 인혁 · 유민의 결혼식까지 82일 남았습니다." | PASS |
+| 47 | BGM | `bgmnet`: 탭 전 음원 요청 0, 탭 뒤 1건·재생. `interact`: volume 0.60·링, 끄기, 음원 오류 복구 문구. reduced에서 링 0.8 정지. 6차와 같다 | PASS |
+| 48 | 방명록 검증 | 빈 성함·빈 말씀 안내와 `aria-invalid`·포커스, 501·전송 실패 시 입력 유지·버튼 복구, 성공 경로. 6차와 같다. 실제 Formspree 전송 0건 | PASS |
+| 49 | 가로 스크롤 | 320/360/375/390/430/1280에서 `scrollWidth` = 화면 폭(처음, 끝까지 스크롤 뒤, 상호작용 뒤). 화면 밖 요소 0, 14px 미만 한글 0 | PASS |
+| 50 | 콘솔 오류 | 페이지 코드의 오류·예외 0건. 나온 줄은 QA가 일부러 만든 501·404와 QA 픽셀 읽기의 Canvas2D `willReadFrequently` 경고뿐이다(6차와 같은 종류) | PASS |
+| 51 | 숨은 reveal | 끝까지 스크롤한 뒤 0 / 26(`widths` 360·375·390·430 + 1280, `layout7` 320~1280 6폭), 안 그려진 디바이더 0 | PASS |
+| 52 | reduced-motion | 로드 직후·스크롤 뒤 숨은 reveal 0, 실행 중 애니메이션 0, 보케는 hero 정지 불빛 7개만(최대 알파 0.851), calendar·closing 캔버스 숨김, 전구 1, BGM 링 정지, 런타임 전환·로드 중 전환 정상 | PASS |
+| 53 | JS 비활성 | `nojs`가 6차와 같다(reveal 보임, D-day 숨김, notice·couple·달력 캡션·주소 그대로). 공유하기·맺음도 보인다(#27) | PASS |
+| 54 | 코드 검사 | `node --check script.js` 통과, `script.js`·`style.css` 한글 0자 | PASS |
+| 55 | 접근성 트리·외부 요청 | 이름 없는 컨트롤 0, alt 없는 img 0, 장식 svg·canvas 노출 0, `lang="ko"`, viewport 메타 그대로. 외부 요청은 모두 https이고 새 도메인 없음(글꼴 하위 집합 순서만 다르다) | PASS |
+
+### 7차 직접 수정
+
+- `_workspace/07_concept-director_design-audit.md` R4 표: T12·T13 선택자에 `.closing__date`를 넣고, T15 "맺음 이름"(`.closing__names`, Cormorant Garamond 400 italic 22 / 1.4 text) 행을 더했다. 컨셉 시트 `typography.scale.table_title`·`closing_names`가 이미 정한 값을 감사 표에 옮긴 것이라 코드와 화면은 그대로다
+
+### 기존 WARNING 현황
+
+- W6·W8·W9·W10: **해소**(7-4 #38)
+- W7: 그대로. 위치 `script.js:835`(가로 휠 450ms 잠금, `GAL.WHEEL_LOCK` `:24`)
+
+### 7차에서 나온 이슈와 수정 제안
+
+- [ ] **W11 (문서) 감사 문서 R8에 맺음 관계가 없다** → concept-director가 `07_concept-director_design-audit.md` R8 관계표(`:258` 아래)에 한 줄 더한다. 예: "맺음의 장식 → 모노그램 | 24(장식 → 섹션 머리와 같은 값)", "맺음의 날짜 → 이름 | 8(한 쌍으로 읽는 두 줄)". 코드는 바꾸지 않아도 된다
+- [ ] **W12 (문서) `02_copy-writer_copy.md:64`** "(아래 `share` 참고)" → "(아래 `closing` 참고)". 카피 시트는 사용자가 직접 고치는 파일이라 QA가 손대지 않았다
+- [ ] **W13 (문서·사용자 확인) `01_concept-director_concept-sheet.md:6-7, 253`** 영문 이름 "사용자 미확인" 주석 → 사용자가 맺음 미리보기에서 "Inhyeok & Yumin"을 골랐으므로 확인된 표기로 볼지 concept-director가 정해 주석과 `defaults_applied`를 고친다. 다른 로마자 표기를 원하면 `index.html:415` 한 곳만 바꾸면 된다(모노그램 "I & Y"는 그대로)
+
+### 참고 (판정 대상 아님)
+
+- 보케 회피 간격의 실측 최솟값은 기준(13px)에 거의 붙어 있다(7-1 참고). 기준을 넉넉히 하고 싶으면 `EXCLUDE_MARGIN`을 키우면 되지만, 지금 값으로 겹침은 0이다
+- 맺음 날짜의 텍스트 상자 가운데는 섹션 가운데보다 1.27px 오른쪽이다. 마지막 글자 뒤 자간(2.56px)을 왼쪽 패딩으로 맞춘 결과라 글자 잉크의 가운데는 섹션 가운데와 같다. 달력 표 제목도 같은 방식이다
+- 공유하기 섹션을 보는 동안 맺음 보케가 켜질 수 있다(명세 1-4가 적은 의도한 동작). 불빛은 맺음 섹션 안에만 그려진다
+
+### 대표 스크린샷 (scratchpad, 저장소에 넣지 않음)
+
+`/private/tmp/claude-501/-Users-inhyeok-Workspace-wedding-letter/cc1402ba-2bf0-4475-9039-e013d45393f0/scratchpad/qa7/` 아래.
+
+| 대상 | 파일 |
+|---|---|
+| hero 첫 화면 (390x844, DPR 3) | `shots/cur/hero.png` (375x548: `shots/extra/hero-375x548.png`, reduced: `shots/extra/hero-reduced-390.png`) |
+| 공유하기 + 맺음 (390x844, DPR 3, 끝까지 스크롤) | `shots/cur/closing.png` (reduced `shots/extra/closing-reduced-390.png`, JS 꺼짐 `shots/extra/closing-nojs-390.png`) |
+| 보케 전후 비교 (전체 + 5배 확대) | `shots/compare7.png` (낱장: 이전 `shots/head/hero-zoom0.png`, B안 `shots/cur/hero-zoom0.png`, `shots/cur/closing-zoom0.png`) |
+| calendar 보케 | `shots/cur/calendar.png` |
+| 맺음 날짜 lining / 기본 숫자, 이름 이탤릭 | `shots/closing-date-lining.png`, `shots/closing-date-default.png`, `shots/closing-names.png` |
+| 원자료 | `b7-*.json`(1~4·9번), `r7-*.json`(5~7번), `f7-390x664.json`(3Hz), `t7-*.json`(reveal 전환), `l7.json`(공유하기·맺음·인사말), `x7.json`(JS 꺼짐·reduced·지도 자리), `static7.out`, `compare7.out`, `cur/`(회귀) |

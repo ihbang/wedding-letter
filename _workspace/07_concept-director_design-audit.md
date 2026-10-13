@@ -172,9 +172,9 @@
 ### R1. 섹션 배경과 리듬
 
 - 모든 섹션의 바탕은 background다. surface는 섹션 면으로 쓰지 않고 카드, 사진 매트, 지도 로딩 면에만 쓴다(D1).
-- 섹션 상하 패딩은 80이다. 예외는 hero, greeting·couple 묶음(0 / 56 + sprig), share 아래 safe-area 세 곳이다.
+- 섹션 상하 패딩은 80이다. 예외는 hero, greeting·couple 묶음(0 / 56 + sprig), closing 아래 safe-area 세 곳이다(2026-10-12 share/closing 분리).
 - 섹션은 여백(약 160)과 장식 SVG로만 나눈다. 배경색을 바꿔서 나누지 않는다.
-- 보케 구간(hero, calendar, share)은 바뀌지 않는다. 방명록을 background로 바꿔도 보케 구간이 아니므로 보케는 나타나지 않는다.
+- 보케 구간(hero, calendar, closing)은 바뀌지 않는다(2026-10-12 share/closing 분리). 방명록을 background로 바꿔도 보케 구간이 아니므로 보케는 나타나지 않는다.
 
 영향: guestbook.
 
@@ -182,7 +182,7 @@
 
 | 내용 | 그릇 | 해당 |
 |---|---|---|
-| 문장(인사, 안내, 맺음) | 맨 텍스트, 가운데 | greeting, notice, account·guestbook 안내문, share 맺음말 |
+| 문장(인사, 안내, 맺음) | 맨 텍스트, 가운데 | greeting, notice, account·guestbook 안내문, share 문구(맺음말은 삭제, 2026-10-12 share/closing 분리) |
 | 섹션의 답 한두 줄(일시, 장소) | 맨 텍스트, 가운데 | 예식일 일시, 오시는 길 장소명·주소 |
 | 라벨 + 값이 여러 행 | 구분선 목록, 왼쪽 | 교통편 |
 | 표 | 가는 선 표 | 달력 |
@@ -207,10 +207,10 @@
 | 역할 | 글꼴 | 굵기 | 크기 / 줄 높이 | 색 | 기타 | 해당 선택자 |
 |---|---|---|---|---|---|---|
 | T1 eyebrow | Cormorant Garamond | 500 | 13 / 16 | accent | 0.28em, 대문자. **섹션 머리에만, 섹션당 한 번** | `.eyebrow`, `.hero__eyebrow` |
-| T2 섹션 제목 | Gowun Batang | 700 | 20 / 1.5 | text | share만 Allura 48 accent(컨셉 지정) | `.section-title`, `.share__title` |
+| T2 섹션 제목 | Gowun Batang | 700 | 20 / 1.5 | text | closing만 Allura 48 accent(컨셉 지정) (2026-10-12 share/closing 분리) | `.section-title`, `.closing__title` |
 | T3 이름 | Gowun Batang | 700 | 22(hero), 18(couple) | text | | `.hero__names`, `.couple__name` |
 | T4 핵심 정보(섹션의 답) | Gowun Batang | 400 | 17 / 1.6 | text | | `.calendar__when`, `.venue__name` |
-| T5 본문 | Gowun Batang | 400 | 15 / 1.95 | text | 문단 사이 1.95em(빈 줄 하나) | greeting, notice, account·guestbook 안내문, share 맺음말, `.couple__line`, `.dday__message` |
+| T5 본문 | Gowun Batang | 400 | 15 / 1.95 | text | 문단 사이 1.95em(빈 줄 하나) | greeting, notice, account·guestbook 안내문, share 문구 `.share__message`(맺음말은 삭제, 2026-10-12 share/closing 분리), `.couple__line`, `.dday__message` |
 | T6 정보 값 | Pretendard | 400 | 14 / 1.7 | text | | `.venue__address`, `.venue__route dd` |
 | T6b 계좌번호 | Pretendard | 500 | 15 / 1.5 | text | 받아 적는 숫자 열이라 한 단계 크게. 지금 그대로 | `.account__number` |
 | T7 정보 라벨 | Pretendard | 600 | 14 / 1.6 | sage_deep | | `.couple__role`, `.venue__route dt`, `.account__side`, `.gb-label` |
@@ -218,9 +218,10 @@
 | T9 버튼 | Pretendard | 500 | 14 / 1.2 | R6 | | `.btn` |
 | T10 표 머리 | Pretendard | 500 | 14 | muted, 일요일 accent | 지금 그대로 | `.cal th` |
 | T11 데이터 숫자 | Pretendard | 400(예식일 600) | 14 | text | 지금 그대로 | `.cal td`, `.cal__mark` |
-| T12 분위기 숫자 | Cormorant Garamond | 300(큰 숫자), 400(카운터), 500(작은 대문자 줄) | 지금 크기 | 지금 색 | `font-variant-numeric: lining-nums`, 카운터는 `tabular-nums` 추가 | `.hero__date`, `.hero__time`, `.dday__count`, `.g-counter`, `.lb-counter`, `.cal__caption-en` |
-| T13 표 제목 | Cormorant Garamond | 500 | 16 / 20 | text | 0.16em, lining | `.cal__caption-en` |
+| T12 분위기 숫자 | Cormorant Garamond | 300(큰 숫자), 400(카운터), 500(작은 대문자 줄) | 지금 크기 | 지금 색 | `font-variant-numeric: lining-nums`, 카운터는 `tabular-nums` 추가 | `.hero__date`, `.hero__time`, `.dday__count`, `.g-counter`, `.lb-counter`, `.cal__caption-en`, `.closing__date` |
+| T13 표 제목 | Cormorant Garamond | 500 | 16 / 20 | text | 0.16em, lining. 맺음 날짜 '2027.01.03'도 이 모양(2026-10-13 7차 QA: 컨셉 시트 `table_title`과 맞춤) | `.cal__caption-en`, `.closing__date` |
 | T14 입력 | Pretendard | 400 | 16 / 1.5 | text, placeholder muted | iOS 확대 방지 | `.gb-input` |
+| T15 맺음 이름 | Cormorant Garamond | 400 italic | 22 / 1.4 | text | 'Inhyeok & Yumin'. 한글 이탤릭 명조가 없어 영문 이탤릭(사용자 결정). 2026-10-13 7차 QA: 컨셉 시트 `closing_names`와 맞춤 | `.closing__names` |
 | 스크립트 | Allura | 400 | 3곳 | accent | 컨셉 시트 그대로(hero `&`, 모노그램 `&`, Thank you) | |
 
 eyebrow 모양(T1)은 섹션 머리에서만 쓴다. 섹션 안에 소제목이 필요하면 T13처럼 text 색으로 한 단계 낮춘다.
@@ -266,6 +267,8 @@ eyebrow 모양(T1)은 섹션 머리에서만 쓴다. 섹션 안에 소제목이 
 | 형제 카드 사이, 사진 → 버튼 줄 | 12 |
 | 라벨 → 필드, 나란한 버튼 사이 | 8 |
 | eyebrow → 제목 | 10 (글자 한 쌍이라 예외로 둔다) |
+| (2026-10-12 7차 QA W11) 맺음: 장식 → 모노그램 | 24 ("장식 → 섹션 머리"와 같은 관계. 맺음은 모노그램이 머리 자리다) |
+| (2026-10-12 7차 QA W11) 맺음: 모노그램 → Thank you, Thank you → 날짜, 날짜 → 이름 | 32, 20, 8 (블록 → 블록, 제목 → 제목 밑 문장, 붙은 두 줄) |
 
 hero 내부 간격은 `hero_layout`의 세로 예산을 따르므로 이 표에서 뺀다.
 
@@ -281,8 +284,7 @@ hero 내부 간격은 `hero_layout`의 세로 예산을 따르므로 이 표에�
 | accent | background / surface | 5.45 / 4.93 | eyebrow, 버튼 글자·윤곽선, 원형 버튼 윤곽선 |
 | on_accent | accent | 5.72 | primary 버튼 글자 |
 | field_border | background / surface / 필드 | 3.37 / 3.05 / 3.57 | 입력 경계(비텍스트 3:1). 방명록이 background로 바뀌어도 충족 |
-| text / accent / muted | 보케 상한 glow 0.28 `#F7EAD7` | 11.10 / 4.93 / 4.68 | calendar의 달력 캡션(text로 바뀜), D-day |
-| text / accent / muted | 보케 상한 primary 0.18 `#F2E7E2` | 10.85 / 4.82 / 4.58 | 같음 |
+| text / accent / muted | (2026-10-12 보케 B안) 보케가 글자 영역을 피하므로 글자 바탕은 background 그대로다 | 12.26 / 5.45 / 5.17 | calendar의 달력 캡션, D-day, hero, closing. 겹친다고 가정한 최악값과 회피 방식은 모션 명세 1-3 |
 | primary(지금 원형 버튼 윤곽선) | background | 2.17 | 3:1 미달. R6에서 accent로 바꾼다 |
 | line | background / surface | 1.32 / 1.20 | 장식 구분선 전용. 입력 경계로 쓰지 않는다(지금도 안 씀) |
 
@@ -322,7 +324,7 @@ M2의 주소 복사 버튼 전체 폭(R6)은 M2에 들어 있다.
 | M12 | R7 | style.css:814 `.gb-input` | `border-radius: 10px;` | `border-radius: var(--radius-card);` | guestbook |
 | M13 | R4 T5 | style.css:474 `.couple__line` / 556 `.dday__message` / 735 `.account__message p + p` | 1.9 / 1.8 / `margin-top: 1em` | `line-height` 1.95 / 1.95 / `margin-top: 1.95em`. couple 두 줄의 가로 정렬(`.couple__rel`)은 줄 높이와 상관없다 | couple, calendar, account |
 | M14 | R8 | style.css:182 `.section-note` | `margin-top: 12px` | `20px` | gallery |
-| M15 | R8 (블록 32) | style.css:506 `.cal`, 546 `.dday`, 709 `.venue__routes`, 850 `.share .sprig`(margin-bottom), 888 `.share__buttons` / 876 `.share__thanks` | 36 / 28 | 모두 `32px`. `.cal`은 `margin: 32px auto 0` | calendar, venue, share |
+| M15 | R8 (블록 32) | style.css:506 `.cal`, 546 `.dday`, 709 `.venue__routes`, 850 `.share .sprig`(margin-bottom), 888 `.share__buttons` / 876 `.share__thanks`. (2026-10-12 share/closing 분리: sprig와 Thank you 묶음은 지금 `.closing .sprig`(24로 바뀜)·`.closing__thanks`이고, `.share__buttons` 위 여백은 섹션 머리 → 콘텐츠 40이 맡는다) | 36 / 28 | 모두 `32px`. `.cal`은 `margin: 32px auto 0` | calendar, venue, share·closing (2026-10-12 share/closing 분리) |
 | M16 | R8 (장식 24) | style.css:491 `.lights`(margin-bottom), 565 `.gallery .sprig`(margin-bottom) | 20 / 32 | 둘 다 `24px`. `.lights`는 `margin: 0 auto 24px` | calendar, gallery |
 | M17 | R8 (16) | style.css:801 `.gb-form` gap, 461 `.couple__list` gap | 18 / 14 | 둘 다 `16px` | guestbook, couple |
 | M18 | U15 | style.css:721-725 `.venue__route dd` | | `text-wrap: pretty;` 추가(지원하지 않는 브라우저는 지금과 같다) | venue |

@@ -187,3 +187,16 @@ concept-director가 감사 문서 `_workspace/07_concept-director_design-audit.m
 - 보케는 공유하기가 아니라 **맺음 섹션**에 둔다. 보케 구간은 hero, calendar, closing이다.
 - 사용자 피드백: 지금 보케는 "너무 흐릿하고 배경과 구분이 안돼서 디스플레이가 눌린 자국 같이 보이기도 하고, 지금 상태로는 아예 없애는 게 나을 것 같을 정도"다. motion-designer가 개선안을 만들고 있다(결정 전).
 
+
+## 보케를 작은 전구 불빛으로 (2026-10-12)
+
+motion-designer의 진단: 빛망울 색(glow `#EBCB94`, L* 83)이 바탕(`#FBF6F1`, L* 97)보다 어두워서, 빛을 그릴수록 바탕보다 어두운 얼룩이 생겼다. 여기에 가장자리 없는 번짐, 큰 것일수록 흐린 구조, 낮은 불투명도 상한이 겹쳐 "디스플레이가 눌린 자국"처럼 보였다.
+
+개선안 A(렌즈 보케), B(작은 전구 불빛), C(전구 줄), 없애기 중에서 사용자가 **B**를 골랐다. 시험 구현과 캡처는 `scratchpad/bokeh-redesign/`에 있다(`build/engine.js`, `build/cfg-b.js`, `shots/compare-*.png`).
+
+- 모양: 심 지름 5~9px를 `#FFFCF8`(바탕보다 밝음)로 채우고, glow 후광을 3.6r까지 둔다. 후광 알파는 심 바로 밖 0.9 → 0.5 → 0.2 → 0이고, 색은 glow 100%다.
+- 움직임: 수명 9~16초, 1.2초 페이드, 밝기 1↔0.5 반짝임(주기 2.4~4.8초). 거의 제자리에 머문다(상승 0~3px/s, 흔들림 2~5px). 구간당 8개.
+- 글자 대비는 불투명도 상한 대신 글자 영역 회피로 지킨다. `data-bokeh-exclude="text"`는 글자 줄 상자만, 값 없는 `data-bokeh-exclude`는 요소 상자 전체를 제외한다. BGM 버튼 자리도 제외하고, reveal이 끝난 뒤 제외 영역을 다시 잰다.
+- 캔버스 DPR은 1에서 min(dpr, 2)로 바꾼다.
+- 구간은 hero, calendar, closing이다. reduced-motion에서는 hero에 정지 불빛 7개를 둔다.
+- 이 결정은 컨셉 시트 motion_direction의 불투명도 상한·흰색 보케 금지·색 비율과, 모션 명세 1장의 수치보다 우선한다.

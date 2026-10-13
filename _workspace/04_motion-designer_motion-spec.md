@@ -1,18 +1,23 @@
 ---
-motion_mood: "dreamy-soft"          # 카탈로그 C(별빛/반딧불이)를 크고 흐린 보케로 변형. 컨셉 시트 motion_direction 지시
+motion_mood: "dreamy-soft"          # 카탈로그 C(별빛/반딧불이)를 작은 전구 불빛으로 변형 (2026-10-12 보케 B안)
 density: "minimal"
-background_animation: "bokeh-canvas" # 구간별 Canvas 2D 3개(hero, calendar, share). 꽃잎·컨페티·하트 파티클 없음
-performance_budget:
-  particles_max: 12                  # 화면 폭 768px 미만: 모든 구간 합산 동시 생존 보케 상한
+background_animation: "bokeh-canvas" # 구간별 Canvas 2D 3개(hero, calendar, closing). 꽃잎·컨페티·하트 파티클 없음 (2026-10-12 보케 B안: share → closing)
+performance_budget:              # (2026-10-12 보케 B안) 보케 항목 전면 교체. 값은 1장, 근거는 00_user-input.md "보케를 작은 전구 불빛으로"
+  particles_max: 12                  # 화면 폭 768px 미만: 모든 구간 합산 동시 생존 불빛 상한
   particles_max_wide: 16             # 768px 이상
   particles_per_zone_max: 8
-  zone_counts: { hero: 8, calendar: 6, share: 6 }
-  bokeh_alpha_max: { glow: 0.28, primary: 0.18 }   # 합성 후 픽셀 최대 불투명도. 입자끼리 겹치지 않으므로 이 값이 곧 상한
-  bokeh_rise_max_px_s: 8
-  bokeh_sway_max_px: 12
-  bokeh_breath_period_s: [5, 9]
+  zone_counts: { hero: 8, calendar: 8, closing: 8 }
+  bokeh_core_diameter_px: [5, 9]     # 흰 심(#FFFCF8) 지름
+  bokeh_halo_ratio: 3.6              # 후광 반지름 / 심 반지름. 스프라이트 지름 최대 32.4px
+  bokeh_alpha_max: { core: 1.0, halo: 0.9 }   # 합성 후 최대 알파. 상한이 아니라 참고값이다. 글자 대비는 글자 영역 회피로 지킨다(1-3)
+  bokeh_text_clearance_px: 13        # 그려진 불빛 정사각형과 제외 상자 사이 최소 거리 = EXCLUDE_MARGIN 8 + BOX_GAP 10 / 2
+  bokeh_rise_max_px_s: 3
+  bokeh_sway_max_px: 5
+  bokeh_life_s: [9, 16]              # 앞뒤 1.2초 페이드 포함
+  bokeh_twinkle: { depth: 0.5, period_s: [2.4, 4.8] }   # 밝기 1 <-> 0.5, 최대 0.42Hz
   bokeh_render_fps: 30               # 보케만 30fps로 그린다. 스크롤·제스처는 60fps 유지
-  canvas_dpr: 1                      # 컨셉 상한 2 이내. 완전히 흐린 원이라 해상도 손실이 보이지 않는다
+  canvas_dpr: "min(devicePixelRatio, 2)"   # DPR 1 고정에서 변경. 심이 5~9px라 DPR 1이면 가장자리가 뭉개진다
+  canvas_memory_mb_max: 14           # 캔버스 3개 합계, DPR 2. 실측 10.8~13.7MB(1-8)
   infinite_loops: ["bokeh (구간별, 조건부)", "string-lights 전구 호흡 (calendar 화면 안일 때만)", "BGM glow 링 (재생 중일 때만)", "hero 스크롤 큐 (첫 스크롤 전까지만)"]
   concurrent_loops_max: 3
   animated_props: ["transform", "opacity", "stroke-dashoffset (장식 SVG 단발 1회)", "canvas drawImage"]
@@ -20,8 +25,8 @@ performance_budget:
   fps_target: 60
   reduced_motion_strategy: "static-only"   # 루프·트랜지션 전부 정지 또는 즉시. 손가락으로 직접 조작하는 드래그·핀치만 유지
 concept_alignment:
-  - "무드 '겨울 오후에 켜진 정원의 전구': 화면 가장자리에서 빛망울이 숨 쉬듯 밝아졌다 어두워진다. 이동보다 밝기 변화가 주된 움직임"
-  - "모든 보케 상한(개수·불투명도·속도·구간)은 컨셉 시트 motion_direction 값 그대로이거나 그보다 낮다"
+  - "무드 '겨울 오후에 켜진 정원의 전구': 작은 전구 불빛이 거의 제자리에서 켜지고, 천천히 반짝이다가, 꺼진다. 이동보다 밝기 변화가 주된 움직임 (2026-10-12 보케 B안)"
+  - "보케 수치는 00_user-input.md '보케를 작은 전구 불빛으로'(2026-10-12) 결정을 따른다. 이 결정은 컨셉 시트 motion_direction의 불투명도 상한·흰색 보케 금지·색 비율보다 우선한다. 개수(구간당 8, 합산 12/16)와 구간 수(3곳)는 컨셉 상한 안이다 (2026-10-12 보케 B안)"
   - "섹션 진입은 fade + translateY(12px→0) 800ms ease-out 하나로 통일. 예외는 컨셉이 지정한 hero 시퀀스, 디바이더 stroke-draw, 전구 호흡, BGM 링뿐"
   - "꽃잎·컨페티·하트 파티클, 패럴랙스, hero 확대·Ken Burns, 터치 반응 파티클, 사진 위 오버레이 효과 없음"
 ---
@@ -31,69 +36,113 @@ concept_alignment:
 > **frontend-developer에게**: 이 문서의 수치는 그대로 구현 대상입니다. 6장 토큰을 먼저 `:root`에 넣고 모든 CSS 모션이 토큰을 참조하게 하세요. 1장 보케 상수는 코드에 `BOKEH` 객체로 같은 이름·값으로 옮겨야 QA가 grep으로 대조할 수 있습니다. 각 항목의 `reduced-motion` 줄은 CSS `@media (prefers-reduced-motion: reduce)`와 JS `matchMedia` 분기 양쪽에 구현합니다.
 >
 > **2026-10-10 변경 (갤러리 캐러셀)**: 3x5 썸네일 그리드를 한 장씩 옆으로 넘기는 캐러셀로 바꿨다(사용자 결정, `00_user-input.md` "갤러리 방식 변경"). 바뀐 곳은 2-5, 4-1(전면 교체), 4-2, 5, 6, 7, 8, 10이고 각 위치에 "(2026-10-10 갤러리 캐러셀로 변경)"을 붙였다. 나머지 절은 그대로다.
+>
+> **2026-10-12 변경 (보케 B안)**: 보케를 "작은 전구 불빛"(B안)으로 바꿨다(사용자 결정, `00_user-input.md` "보케를 작은 전구 불빛으로"). share/closing 분리(c6d4bdd)에 따라 보케 구간은 hero, calendar, closing이다. 글자 대비는 불투명도 상한 대신 글자 영역 회피(`data-bokeh-exclude="text"`)로 지킨다. 바뀐 곳은 frontmatter, 0, 1(전면 교체), 2-1, 2-6, 2-7, 2-8(신설), 3-1, 5, 7, 8, 10, 11이고 각 위치에 "(2026-10-12 보케 B안)"을 붙였다. 이 결정은 컨셉 시트 motion_direction의 보케 상한보다 우선한다.
 
 ## 0. 모션 무드 결정
 
 | 항목 | 결정 | 근거 |
 |---|---|---|
-| motion_mood | `dreamy-soft` | 첫 키워드 '로맨틱'의 기본값은 `romantic-lush`(꽃잎 24~40개)지만, 컨셉 시트가 꽃잎을 금지하고 카탈로그 C(빛)를 보케로 바꿔 쓰라고 지시했다. 카탈로그 C의 무드는 `dreamy-soft`다 |
-| density | `minimal` | 컨셉 시트 지정. 구간당 6~8개, 모바일 합산 12개 이하 |
-| 배경 모션 종류 | 1종 (보케) | 장식 SVG 연출(디바이더 그리기, 전구 호흡)은 배경이 아니라 장식 요소에 붙는 모션이다 |
-| 움직임의 성격 | 밝기 호흡 > 위치 이동 | 입자 하나가 한 번 숨 쉬는 동안(5~9초) 최대 72px만 떠오른다. 눈이 따라가는 이동이 아니라 빛이 켜졌다 꺼지는 결로 읽히게 한다 |
-| 피하는 것 | 사진과 겹치는 파티클 | 07(컨페티), 04·05(비눗방울) 사진과 화면 파티클이 겹쳐 보이는 문제 때문에 꽃잎을 쓰지 않는다(컨셉 시트) |
+| motion_mood | `dreamy-soft` | 첫 키워드 '로맨틱'의 기본값은 `romantic-lush`(꽃잎 24~40개)지만, 컨셉 시트가 꽃잎을 금지하고 카탈로그 C(빛)를 쓰라고 지시했다. 카탈로그 C의 무드는 `dreamy-soft`다. B안의 작은 전구 불빛은 카탈로그 C의 반짝이는 빛에 오히려 더 가깝다 (2026-10-12 보케 B안) |
+| density | `minimal` | 구간당 8개, 모바일 합산 12개 이하. 불빛 하나의 심이 지름 5~9px라 화면에서 차지하는 면적은 이전 보케(지름 12~56px)보다 훨씬 작다 (2026-10-12 보케 B안) |
+| 배경 모션 종류 | 1종 (보케: 작은 전구 불빛) | 장식 SVG 연출(디바이더 그리기, 전구 호흡)은 배경이 아니라 장식 요소에 붙는 모션이다 |
+| 빛의 모양 | 바탕보다 밝은 흰 심 + glow 후광 | 이전 보케는 glow `#EBCB94`(L* 83)가 바탕 `#FBF6F1`(L* 97)보다 어두워서 빛을 그릴수록 바탕보다 어두운 얼룩이 생겼다. 사용자가 "디스플레이가 눌린 자국"이라고 한 원인이다. 심을 바탕보다 밝은 on_accent `#FFFCF8`로 채우고 그 둘레에만 glow를 둬야 빛으로 읽힌다 (2026-10-12 보케 B안) |
+| 움직임의 성격 | 반짝임 > 위치 이동 | 불빛 하나가 9~16초 사는 동안 1.2초에 걸쳐 켜지고, 2.4~4.8초 주기로 밝기 1↔0.5를 오가다가, 1.2초에 걸쳐 꺼진다. 위로는 수명 내내 최대 48px, 좌우로는 ±5px만 움직여 거의 제자리다 (2026-10-12 보케 B안) |
+| 글자 대비를 지키는 방법 | 글자 영역 회피 | 후광의 가장 진한 고리(glow 0.9) 위에서 muted 글자는 3.71:1이다. 불투명도를 낮춰 4.5:1을 맞추면 다시 흐린 얼룩이 된다. 그래서 상한 대신 불빛이 글자 줄 근처에 생기지 않게 한다(1-3) (2026-10-12 보케 B안) |
+| 피하는 것 | 사진과 겹치는 파티클 | 07(컨페티), 04·05(비눗방울) 사진과 화면 파티클이 겹쳐 보이는 문제 때문에 꽃잎을 쓰지 않는다(컨셉 시트). hero 사진 위에도 불빛을 두지 않는다 |
 
 ---
 
-## 1. 애니메이션 배경: 보케 (Must)
+## 1. 애니메이션 배경: 보케 (Must) (2026-10-12 보케 B안: 1장 전면 교체)
+
+B안 "작은 전구 불빛"이다. 결정 기록은 `_workspace/00_user-input.md` "보케를 작은 전구 불빛으로", 시험 구현은 `scratchpad/bokeh-redesign/build/engine.js` + `build/cfg-b.js`에 있다. 1-7 코드는 시험 코드를 지금 `script.js` 구조에 맞춰 옮기고 시험에서 찾은 문제를 고친 것이며, 이 장의 수치는 모두 1-7 코드를 실제 페이지에 넣어 잰 값이다(1-8).
 
 ### 1-1. 구조
 
 | 항목 | 값 |
 |---|---|
-| 방식 | 구간 섹션마다 `<canvas class="bokeh" aria-hidden="true">` 1개. 섹션 `position: relative; isolation: isolate`, 캔버스 `position: absolute; inset: 0; z-index: 0; pointer-events: none`, 섹션의 나머지 자식은 `position: relative; z-index: 1` |
-| 구간 | `data-bokeh="hero"`, `data-bokeh="calendar"`, `data-bokeh="share"` 세 섹션만. 다른 섹션에는 캔버스를 두지 않는다 |
-| 이 구조를 고른 이유 | 캔버스가 섹션 안에 갇혀서 ① 다른 섹션·surface(카드, 사진 매트)·데스크톱 컬럼 바깥 면에 보케가 나갈 수 없고 ② hero 사진(불투명 JPEG, z-index 1)이 항상 보케 앞에 온다. fixed 전체 화면 캔버스는 구간 경계 계산과 마스킹이 따로 필요하다 |
-| 해상도 | `canvas.width = section.clientWidth`, `canvas.height = section.clientHeight` (DPR 1 고정). 390x664 hero 기준 약 1.0MB 메모리 |
-| 그리기 | 색별 스프라이트 2장(128x128 오프스크린 캔버스, 방사형 그라데이션)을 미리 만들고 매 프레임 `drawImage`로 크기만 바꿔 찍는다. 프레임마다 `createRadialGradient`를 만들지 않는다 |
-| 프레임 | rAF 루프에서 33ms 미만 간격의 프레임은 건너뛴다(30fps). 8px/s 이하 이동이라 30fps에서도 프레임당 0.27px 이하로 매끄럽다 |
-| dt | `dt = min((now - last) / 1000, 0.05)`. 재개 직후나 끊김 뒤에도 입자가 순간 이동하지 않는다 |
+| 방식 | 구간 섹션마다 `<canvas class="bokeh" aria-hidden="true">` 1개. 섹션 `position: relative; isolation: isolate`, 캔버스 `position: absolute; inset: 0; z-index: 0; pointer-events: none`, 섹션의 나머지 자식은 `position: relative; z-index: 1` (지금 CSS 그대로) |
+| 구간 | `data-bokeh="hero"`, `data-bokeh="calendar"`, `data-bokeh="closing"` 세 섹션만. 공유하기(share)를 포함한 다른 섹션에는 캔버스를 두지 않는다 (2026-10-12 보케 B안: share → closing) |
+| 이 구조를 고른 이유 | 캔버스가 섹션 안에 갇혀서 ① 다른 섹션·surface(카드, 사진 매트)·데스크톱 컬럼 바깥 면에 불빛이 나갈 수 없고 ② hero 사진(불투명 JPEG, z-index 1)이 항상 불빛 앞에 온다 |
+| 해상도 | `BOKEH_DPR = min(devicePixelRatio, 2)`(로드 때 1회). `canvas.width = round(W × DPR)`, `canvas.height = round(H × DPR)`, `ctx.setTransform(DPR, 0, 0, DPR, 0, 0)` 뒤 CSS px 좌표로 그린다. CSS 크기는 섹션과 같다(`width/height: 100%`). DPR 1이면 5~9px 심의 가장자리가 뭉개지고, 3은 2와 눈으로 구분되지 않는데 메모리만 2.25배다 (2026-10-12 보케 B안: DPR 1 고정에서 변경) |
+| 그리기 | 심 지름별 스프라이트(오프스크린 캔버스에 방사형 그라데이션 1회, 화면 DPR로 렌더, 지름 0.1px 단위로 캐시)를 `drawImage`로 찍는다. 프레임마다 `createRadialGradient`를 만들지 않는다 |
+| 지우기 | 매 프레임 캔버스 전체가 아니라 직전 프레임에 찍은 스프라이트 사각형(사방 1px 여유)만 `clearRect`. 크기 변경, 정지 그림, 모드 전환 때만 전체를 지운다. DPR 2 캔버스(hero 780x1328 등)의 전체 지우기를 피하려는 것이다 |
+| 프레임 | rAF 루프에서 33ms 미만 간격의 프레임은 건너뛴다(30fps). 가장 빠른 움직임이 가로 5.2px/s라 30fps에서 프레임당 0.17px 이하다 |
+| dt | `dt = min((now - last) / 1000, 0.05)`. 재개 직후나 끊김 뒤에도 불빛이 순간 이동하지 않는다 |
 
 ### 1-2. 입자 파라미터
 
-| 파라미터 | 값 | 컨셉 상한 |
+| 파라미터 | 값 | 이전 값 |
 |---|---|---|
-| 구간별 슬롯 수 | hero 8, calendar 6, share 6 | 구간당 8 이하 |
-| 합산 동시 생존 상한 | 768px 미만 12, 768px 이상 16. 새 입자는 전체 생존 수가 상한 미만일 때만 생긴다 | 12 / 16 |
-| 지름 | 12~56px. 작은 것 50%(12~24), 중간 35%(24~40), 큰 것 15%(40~56) | 12~56 |
-| 가로 위치 | 75%는 가장자리 띠(구간 폭의 왼쪽 0~28%, 오른쪽 72~100%), 25%는 가운데 띠(28~72%). 가운데 띠는 지름 28px 이하만 | "화면 가장자리에서" |
-| 큰 입자 | 지름 40px 이상은 가장자리 띠에서만 | |
-| 색 | 70% glow `#EBCB94`(235,203,148), 30% primary `#C9A09F`(201,160,159). 생성할 때마다 확률로 고른다 | glow 70 / primary 30, 그 밖의 색 금지 |
-| 최대 불투명도(peak) | 지름에 반비례. glow: 12px에서 0.28 → 56px에서 0.18. primary: 12px에서 0.18 → 56px에서 0.10. `peak = hi - (hi - lo) * (d - 12) / 44` | glow 0.28, primary 0.18 |
-| 수명 | 한 번 숨 쉬는 시간 T = 5~9초(입자마다 랜덤). 수명이 끝나면 0.6~2.4초 쉬었다가 다른 자리에서 다시 생긴다 | 호흡 주기 5~9초 |
-| 밝기 곡선 | `alpha = peak * sin²(π * age / T)`. 0에서 시작해 T/2에 peak, T에 다시 0. 생성·소멸 순간 모두 0이라 깜빡임이 없다 | 1초에 1회 넘는 깜빡임 금지 (최대 0.2Hz) |
-| 상승 | 속도 v = 3~8px/s, `y = y0 - v * age`. 수명 동안 15~72px 떠오른다 | 8px/s 이하 |
-| 좌우 흔들림 | 진폭 A = 4~12px, 주기 P = 8~14초, `x = x0 + A * sin(2π * age / P + φ)`. 최대 가로 속도 9.4px/s | ±12px |
-| 스프라이트 그라데이션 | 중심에서 반지름 비율 0 → 알파 1.0, 0.35 → 0.85, 0.7 → 0.35, 1.0 → 0. 가장자리가 0으로 끝나 하드 엣지가 없다 | 하드 엣지·스파클 금지 |
+| 구간별 슬롯 수 | hero 8, calendar 8, closing 8 | hero 8, calendar 6, share 6 |
+| 합산 동시 생존 상한 | 768px 미만 12, 768px 이상 16. 새 불빛은 전체 생존 수가 상한 미만일 때만 생긴다 | 같음 |
+| 심 지름 d | 5~9px. 50%는 5~6, 35%는 6~7.5, 15%는 7.5~9 | 흐린 원 12~56px |
+| 후광 반지름 R | `R = 3.6 × d / 2`. 최대 16.2px, 스프라이트 지름 최대 32.4px | 없음 |
+| 그라데이션 | 중심에서 심 반지름 r의 배수로: 0~0.75r 심 `#FFFCF8` 알파 1 → 1.1r glow 0.9 → 1.6r glow 0.5 → 1.98r glow 0.2 → 2.88r glow 0.06 → 3.6r(=R) glow 0. 캔버스 color stop offset은 `배수 / 3.6`. R에서 알파 0이라 하드 엣지가 없다 | glow·primary 원 1.0 → 0 |
+| 색 | 심 on_accent `#FFFCF8`(255,252,248), 후광 glow `#EBCB94`(235,203,148) 100%. primary 불빛은 없다 | glow 70 / primary 30 |
+| 밝기 | `brightness = smoothstep(페이드) × 반짝임`, 최대 1. 캔버스 `globalAlpha`로 곱한다 | `peak × sin²`, peak 0.10~0.28 |
+| 합성 후 최대 알파 | 심 1.0, 후광 0.9. **상한이 아니라 참고값**이다. 글자 대비는 1-3 회피로 지킨다 | glow 0.28 / primary 0.18 상한 |
+| 수명 T | 9~16초(불빛마다 랜덤). 끝나면 0.4~1.6초 쉬었다가 다른 자리에서 다시 생긴다 | 호흡 5~9초, 쉼 0.6~2.4초 |
+| 페이드 | 처음과 마지막 1.2초. `e = age / 1.2`(끝은 `(T − age) / 1.2`), `smoothstep = e²(3 − 2e)`. 생길 때와 사라질 때 밝기가 0이라 튀지 않는다 | sin² 곡선 |
+| 반짝임 | `1 − 0.5 × (0.5 − 0.5 cos(2π · age / tw + φt))`, tw 2.4~4.8초. 밝기가 1과 0.5 사이를 오간다. 가장 빠른 것도 0.42Hz다 | 없음 |
+| 상승 | v = 0~3px/s, `y = y0 − v × age`. 수명 동안 0~48px | 3~8px/s |
+| 좌우 흔들림 | A = 2~5px, P = 6~10초, `x = x0 + A sin(2π · age / P + φ)`. 가로 최대 5.2px/s | 4~12px, 8~14초 |
+| 가로 위치 | 구간 폭 전체에서 고르게 뽑는다. 가운데 글자 줄은 1-3 회피가 비운다 | 가장자리 띠 75% |
 
-### 1-3. 겹침 방지 (불투명도 상한을 구조로 보장)
+### 1-3. 겹침 방지와 글자 회피 (2026-10-12 보케 B안: 불투명도 상한 대신)
 
-입자 둘이 겹치면 알파가 쌓여 상한을 넘는다. 그래서 **입자의 수명 전체 궤적 사각형끼리 겹치지 않게** 생성 시점에 자리를 고른다.
+불빛 둘이 겹치면 진한 후광 고리가 겹쳐 얼룩이 되고, 글자 뒤에 고리가 오면 대비가 4.5:1 아래로 떨어진다(아래 대비 근거). 둘 다 **생성 시점에 수명 전체의 궤적 상자로 자리를 골라** 막는다.
 
 | 항목 | 값 |
 |---|---|
-| 궤적 사각형 | 가로 `x0 - A - r` ~ `x0 + A + r`, 세로 `y0 - v*T - r` ~ `y0 + r`, 사방에 3px 여유(BOX_GAP 6px의 절반) |
-| 생성 조건 | ① 사각형이 캔버스 안에 완전히 들어간다(구간 경계에서 원이 잘려 직선 모서리가 생기지 않게) ② 살아 있는 다른 입자의 사각형과 겹치지 않는다 ③ 제외 영역과 겹치지 않는다 |
-| 시도 | 슬롯당 최대 10회 랜덤 시도. 6회째부터는 v = 0(제자리 호흡)으로 사각형 높이를 줄인다. 10회 모두 실패하면 0.4초 뒤 다시 시도 |
-| 결과 | 한 픽셀 위에는 입자가 최대 1개뿐이고, 캔버스 CSS opacity는 1 이하이므로 합성 후 픽셀 불투명도는 그 입자의 peak를 넘지 않는다 |
+| 궤적 상자 | 가로 `x0 − A − R − 5` ~ `x0 + A + R + 5`, 세로 `y0 − v·T − R − 5` ~ `y0 + R + 5`. 5는 `BOX_GAP` 10의 절반 |
+| 생성 조건 | ① 상자가 캔버스 안에 완전히 들어간다(구간 경계에서 후광이 잘리지 않게) ② 살아 있는 다른 불빛의 상자와 겹치지 않는다 ③ 제외 상자(사방 `EXCLUDE_MARGIN` 8px 확장)와 겹치지 않는다 |
+| 시도 | 불빛 하나에 최대 14회 랜덤 시도. 9번째 시도(k ≥ 8)부터는 v = 0(제자리)으로 상자를 줄인다. 14회 모두 실패하면 0.4초 뒤 다시 |
+| 최소 간격 | 그려진 불빛 정사각형(중심 ± R)끼리 10px 이상, 불빛 정사각형과 제외 상자 사이 13px 이상(8 + 5). 정사각형 가장자리에서 후광 알파는 이미 0이라 눈에 보이는 빛과 글자 사이는 이보다 넓다 |
+| 결과 | 한 픽셀 위에 불빛은 최대 1개이고, 글자 줄 상자 위에는 불빛이 없다. 글자 대비는 바탕 위 값 그대로다 |
 
-**제외 영역**: 구간 섹션 안에서 `[data-bokeh-exclude]`가 붙은 요소의 사각형(섹션 기준 좌표)에 사방 12px을 더한 영역.
+**제외 상자**: 구간 섹션 안 `[data-bokeh-exclude]` 요소를 섹션 기준 좌표로 잰다. reveal 대기 중인 요소는 `pendingShift`로 이동분(12px)을 빼고 최종 위치로 잰다.
 
-| 구간 | `data-bokeh-exclude`를 붙일 요소 |
+| 대상 | 제외 상자 |
 |---|---|
-| hero | hero 사진 `<img>` (사진 위아래 여백에만 보케가 생긴다. 사진이 fade-in 중일 때도 사진 뒤가 비어 있다) |
-| calendar | string-lights 인라인 SVG (전구 후광과 보케가 겹쳐 뭉개지지 않게) |
-| share | sprig-divider 인라인 SVG, wreath `<img>` |
-| 공통 | 나중에 이 세 섹션 안에 surface 카드가 들어오면 그 카드에도 붙인다 |
+| `data-bokeh-exclude="text"` (새 값) | 요소 안 텍스트 노드마다 `Range.getClientRects()`가 주는 줄 상자. 공백뿐인 노드와 `.sr-only` 안 글자는 뺀다. 그래서 가운데 정렬된 짧은 줄 양옆 여백에는 불빛이 생길 수 있다 |
+| `data-bokeh-exclude` (값 없음) | 요소의 `getBoundingClientRect()` 전체 |
+| BGM 토글 (속성을 붙이지 않고 코드가 처리) | hero 구간만. 고정 버튼이 스크롤 0일 때 hero 위에 놓이는 자리: 버튼 사각형의 세로 위치에서 `scrollY`를 뺀다(`r.top − base.top − scrollY`). 첫 화면에서 버튼 뒤로 불빛이 비치지 않게 한다. calendar·closing에서는 버튼이 스크롤을 따라 움직여서 제외하지 않는다. 버튼 면이 불투명도 0.92라 뒤로 지나가는 불빛은 가려진다 |
+
+**HTML에 붙일 속성** (구간 3곳, 모두 12개. 기존 3개(`.hero__photo`, `.lights`, closing `.sprig`)는 그대로 두고, wreath `<img>`의 속성은 `.monogram`으로 옮기고, 8개를 새로 붙인다):
+
+| 구간 | 요소 | 속성 | 이유 |
+|---|---|---|---|
+| hero | `.hero__top` | `data-bokeh-exclude="text"` | eyebrow, 날짜, 요일·시간 줄 |
+| hero | `.hero__photo` | `data-bokeh-exclude` (기존) | 사진 위 불빛 금지(컨셉) |
+| hero | `.hero__bottom` | `data-bokeh-exclude="text"` | 이름, 한글 일시, 장소 줄 |
+| hero | `.scroll-cue` | `data-bokeh-exclude` | 1px 선과 불빛이 겹치지 않게. 세로 640px 이하에서는 `display: none`이라 상자가 생기지 않는다 |
+| calendar | `.section-head[data-lights-trigger]` | `data-bokeh-exclude="text"` | THE DAY, 예식일 |
+| calendar | `.lights` | `data-bokeh-exclude` (기존) | 전구 후광과 불빛이 뭉개지지 않게 |
+| calendar | `.calendar__when` | `data-bokeh-exclude="text"` | 한글 일시 |
+| calendar | `.cal` | `data-bokeh-exclude` | 표는 칸 사이에 불빛이 끼지 않게 상자 전체로 뺀다 |
+| calendar | `.dday` | `data-bokeh-exclude="text"` | 문장과 카운터. init 뒤 JS가 채우므로 1-5 재측정이 잡는다 |
+| closing | `.sprig` | `data-bokeh-exclude` (기존) | 꽃가지 장식 |
+| closing | `.monogram` | `data-bokeh-exclude` | wreath와 I & Y 전체. wreath `<img>`에 있던 속성은 `.monogram`으로 옮긴다 |
+| closing | `.closing__thanks` | `data-bokeh-exclude="text"` | Thank you, 날짜, 이름 |
+| 공통 | 나중에 세 구간에 들어오는 요소 | 글자 묶음은 `"text"`, 사진·카드·장식은 값 없음 | |
+
+**대비 근거: 글자 영역 회피 + 겹친다고 가정한 최악값 (참고)**: 첫 줄이 회피로 보장되는 실제 값이고, 나머지 줄은 불빛이 글자 뒤에 **겹친다고 가정했을 때**의 값이다. 합성 색은 glow를 background `#FBF6F1` 위에 해당 알파로 섞은 색이다.
+
+| 글자 뒤 픽셀 | 합성 색 | text | muted | accent | sage_deep |
+|---|---|---|---|---|---|
+| 바탕만 (회피 결과, 실제 값) | `#FBF6F1` | 12.26 | 5.17 | 5.45 | 5.44 |
+| 심 (알파 1) | `#FFFCF8` | 12.87 | 5.43 | 5.72 | 5.71 |
+| 후광 가장 진한 고리, 반짝임 최대 (1.1r, glow 0.9) | `#EDCF9D` | 8.80 | **3.71** | **3.91** | **3.90** |
+| 같은 고리, 반짝임 최저 (0.9 × 0.5) | `#F4E3C7` | 10.42 | **4.40** | 4.63 | 4.62 |
+| 1.6r (glow 0.5) | `#F3E1C3` | 10.23 | **4.32** | 4.54 | 4.54 |
+| 1.98r (glow 0.2) | `#F8EDDE` | 11.41 | 4.82 | 5.07 | 5.06 |
+| reduced 정지 그림의 고리 (0.9 × 0.85) | `#EFD5AA` | 9.26 | **3.91** | **4.11** | **4.11** |
+
+- 굵은 값이 4.5:1 미달이다. muted·accent·sage_deep 글자가 후광 안쪽(1.6r 안)에 걸리면 기준에 못 미친다.
+- 불투명도로 맞추려면 고리 알파를 muted 기준 0.39, accent 기준 0.52 아래로 낮춰야 한다. 그러면 B안의 빛이 사라지고 이전 보케의 흐린 얼룩으로 돌아간다. 그래서 상한 대신 회피로 지킨다.
+- 심은 바탕보다 밝아서 겹치더라도 대비가 오히려 오른다.
+- 이전 표(불투명도 상한 glow 0.28 / primary 0.18에서 muted 4.68 / 4.56)는 폐기한다.
 
 ### 1-4. 실행·정지 조건
 
@@ -103,159 +152,518 @@ concept_alignment:
 | 구간 이탈 | 위 띠에서 벗어남 (다른 구간으로 스크롤) | `.is-on` 제거 → `opacity 1→0` 600ms, 600ms 뒤 rAF 정지. 그 사이 다시 들어오면 타이머 취소 |
 | 탭 숨김 | `document.visibilityState === 'hidden'` | 즉시 rAF 정지(페이드 없음). 보이면 활성 구간만 재개 |
 | 라이트박스 열림 | 4-2 lightbox `open` | 즉시 rAF 정지. 닫히면 재개 |
-| reduced-motion | `matchMedia('(prefers-reduced-motion: reduce)')` | 루프를 만들지 않는다. 1-6 정적 대체 |
-| 정지 중 상태 | 입자 배열과 나이(age)를 그대로 둔다 | 재개하면 이어서 숨 쉰다 |
+| reduced-motion | `matchMedia('(prefers-reduced-motion: reduce)')` | 루프를 만들지 않는다. 1-6 정지 그림 |
+| 정지 중 상태 | 불빛 배열과 나이(age)를 그대로 둔다 | 재개하면 이어서 반짝인다 |
 
-정지 사유는 `Set`(예: `'hidden'`, `'lightbox'`)으로 관리하고, `활성 && 사유 없음 && !reduced`일 때만 rAF를 돌린다.
+정지 사유는 `Set`(`'hidden'`, `'lightbox'`)으로 관리하고, `활성 && 사유 없음 && !reduced`일 때만 rAF를 돌린다.
+
+- couple 섹션을 보는 동안 calendar가, 공유하기 섹션을 보는 동안 closing이 켜질 수 있다. 두 섹션이 짧아서 다음 보케 구간이 가운데 70% 띠에 들어오기 때문이고, 의도한 동작이다. 세로 844px 이상 화면에서는 greeting 아래쪽을 볼 때도 calendar가 켜진다 (2026-10-12 보케 B안: 실측)
 
 ### 1-5. 시작·크기 변경
 
 | 항목 | 값 |
 |---|---|
-| 초기 배치 | 슬롯마다 입자를 바로 만들고 나이를 `0 ~ T` 사이 랜덤으로 둔다(pre-seed). 켜지는 순간 이미 여러 단계의 호흡이 섞여 있다 |
+| 초기 배치 | 슬롯마다 불빛을 바로 만들고 나이를 `0 ~ T` 사이 랜덤으로 둔다(pre-seed). 켜지는 순간 이미 여러 단계의 불빛이 섞여 있다 |
 | hero 첫 등장 | 2-1 시퀀스 600ms 시점부터 hero 캔버스 `opacity 0→1`을 1200ms(`--dur-bokeh-intro`)로. 첫 등장이 끝나면 일반 600ms 페이드로 바꾼다 |
-| 크기 변경 | 섹션에 `ResizeObserver`, 150ms 디바운스. 캔버스 크기와 제외 영역을 다시 잰다. 폭이 바뀌었거나 높이가 40px 넘게 바뀌면 입자를 모두 새로 pre-seed한다 |
-| 제외 영역 재측정 | 위 경우 + `document.fonts.ready` 후 1회 + hero 사진 `load` 후 1회 (폰트 교체로 hero 내용이 몇 px 움직여도 사진 위로 보케가 들어가지 않게) |
+| 크기 변경 | 섹션에 `ResizeObserver`, 150ms 디바운스. 캔버스 픽셀 크기를 DPR로 다시 맞추고, 전체를 지우고, 제외 상자를 다시 잰다. 폭이 바뀌었거나 높이가 40px 넘게 바뀌면 불빛을 모두 새로 pre-seed하고, 아니면 캔버스 밖으로 나가거나 제외 상자에 닿는 불빛만 지운다(`dropBlocked`) |
+| 제외 상자 재측정 | 위 경우 + `document.fonts.ready` 후 1회 + hero 사진 `load` 후 1회 + 구간 안 `.reveal`이나 `[data-bokeh-exclude]` 요소의 **transform 전환이 끝날 때**(`transitionend`, `propertyName === 'transform'`, 구간별 100ms 디바운스 `SETTLE_DEBOUNCE`). 재측정 뒤 제외 상자에 닿는 불빛은 지우고 0.4초 뒤 다른 자리에 새로 만든다 (2026-10-12 보케 B안) |
+| reveal 뒤 재측정을 `transitionend`로 하는 이유 | 시험 코드는 `revealed` 이벤트 900ms 뒤에 쟀다. 그런데 스크롤 큐는 reveal이 아니라 2-1의 1700ms에 `scaleY(0→1)`로 600ms 동안 펼쳐지고, 처음 잴 때는 높이가 0이다. 이 때문에 390x664 hero 300초 시뮬레이션에서 불빛이 스크롤 큐 상자를 288프레임 침범했고, `transitionend` 재측정으로 바꾼 뒤 0이 됐다. D-day 줄은 init 뒤 JS가 채우므로 `ResizeObserver`와 이 재측정이 함께 잡는다 |
 | 창 resize 이벤트 | 쓰지 않는다. iOS 주소창 표시·숨김마다 발생해서 불필요하게 재배치된다 |
 
-### 1-6. prefers-reduced-motion 정적 대체
+### 1-6. prefers-reduced-motion 정지 그림 (2026-10-12 보케 B안: 정적 점 5개 → 정지 불빛 7개)
 
-- calendar, share 캔버스는 숨긴다(`display: none`). 보케 없음.
-- hero 캔버스에 **정지한 흐린 점 5개**를 한 번만 그린다(크기 변경 시 다시 그림). 루프·페이드 없음, 캔버스 `opacity: 1`.
-- 위치는 사진 위 여백 띠(섹션 위 ~ 사진 위 -12px)와 아래 여백 띠(사진 아래 +12px ~ 섹션 아래) 기준 비율이다. 점이 띠를 벗어나면 반지름만큼 안쪽으로 clamp한다.
-
-| # | 띠 | x (폭 비율) | y (띠 높이 비율) | 지름 | 색 | 알파 |
-|---|---|---|---|---|---|---|
-| 1 | 위 | 0.12 | 0.42 | 44px | glow | 0.24 |
-| 2 | 위 | 0.88 | 0.62 | 28px | primary | 0.16 |
-| 3 | 아래 | 0.10 | 0.66 | 36px | primary | 0.15 |
-| 4 | 아래 | 0.90 | 0.30 | 52px | glow | 0.22 |
-| 5 | 아래 | 0.80 | 0.80 | 20px | glow | 0.26 |
-
-390x664(위 띠 186px, 아래 띠 194px)와 375x548 압축 규칙(위 띠 148px, 아래 띠 126px) 모두에서 5개가 clamp 없이 띠 안에 들어가고 서로 겹치지 않는 것을 계산으로 확인한 배치다. 큰 점(1, 3, 4)은 좌우 가장자리 12% 안쪽에 있다. 알파는 모두 컨셉 상한 이하다.
-
-- 런타임에 설정이 바뀌면(`change` 이벤트) 새로고침하지 않고 전환한다: reduce로 바뀌면 모든 루프 정지 → 캔버스 지움 → 정적 점 그리기. 반대면 정적 점 지움 → 시스템 시작. BGM 재생이 끊기지 않게 하기 위해서다.
+- calendar, closing 캔버스는 숨긴다(`display: none`, 6장 CSS 그대로). 보케 없음.
+- hero 캔버스에 **정지한 불빛 7개**(`STATIC_COUNT`)를 한 번 그린다. 루프·페이드·반짝임 없음, 캔버스 `opacity: 1`.
+- 배치는 1-2·1-3과 같은 규칙(궤적 상자, 제외 상자, 최소 간격)으로 `spawn`을 부르되, 난수를 고정 시드 PRNG `mulberry32(5)`(`STATIC_SEED`)에서 받는다. 7개가 찰 때까지 최대 21번(7 × 3) 부른다. 각 불빛은 궤적 시작점 (x0, y0)에 밝기 0.85(`STATIC_ALPHA`)로 찍는다.
+- 다시 그리는 때: 크기 변경, 제외 상자 재측정(폰트, 사진, 전환 끝). 그릴 때마다 시드를 처음부터 다시 쓰므로 **같은 레이아웃이면 새로고침해도 픽셀 단위로 같은 그림**이다. 스프라이트를 반올림한 지름으로 렌더하는 것도 이 때문이다(1-7).
+- 정지 그림도 글자를 피한다. 정지 고리(0.9 × 0.85)가 글자에 걸리면 muted가 3.91이 된다(1-3 대비 근거).
+- 이전 배치표(점 5개, `BOKEH_STATIC`)는 폐기한다.
+- 런타임에 설정이 바뀌면(`change` 이벤트) 새로고침하지 않고 전환한다. reduce로 바뀌면 모든 루프 정지 → 캔버스 지움 → 정지 그림. 반대면 정지 그림 지움 → 시스템 시작. BGM 재생이 끊기지 않게 하기 위해서다.
+- 시험 결과(1-8의 6개 화면): 모두 7개, 제외 상자 침범 0, 제외 상자까지 최소 13.2~24.7px. 두 번 로드한 hero 캔버스의 픽셀이 같았고, reduce → no-preference → reduce 전환 뒤에도 같은 그림이었다.
 
 ### 1-7. 참고 구현 (frontend가 옮길 기준 코드)
 
+`script.js`의 보케 블록, 즉 `/* ---------- Bokeh background (spec 1) ---------- */`부터 `/* ---------- Section reveal (spec 2-0) ---------- */` 바로 앞까지를 아래 코드로 통째로 바꾼다. 함수 이름과 `initBokeh()`가 돌려주는 API(`pause`, `resume`, `openHeroGate`, `toStatic`, `toLive`, `stats`)가 지금 코드와 같아서 `initHero`, `initLightbox`, 부트 순서, `window.__bokeh` 줄은 고치지 않는다. 헬퍼 `rand`, `clamp`, `isReduced`는 파일 위쪽의 기존 것을 쓴다.
+
 ```js
-// Bokeh background for zones: hero, calendar, share.
-const BOKEH = Object.freeze({
-  ZONES: { hero: 8, calendar: 6, share: 6 },          // living-particle slots per zone (<= 8)
-  MAX_TOTAL_MOBILE: 12, MAX_TOTAL_WIDE: 16,            // wide = (min-width: 768px)
-  D_MIN: 12, D_MAX: 56,
-  SIZE_MIX: [[0.50, 12, 24], [0.35, 24, 40], [0.15, 40, 56]], // [share, min, max]
-  CENTER_D_MAX: 28, EDGE_BIAS: 0.75, EDGE_BAND: 0.28,
-  GLOW_RATIO: 0.7,
-  RGB: { glow: '235,203,148', primary: '201,160,159' },
-  ALPHA: { glow: [0.28, 0.18], primary: [0.18, 0.10] }, // [at D_MIN, at D_MAX]
-  RISE: [3, 8], SWAY: [4, 12], SWAY_PERIOD: [8, 14],   // px/s, px, s
-  BREATH: [5, 9], GAP: [0.6, 2.4],                     // s
-  BOX_GAP: 6, EXCLUDE_MARGIN: 12, TRIES: 10, STILL_AFTER: 5, RETRY: 0.4,
-  FPS: 30, DPR: 1, ZONE_FADE: 600, INTRO_FADE: 1200, INTRO_DELAY: 600,
-});
+  /* ---------- Bokeh background (spec 1) ---------- */
 
-const rand = (a, b) => a + Math.random() * (b - a);
-const overlaps = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+  // Small garden lights for zones: hero, calendar, closing (spec 1, option B 2026-10-12).
+  const BOKEH = Object.freeze({
+    ZONES: { hero: 8, calendar: 8, closing: 8 },        // living-light slots per zone (<= 8)
+    MAX_TOTAL_MOBILE: 12, MAX_TOTAL_WIDE: 16,            // wide = (min-width: 768px)
+    SIZE_MIX: [[0.50, 5, 6], [0.35, 6, 7.5], [0.15, 7.5, 9]], // [share, min, max] core diameter px
+    HALO: 3.6,                                           // halo radius / core radius
+    RGB: { core: '255,252,248', glow: '235,203,148' },   // on_accent #FFFCF8, glow #EBCB94
+    // Radial profile [radius in core radii, color, alpha]; gradient offset = radius / HALO.
+    PROFILE: [[0, 'core', 1], [0.75, 'core', 1], [1.1, 'glow', 0.9], [1.6, 'glow', 0.5],
+              [1.98, 'glow', 0.2], [2.88, 'glow', 0.06], [3.6, 'glow', 0]],
+    LIFE: [9, 16], FADE: 1.2, GAP: [0.4, 1.6],           // s
+    TWINKLE_DEPTH: 0.5, TWINKLE_PERIOD: [2.4, 4.8],      // brightness 1 <-> 0.5, s (<= 0.42 Hz)
+    RISE: [0, 3], SWAY: [2, 5], SWAY_PERIOD: [6, 10],    // px/s, px, s
+    BOX_GAP: 10, EXCLUDE_MARGIN: 8, TRIES: 14, STILL_AFTER: 8, RETRY: 0.4,
+    FPS: 30, DPR_MAX: 2, ZONE_FADE: 600, INTRO_FADE: 1200, INTRO_DELAY: 600, SETTLE_DEBOUNCE: 100,
+    STATIC_COUNT: 7, STATIC_SEED: 5, STATIC_ALPHA: 0.85, // reduced-motion still picture (hero)
+  });
+  const BOKEH_DPR = Math.min(window.devicePixelRatio || 1, BOKEH.DPR_MAX);
 
-function makeSprite(rgb) {
-  const c = document.createElement('canvas');
-  c.width = c.height = 128;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-  g.addColorStop(0, `rgba(${rgb},1)`);
-  g.addColorStop(0.35, `rgba(${rgb},0.85)`);
-  g.addColorStop(0.7, `rgba(${rgb},0.35)`);
-  g.addColorStop(1, `rgba(${rgb},0)`);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 128, 128);
-  return c;
-}
+  const overlaps = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
 
-function pickDiameter(center) {
-  let r = Math.random();
-  let d = rand(12, 24);
-  for (const [share, lo, hi] of BOKEH.SIZE_MIX) {
-    if ((r -= share) <= 0) { d = rand(lo, hi); break; }
+  // Seeded PRNG: the reduced-motion picture is the same on every load at the same layout.
+  function mulberry32(seed) {
+    return () => {
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
   }
-  return center ? Math.min(d, BOKEH.CENTER_D_MAX) : d;
-}
 
-function spawn(zone, preseed) {
-  const { W, H } = zone;
-  const half = BOKEH.BOX_GAP / 2;
-  for (let k = 0; k < BOKEH.TRIES; k++) {
-    const edge = Math.random() < BOKEH.EDGE_BIAS;
-    const d = pickDiameter(!edge);
-    const r = d / 2;
-    const A = rand(...BOKEH.SWAY);
-    const T = rand(...BOKEH.BREATH);
-    const v = k >= BOKEH.STILL_AFTER ? 0 : rand(...BOKEH.RISE);
-    const band = BOKEH.EDGE_BAND * W;
-    const x0 = edge
-      ? (Math.random() < 0.5 ? rand(r + A, Math.max(r + A, band)) : rand(Math.min(W - r - A, W - band), W - r - A))
-      : rand(band, W - band);
-    const y0 = rand(r + v * T + half, H - r - half);
-    const box = { l: x0 - A - r - half, r: x0 + A + r + half, t: y0 - v * T - r - half, b: y0 + r + half };
-    if (box.l < 0 || box.r > W || box.t < 0 || box.b > H) continue;
-    if (zone.excludes.some((e) => overlaps(box, e))) continue;
-    if (zone.particles.some((p) => p && overlaps(box, p.box))) continue;
-    const color = Math.random() < BOKEH.GLOW_RATIO ? 'glow' : 'primary';
-    const [hi, lo] = BOKEH.ALPHA[color];
-    const peak = hi - (hi - lo) * (d - BOKEH.D_MIN) / (BOKEH.D_MAX - BOKEH.D_MIN);
-    return { x0, y0, d, r, A, v, T, P: rand(...BOKEH.SWAY_PERIOD), phi: rand(0, Math.PI * 2),
-             color, peak, box, age: preseed ? rand(0, T) : 0 };
+  // One sprite (core + halo) per core diameter rounded to 0.1px, rendered at the canvas DPR.
+  const bokehSprites = new Map();
+  function makeSprite(d) {
+    const key = Math.round(d * 10) / 10;
+    let s = bokehSprites.get(key);
+    if (s) return s;
+    const R = (key / 2) * BOKEH.HALO;
+    const px = Math.ceil(R * 2 * BOKEH_DPR) + 2;
+    const c = document.createElement('canvas');
+    c.width = c.height = px;
+    const ctx = c.getContext('2d');
+    ctx.translate(px / 2, px / 2);
+    ctx.scale(BOKEH_DPR, BOKEH_DPR);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+    BOKEH.PROFILE.forEach(([k, color, a]) => g.addColorStop(k / BOKEH.HALO, `rgba(${BOKEH.RGB[color]},${a})`));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, R, 0, Math.PI * 2);
+    ctx.fill();
+    s = { c, size: px / BOKEH_DPR };
+    bokehSprites.set(key, s);
+    return s;
   }
-  return null;
-}
 
-function step(zone, dt, sprites, canSpawn) {
-  const { ctx } = zone;
-  ctx.clearRect(0, 0, zone.W, zone.H);
-  zone.particles.forEach((p, i) => {
-    if (!p) {
-      zone.wait[i] -= dt;
-      if (zone.wait[i] <= 0 && canSpawn()) {
-        zone.particles[i] = spawn(zone, false);
+  function pickDiameter(rng) {
+    let x = rng();
+    for (const [share, lo, hi] of BOKEH.SIZE_MIX) {
+      if ((x -= share) <= 0) return lo + rng() * (hi - lo);
+    }
+    const [, lo, hi] = BOKEH.SIZE_MIX[BOKEH.SIZE_MIX.length - 1];
+    return lo + rng() * (hi - lo);
+  }
+
+  // A light's whole-life path box (sway, rise, halo, half gap) must fit the canvas and miss
+  // exclusions and every other living light's box. rng is seeded only for the still picture.
+  function spawn(zone, preseed, rng = Math.random) {
+    const { W, H } = zone;
+    const rr = (a, b) => a + rng() * (b - a);
+    const half = BOKEH.BOX_GAP / 2;
+    for (let k = 0; k < BOKEH.TRIES; k++) {
+      const d = pickDiameter(rng);
+      const R = (d / 2) * BOKEH.HALO;
+      const A = rr(...BOKEH.SWAY);
+      const T = rr(...BOKEH.LIFE);
+      const v = k >= BOKEH.STILL_AFTER ? 0 : rr(...BOKEH.RISE);
+      const x0 = rr(R + A + half, W - R - A - half);
+      const y0 = rr(R + v * T + half, H - R - half);
+      const box = { l: x0 - A - R - half, r: x0 + A + R + half, t: y0 - v * T - R - half, b: y0 + R + half };
+      if (box.l < 0 || box.r > W || box.t < 0 || box.b > H) continue;
+      if (zone.excludes.some((e) => overlaps(box, e))) continue;
+      if (zone.particles.some((p) => p && overlaps(box, p.box))) continue;
+      return {
+        x0, y0, d, R, A, v, T, box, sprite: makeSprite(d),
+        P: rr(...BOKEH.SWAY_PERIOD), phi: rr(0, Math.PI * 2),
+        tw: rr(...BOKEH.TWINKLE_PERIOD), tphi: rr(0, Math.PI * 2),
+        age: preseed ? rr(0, T) : 0,
+      };
+    }
+    return null;
+  }
+
+  // Fade in, hold, fade out (smoothstep over FADE), times a twinkle between 1 and 1 - TWINKLE_DEPTH.
+  function brightness(p) {
+    const f = BOKEH.FADE;
+    const e = p.age < f ? p.age / f : p.age > p.T - f ? (p.T - p.age) / f : 1;
+    const tw = 1 - BOKEH.TWINKLE_DEPTH * (0.5 - 0.5 * Math.cos((2 * Math.PI * p.age) / p.tw + p.tphi));
+    return e * e * (3 - 2 * e) * tw;
+  }
+  const lightX = (p) => p.x0 + p.A * Math.sin((2 * Math.PI * p.age) / p.P + p.phi);
+  const lightY = (p) => p.y0 - p.v * p.age;
+
+  function drawLight(zone, sprite, x, y, alpha) {
+    const s = sprite.size;
+    zone.ctx.globalAlpha = alpha;
+    zone.ctx.drawImage(sprite.c, x - s / 2, y - s / 2, s, s);
+    zone.dirty.push([x - s / 2 - 1, y - s / 2 - 1, s + 2, s + 2]);
+  }
+
+  function clearAll(zone) {
+    zone.ctx.clearRect(0, 0, zone.W, zone.H);
+    zone.dirty.length = 0;
+    zone.still = [];
+  }
+
+  function step(zone, dt, canSpawn) {
+    const { ctx } = zone;
+    zone.dirty.forEach(([x, y, w, h]) => ctx.clearRect(x, y, w, h)); // only last frame's sprites
+    zone.dirty.length = 0;
+    zone.particles.forEach((p, i) => {
+      if (!p) {
+        zone.wait[i] -= dt;
+        if (zone.wait[i] <= 0 && canSpawn()) {
+          zone.particles[i] = spawn(zone, false);
+          if (!zone.particles[i]) zone.wait[i] = BOKEH.RETRY;
+        }
+        return;
+      }
+      p.age += dt;
+      if (p.age >= p.T) { zone.particles[i] = null; zone.wait[i] = rand(...BOKEH.GAP); return; }
+      drawLight(zone, p.sprite, lightX(p), lightY(p), brightness(p));
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  // Vertical offset a pending reveal transform adds to an element (so exclusions use the final position).
+  function pendingShift(el) {
+    const group = el.closest('.reveal');
+    if (!group) return 0;
+    const t = getComputedStyle(group).transform;
+    if (!t || t === 'none' || typeof DOMMatrixReadOnly !== 'function') return 0;
+    return new DOMMatrixReadOnly(t).m42;
+  }
+
+  // Exclusion boxes in zone coordinates, before the margin. data-bokeh-exclude="text": one box per
+  // rendered text line; no value: the element box. Hero only: the fixed BGM toggle where it sits at scroll 0.
+  function excludeRects(zone) {
+    const base = zone.el.getBoundingClientRect();
+    const rects = [];
+    const push = (r, dy) => rects.push({ l: r.left - base.left, r: r.right - base.left, t: r.top - base.top - dy, b: r.bottom - base.top - dy });
+    const range = document.createRange();
+    zone.el.querySelectorAll('[data-bokeh-exclude]').forEach((ex) => {
+      const dy = pendingShift(ex);
+      if (ex.dataset.bokehExclude !== 'text') { push(ex.getBoundingClientRect(), dy); return; }
+      const walker = document.createTreeWalker(ex, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        if (!n.textContent.trim() || n.parentElement.closest('.sr-only')) continue;
+        range.selectNodeContents(n);
+        [...range.getClientRects()].forEach((r) => { if (r.width && r.height) push(r, dy); });
+      }
+    });
+    const bgm = zone.name === 'hero' && document.querySelector('.bgm-toggle');
+    if (bgm) push(bgm.getBoundingClientRect(), window.scrollY);
+    return rects;
+  }
+
+  function initBokeh() {
+    const els = [...document.querySelectorAll('[data-bokeh]')];
+    if (!els.length || !('IntersectionObserver' in window)) return null;
+
+    const wide = matchMedia('(min-width: 768px)');
+    const pauses = new Set();          // 'hidden' | 'lightbox'
+    const frameMs = 1000 / BOKEH.FPS - 1; // 30fps gate with 1ms tolerance for vsync jitter
+    let rafId = 0;
+    let last = 0;
+    let heroGateOpen = false;
+
+    const zones = els.map((el) => {
+      const name = el.dataset.bokeh;
+      const canvas = el.querySelector('canvas.bokeh');
+      const slots = BOKEH.ZONES[name] || 0;
+      return {
+        name, el, canvas, ctx: canvas.getContext('2d'),
+        W: 0, H: 0, excludes: [], dirty: [], still: [],
+        particles: new Array(slots).fill(null), wait: new Array(slots).fill(0),
+        inBand: false, live: false, offTimer: 0, roTimer: 0, settleTimer: 0,
+      };
+    });
+    const heroZone = zones.find((z) => z.name === 'hero');
+
+    const maxTotal = () => (wide.matches ? BOKEH.MAX_TOTAL_WIDE : BOKEH.MAX_TOTAL_MOBILE);
+    const livingIn = (z) => z.particles.reduce((n, p) => n + (p ? 1 : 0), 0);
+    const livingTotal = () => zones.reduce((n, z) => n + (z.live ? livingIn(z) : 0), 0);
+    const canSpawn = () => livingTotal() < maxTotal();
+
+    function trimToCap(zone) {
+      for (let i = zone.particles.length - 1; i >= 0 && livingTotal() > maxTotal(); i--) {
+        if (!zone.particles[i]) continue;
+        zone.particles[i] = null;
+        zone.wait[i] = rand(...BOKEH.GAP);
+      }
+    }
+
+    function measureExcludes(zone) {
+      const m = BOKEH.EXCLUDE_MARGIN;
+      zone.excludes = excludeRects(zone).map((r) => ({ l: r.l - m, r: r.r + m, t: r.t - m, b: r.b + m }));
+    }
+
+    // After a layout change: drop lights whose path box now leaves the canvas or meets an exclusion.
+    function dropBlocked(zone) {
+      zone.particles.forEach((p, i) => {
+        if (!p || (p.box.r <= zone.W && p.box.b <= zone.H && !zone.excludes.some((e) => overlaps(p.box, e)))) return;
+        zone.particles[i] = null;
+        zone.wait[i] = BOKEH.RETRY;
+      });
+    }
+
+    function seed(zone) {
+      zone.particles.fill(null);
+      zone.wait.fill(0);
+      for (let i = 0; i < zone.particles.length; i++) {
+        zone.particles[i] = spawn(zone, true);
         if (!zone.particles[i]) zone.wait[i] = BOKEH.RETRY;
       }
-      return;
+      if (zone.live) trimToCap(zone);
     }
-    p.age += dt;
-    if (p.age >= p.T) { zone.particles[i] = null; zone.wait[i] = rand(...BOKEH.GAP); return; }
-    const s = Math.sin(Math.PI * p.age / p.T);
-    const x = p.x0 + p.A * Math.sin((Math.PI * 2 * p.age) / p.P + p.phi);
-    const y = p.y0 - p.v * p.age;
-    ctx.globalAlpha = p.peak * s * s;   // never exceeds peak (<= 0.28 glow / 0.18 primary)
-    ctx.drawImage(sprites[p.color], x - p.r, y - p.r, p.d, p.d);
-  });
-}
-// Zone controller (IntersectionObserver, ResizeObserver, pause reasons, 30fps rAF gate)
-// follows the tables in 1-4 and 1-5. canSpawn() returns true while the sum of living
-// particles across running zones is below MAX_TOTAL_MOBILE / MAX_TOTAL_WIDE.
+
+    // Reduced motion (spec 1-6): STATIC_COUNT still lights, same placement rules, fixed seed.
+    function drawStatic(zone) {
+      clearAll(zone);
+      const rng = mulberry32(BOKEH.STATIC_SEED);
+      const scratch = { W: zone.W, H: zone.H, excludes: zone.excludes, particles: [] };
+      for (let i = 0; i < BOKEH.STATIC_COUNT * 3 && scratch.particles.length < BOKEH.STATIC_COUNT; i++) {
+        const p = spawn(scratch, false, rng);
+        if (p) scratch.particles.push(p);
+      }
+      zone.still = scratch.particles;
+      zone.still.forEach((p) => drawLight(zone, p.sprite, p.x0, p.y0, BOKEH.STATIC_ALPHA));
+      zone.ctx.globalAlpha = 1;
+    }
+
+    function resize(zone, force) {
+      const W = zone.el.clientWidth;
+      const H = zone.el.clientHeight;
+      const reseed = force || W !== zone.W || Math.abs(H - zone.H) > 40;
+      zone.W = W;
+      zone.H = H;
+      const cw = Math.round(W * BOKEH_DPR);
+      const ch = Math.round(H * BOKEH_DPR);
+      if (zone.canvas.width !== cw) zone.canvas.width = cw;
+      if (zone.canvas.height !== ch) zone.canvas.height = ch;
+      zone.ctx.setTransform(BOKEH_DPR, 0, 0, BOKEH_DPR, 0, 0);
+      clearAll(zone);
+      measureExcludes(zone);
+      if (reseed) seed(zone);
+      else dropBlocked(zone);
+      if (isReduced() && zone === heroZone) drawStatic(zone);
+    }
+
+    function loop(now) {
+      rafId = requestAnimationFrame(loop);
+      if (now - last < frameMs) return;
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      zones.forEach((z) => { if (z.live) step(z, dt, canSpawn); });
+    }
+
+    function kick() {
+      const run = !isReduced() && pauses.size === 0 && zones.some((z) => z.live);
+      if (run && !rafId) {
+        last = performance.now();
+        rafId = requestAnimationFrame(loop);
+      } else if (!run && rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    }
+
+    const wants = (z) => z.inBand && !isReduced() && (z !== heroZone || heroGateOpen);
+
+    function refresh(zone) {
+      if (wants(zone)) {
+        clearTimeout(zone.offTimer);
+        zone.offTimer = 0;
+        if (!zone.live) {
+          zone.live = true;
+          trimToCap(zone); // canvas is still at opacity 0, so dropping extras is invisible
+        }
+        zone.canvas.classList.add('is-on');
+      } else if (zone.live && !zone.offTimer) {
+        zone.canvas.classList.remove('is-on');
+        zone.offTimer = setTimeout(() => {
+          zone.offTimer = 0;
+          zone.live = false;
+          kick();
+        }, BOKEH.ZONE_FADE);
+      }
+      kick();
+    }
+
+    zones.forEach((z) => resize(z, true));
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const zone = zones.find((z) => z.el === entry.target);
+        zone.inBand = entry.isIntersecting;
+        if (!isReduced()) refresh(zone);
+      });
+    }, { rootMargin: '-15% 0px -15% 0px', threshold: 0 });
+    zones.forEach((z) => io.observe(z.el));
+
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver((entries) => {
+        entries.forEach((entry) => {
+          const zone = zones.find((z) => z.el === entry.target);
+          clearTimeout(zone.roTimer);
+          zone.roTimer = setTimeout(() => resize(zone, false), 150);
+        });
+      });
+      zones.forEach((z) => ro.observe(z.el));
+    }
+
+    // Boxes move with font swaps, the hero photo load and every reveal or scale-in (scroll cue).
+    const remeasure = (zone) => {
+      measureExcludes(zone);
+      dropBlocked(zone);
+      if (isReduced() && zone === heroZone) drawStatic(zone);
+    };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => zones.forEach(remeasure));
+    const heroPhoto = heroZone && heroZone.el.querySelector('.hero__photo');
+    if (heroPhoto && !heroPhoto.complete) heroPhoto.addEventListener('load', () => remeasure(heroZone), { once: true });
+    zones.forEach((z) => z.el.addEventListener('transitionend', (e) => {
+      if (e.propertyName !== 'transform' || !e.target.matches('.reveal, [data-bokeh-exclude]')) return;
+      clearTimeout(z.settleTimer);
+      z.settleTimer = setTimeout(() => remeasure(z), BOKEH.SETTLE_DEBOUNCE);
+    }));
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) pauses.add('hidden');
+      else pauses.delete('hidden');
+      kick();
+    });
+
+    function toStatic() {
+      heroGateOpen = true;
+      zones.forEach((z) => {
+        clearTimeout(z.offTimer);
+        z.offTimer = 0;
+        z.live = false;
+        z.canvas.classList.remove('is-intro');
+        z.canvas.classList.toggle('is-on', z === heroZone);
+        clearAll(z);
+      });
+      kick();
+      if (heroZone) drawStatic(heroZone);
+    }
+
+    function toLive() {
+      zones.forEach((z) => {
+        clearAll(z);
+        z.canvas.classList.remove('is-on');
+        refresh(z);
+      });
+    }
+
+    if (isReduced()) toStatic();
+
+    return {
+      pause(reason) { pauses.add(reason); kick(); },
+      resume(reason) { pauses.delete(reason); kick(); },
+      // Hero first appearance: 1200ms fade instead of the usual 600ms (spec 1-5).
+      openHeroGate() {
+        if (heroGateOpen || !heroZone) { heroGateOpen = true; return; }
+        heroGateOpen = true;
+        heroZone.canvas.classList.add('is-intro');
+        refresh(heroZone);
+        setTimeout(() => heroZone.canvas.classList.remove('is-intro'), BOKEH.INTRO_FADE);
+      },
+      toStatic,
+      toLive,
+      // QA (spec 1-7): drawn squares (center +- R) of running and still lights against freshly measured exclusions.
+      stats() {
+        const out = {
+          living: livingTotal(), zones: {}, still: 0,
+          running: rafId ? zones.filter((z) => z.live).map((z) => z.name) : [],
+          excludeHits: 0, pairHits: 0, minExcludeGap: null,
+        };
+        zones.forEach((z) => {
+          out.zones[z.name] = livingIn(z);
+          out.still += z.still.length;
+          const lights = (z.live ? z.particles.filter(Boolean).map((p) => [lightX(p), lightY(p), p.R]) : [])
+            .concat(z.still.map((p) => [p.x0, p.y0, p.R]))
+            .map(([x, y, R]) => ({ l: x - R, r: x + R, t: y - R, b: y + R }));
+          const raw = excludeRects(z);
+          lights.forEach((a, i) => {
+            raw.forEach((e) => {
+              if (overlaps(a, e)) out.excludeHits++;
+              const gap = Math.hypot(Math.max(e.l - a.r, a.l - e.r, 0), Math.max(e.t - a.b, a.t - e.b, 0));
+              out.minExcludeGap = out.minExcludeGap === null ? gap : Math.min(out.minExcludeGap, gap);
+            });
+            lights.slice(i + 1).forEach((b) => { if (overlaps(a, b)) out.pairHits++; });
+          });
+        });
+        if (out.minExcludeGap !== null) out.minExcludeGap = Math.round(out.minExcludeGap * 10) / 10;
+        return out;
+      },
+    };
+  }
 ```
 
-**QA 확인용 훅 (Should)**: `window.__bokeh = { config: BOKEH, stats() }`. `stats()`는 `{ living, zones: { hero, calendar, share }, maxPeak: { glow, primary }, running: [...] }`를 반환한다(maxPeak는 현재 살아 있는 입자 peak의 최댓값). 읽기 전용이며 페이지 동작에 영향이 없다.
+**지금 `script.js`에서 바뀌는 것**
 
-### 1-8. 보케 성능 예산
-
-| 항목 | 예산 |
+| 구분 | 내용 |
 |---|---|
-| 프레임당 작업 | `clearRect` 1회 + `drawImage` 최대 8회. 스크립트 시간 프레임당 1ms 이하 (Chrome DevTools Performance, CPU 4x throttle 기준 목표) |
-| 동시에 도는 캔버스 | 평소 1개. 세로가 아주 긴 창에서만 hero + calendar 2개(합산 상한이 입자 수를 제한) |
-| 메모리 | 캔버스 3개 합계 약 3.5MB (DPR 1) |
-| 금지 | 캔버스에 `filter: blur()`, `ctx.filter`, `shadowBlur` 사용 금지. 흐림은 스프라이트 그라데이션으로만 |
+| `BOKEH` 값이 바뀌는 키 | `ZONES` `{ hero: 8, calendar: 8, closing: 8 }`, `SIZE_MIX` `[[0.50, 5, 6], [0.35, 6, 7.5], [0.15, 7.5, 9]]`, `RGB` `{ core: '255,252,248', glow: '235,203,148' }`, `GAP` `[0.4, 1.6]`, `RISE` `[0, 3]`, `SWAY` `[2, 5]`, `SWAY_PERIOD` `[6, 10]`, `BOX_GAP` 10, `EXCLUDE_MARGIN` 8, `TRIES` 14, `STILL_AFTER` 8 |
+| `BOKEH`에 새로 생기는 키 | `HALO` 3.6, `PROFILE`(7단 그라데이션), `LIFE` `[9, 16]`, `FADE` 1.2, `TWINKLE_DEPTH` 0.5, `TWINKLE_PERIOD` `[2.4, 4.8]`, `DPR_MAX` 2, `SETTLE_DEBOUNCE` 100, `STATIC_COUNT` 7, `STATIC_SEED` 5, `STATIC_ALPHA` 0.85 |
+| `BOKEH`에서 없어지는 키 | `D_MIN`, `D_MAX`, `CENTER_D_MAX`, `EDGE_BIAS`, `EDGE_BAND`, `GLOW_RATIO`, `ALPHA`, `BREATH`(→ `LIFE`), `DPR`(→ `DPR_MAX`) |
+| 그대로인 키 | `MAX_TOTAL_MOBILE` 12, `MAX_TOTAL_WIDE` 16, `RETRY` 0.4, `FPS` 30, `ZONE_FADE` 600, `INTRO_FADE` 1200, `INTRO_DELAY` 600 |
+| 없어지는 것 | `BOKEH_STATIC` 배열, `initBokeh` 안의 `sprites` 객체, primary 색 불빛 |
+| 새 함수·상수 | `BOKEH_DPR`, `mulberry32`, `bokehSprites`, `brightness`, `lightX`, `lightY`, `drawLight`, `clearAll`, `excludeRects`, `initBokeh` 안 `dropBlocked` |
+| 시그니처가 바뀌는 함수 | `makeSprite(rgb)` → `makeSprite(d)`, `pickDiameter(center)` → `pickDiameter(rng)`, `spawn(zone, preseed)` → `spawn(zone, preseed, rng = Math.random)`, `step(zone, dt, sprites, canSpawn)` → `step(zone, dt, canSpawn)` |
+| 내용이 바뀌는 함수 | `measureExcludes`(→ `excludeRects`), `drawStatic`, `resize`, `remeasure`, `toStatic`, `toLive`, `stats` |
+| HTML | 1-3 표의 속성 8개 추가, wreath `<img>`의 속성을 `.monogram`으로 이동 |
+| CSS | 바꿀 것 없음 |
 
-**명세 검증 (1-7 코드를 node로 300초씩 시뮬레이션, 30fps)**:
+시험 코드(`build/engine.js` + `build/cfg-b.js`)와 다른 점: ① 스타일 분기(A·C안), 가랜드, 테스트 훅을 뺐다 ② 정지 그림용 PRNG를 전역 `rnd` 교체 대신 `spawn`의 `rng` 인자로 넘긴다 ③ reveal 뒤 재측정을 `revealed` + 900ms에서 `transitionend`로 바꿨다(1-5) ④ BGM 자리에 `scrollY` 보정을 넣었다(시험 코드는 스크롤 0에서만 맞았다) ⑤ 정지 불빛 7개를 최대 21번 시도해 채운다(7번만 시도하면 390x664에서 6개만 놓였다) ⑥ 스프라이트를 반올림한 지름으로 렌더한다(시험 코드는 처음 만든 불빛의 지름을 써서 새로고침마다 정지 그림 픽셀이 조금씩 달랐다) ⑦ 크기 변경 때 캔버스 전체를 지운다(지울 목록만 비우면 캔버스 크기가 그대로일 때 잔상이 남는다) ⑧ `.sr-only` 글자를 제외 대상에서 뺐다 ⑨ `stats()`에 회피 검증값을 넣었다.
 
-| 구간 크기 (제외 영역) | 최대 생존 | 평균 생존 | 평균 가시(알파 > 0.05) | 최대 알파 glow / primary | 원 겹침 | 경계 이탈 | 제외 영역 침범 | glow 비율 |
-|---|---|---|---|---|---|---|---|---|
-| hero 390x664 (사진 y 198~458) | 8 | 6.56 | 4.45 | 0.2798 / 0.1798 | 0 | 0 | 0 | 0.70 |
-| hero 375x548 (사진 y 160~410) | 8 | 6.51 | 4.38 | 0.2799 / 0.1797 | 0 | 0 | 0 | 0.64 |
-| calendar 390x760 (전구 SVG) | 6 | 4.95 | 3.36 | 0.2794 / 0.1798 | 0 | 0 | 0 | 0.72 |
-| share 390x620 (디바이더, wreath) | 6 | 4.94 | 3.32 | 0.2799 / 0.1798 | 0 | 0 | 0 | 0.74 |
+**QA 확인용 훅 (Must)**: 부트의 `window.__bokeh = Object.freeze({ config: BOKEH, stats: () => bokeh.stats() })` 줄은 그대로 둔다. 글자 대비를 상수가 아니라 실행 중 회피로 지키므로, 이 훅이 회피를 자동으로 확인하는 유일한 방법이라 Must로 올린다. `stats()`가 돌려주는 값:
 
-평소 눈에 띄는 빛망울은 hero에서 4개 남짓, calendar·share에서 3개 남짓이다. density `minimal`에 맞는 양이다.
+| 키 | 뜻 | 기대값 |
+|---|---|---|
+| `living` | 활성 구간에 살아 있는 불빛 수 | 768px 미만 12 이하, 이상 16 이하 |
+| `zones` | `{ hero, calendar, closing }` 구간별 살아 있는 수 | 각 8 이하 |
+| `still` | reduced 정지 그림의 불빛 수 | reduced에서 7, 아니면 0 |
+| `running` | rAF가 그리고 있는 구간 이름 | 1-4 조건에 맞는 구간만 |
+| `excludeHits` | 그려진 불빛 정사각형(중심 ± R)과 **호출 시점에 새로 잰** 제외 상자(여유 없음)가 겹친 쌍의 수 | 0 |
+| `pairHits` | 불빛 정사각형끼리 겹친 쌍의 수 | 0 |
+| `minExcludeGap` | 불빛 정사각형과 제외 상자 사이 최소 거리(px, 소수 첫째 자리). 불빛이 없으면 `null` | 13.0 이상 |
+
+### 1-8. 보케 성능 예산 (2026-10-12 보케 B안)
+
+| 항목 | 예산 | 실측 |
+|---|---|---|
+| 프레임당 작업 | 직전 자리 `clearRect` 최대 8회 + `drawImage` 최대 8회. 스크립트 시간 프레임당 1ms 이하(CPU 4x throttle) | 390 x 664(DPR 3 → 2)에서 평균 0.05ms 이하, 최대 0.2ms(1x), 0.7ms(4x), 1.5ms(6x). 모든 경우 30fps 유지 |
+| 동시에 도는 캔버스 | 평소 1개. 두 구간이 동시에 띠 안에 들어와도 합산 상한이 불빛 수를 제한 | 6개 화면 모두 한 번에 1개 |
+| 캔버스 메모리 | 3개 합계 DPR 2에서 14MB 이하 | 아래 표. 10.8~13.7MB |
+| 스프라이트 메모리 | 0.3MB 이하 | 19~24장, 0.07~0.21MB |
+| 금지 | 캔버스에 `filter: blur()`, `ctx.filter`, `shadowBlur` 사용 금지. 빛 번짐은 스프라이트 그라데이션으로만 | — |
+
+캔버스 메모리(픽셀 크기 × 4바이트). DPR은 2에서 자른다:
+
+| 화면 (CSS px, 기기 DPR) | hero | calendar | closing | 합계 |
+|---|---|---|---|---|
+| 390 x 664, DPR 3 (iPhone 14 Safari) | 780x1328, 3.95MB | 780x1684, 5.01MB | 780x986, 2.93MB | 11.9MB |
+| 375 x 548, DPR 2 (iPhone SE Safari) | 750x1096, 3.14MB | 750x1684, 4.82MB | 750x986, 2.82MB | 10.8MB |
+| 360 x 700, DPR 3 (Android) | 720x1400, 3.85MB | 720x1684, 4.63MB | 720x986, 2.71MB | 11.2MB |
+| 430 x 750, DPR 3 | 860x1500, 4.92MB | 860x1684, 5.52MB | 860x986, 3.23MB | 13.7MB |
+| 데스크톱 1280 x 900, DPR 1 (컬럼 480) | 480x900, 1.65MB | 480x842, 1.54MB | 480x493, 0.90MB | 4.1MB |
+
+DPR 1 고정이던 이전 명세는 약 3.5MB였다. DPR 3을 자르지 않으면 430 x 750에서 30.8MB가 된다.
+
+**명세 검증**: 1-7 코드와 1-3 속성을 지금 `index.html`·`script.js`·`style.css`에 넣은 시험 사이트를 headless Chrome에서 잰 값이다(2026-10-12). "실제 페이지"는 각 구간에서 10초 동안 250ms마다 `__bokeh.stats()`를 40번 읽은 결과, "시뮬레이션"은 같은 페이지에서 잰 제외 상자로 구간마다 300초(30fps, 9000프레임)를 돌린 결과다.
+
+| 화면 | 구간 (크기, 제외 상자 수) | 최대 생존 | 평균 생존 | 평균 가시(밝기 > 0.3) | 제외 상자 침범 | 불빛끼리 겹침 | 경계 이탈 | 제외 상자까지 최소 | 불빛 사이 최소 |
+|---|---|---|---|---|---|---|---|---|---|
+| 390 x 664 | hero (390x664, 11) | 8 | 7.32 | 6.65 | 0 | 0 | 0 | 13.6px | 11.2px |
+| 390 x 664 | calendar (390x842, 7) | 8 | 7.36 | 6.70 | 0 | 0 | 0 | 13.5px | 11.4px |
+| 390 x 664 | closing (390x493, 5) | 8 | 7.41 | 6.75 | 0 | 0 | 0 | 13.1px | 10.4px |
+| 375 x 548 | hero (375x548, 11) | 8 | 7.07 | 6.45 | 0 | 0 | 0 | 13.1px | 10.2px |
+| 375 x 548 | calendar (375x842, 7) | 8 | 7.41 | 6.77 | 0 | 0 | 0 | 13.0px | 10.9px |
+| 375 x 548 | closing (375x493, 5) | 8 | 7.41 | 6.76 | 0 | 0 | 0 | 13.3px | 12.3px |
+| 360 x 700, 430 x 750, 390 x 844, 데스크톱 480 | 세 구간 모두 | 8 | 7.36~7.41 | 6.71~6.75 | 0 | 0 | 0 | 13.0~14.8px | 10.7~14.6px |
+
+- 실제 페이지 샘플링(6개 화면 × 3구간): 구간별 최대 8, `excludeHits` 0, `pairHits` 0, `minExcludeGap` 13.5~34.7px, `running`은 그 구간 하나.
+- `running`이 `[]`였던 위치(6개 화면 모두): greeting 머리, gallery·venue·notice·account·guestbook 머리와 머리 + 200px. lightbox를 연 동안과 탭을 숨긴 동안도 `[]`이고 그 사이 그린 프레임은 0이며, 닫거나 다시 보이면 `["hero"]`로 돌아온다(390 x 664에서 확인).
+- 평소 눈에 띄는 불빛은 구간마다 6~7개다. 이전 보케(눈에 띄는 3~4개, 지름 12~56px)보다 개수는 많지만 하나하나가 작아서 density `minimal` 범위다.
 
 ---
 
@@ -303,7 +711,7 @@ function step(zone, dt, sprites, canSpawn) {
 - 사진이 300ms 시점에 아직 로드되지 않았으면 `img.decode()` 완료 시점에 페이드를 시작한다. **텍스트는 사진을 기다리지 않는다.**
 - hero 사진에 `<link rel="preload" as="image" href="images/photos/hero.jpg" fetchpriority="high">`. 227KB.
 - 전체 시퀀스는 약 2.3초에 끝난다.
-- **reduced-motion**: 모든 요소 즉시 표시, 보케는 1-6 정적 점 5개, 스크롤 큐는 정지한 선.
+- **reduced-motion**: 모든 요소 즉시 표시, 보케는 1-6 정지 불빛 7개(2026-10-12 보케 B안), 스크롤 큐는 정지한 선.
 
 ### 2-2. Greeting
 
@@ -334,15 +742,23 @@ function step(zone, dt, sprites, canSpawn) {
 ### 2-6. Venue / Account / Guestbook
 
 - 공통 reveal, 섹션당 최대 3그룹. 예: venue ① 헤더 ② 장소명·주소·주소 복사(2026-10-12 카드 없음) ③ 지도·길찾기 버튼·교통편 / account ① 헤더 ② 신랑측 ③ 신부측 / guestbook ① 헤더 ② 폼 ③ 안내.
-- 보케 구간(hero, calendar, share)이 아니라 보케 없음.
+- 보케 구간(hero, calendar, closing)이 아니라 보케 없음 (2026-10-12 보케 B안).
 - **reduced-motion**: 즉시 표시.
 
-### 2-7. Share (보케 구간, 마지막 섹션)
+### 2-7. 공유하기 (보케 없음) (2026-10-12 보케 B안: share/closing 분리)
+
+- 그룹 ① 헤더(eyebrow "SHARE", 제목 "공유하기", 안내 문구) ② 카카오톡 공유·링크 복사 버튼.
+- 보케 구간이 아니다. 섹션이 짧아서 이 섹션을 보는 동안 바로 아래 맺음 섹션이 가운데 70% 띠에 들어와 closing 불빛이 켜질 수 있다(1-4). 이 섹션 안에는 불빛이 그려지지 않는다(캔버스가 맺음 섹션 안에 갇혀 있다).
+- 버튼 누름은 5장, 복사 피드백은 4-4, 카카오 공유는 4-6.
+- **reduced-motion**: 즉시 표시.
+
+### 2-8. 맺음 (보케 구간, 마지막 섹션) (2026-10-12 보케 B안: share/closing 분리)
 
 - 상단 sprig-divider는 3-1 stroke-draw.
-- 그룹 ① wreath 모노그램 ② 'Thank you' + 맺음말 ③ 공유 버튼.
-- 마지막 섹션이므로 2-0의 페이지 끝 안전장치가 여기서 작동한다.
-- **reduced-motion**: 즉시 표시.
+- 그룹 ① 모노그램(wreath + "I & Y") ② "Thank you"(제목) + "2027.01.03" + "Inhyeok & Yumin". 맺음말 문장은 없다.
+- 불빛은 꽃가지 장식, 모노그램, 글자 줄을 피해 그 둘레 여백에만 생긴다(1-3 제외 대상: `.sprig`, `.monogram`, `.closing__thanks`).
+- 마지막 섹션이므로 2-0의 페이지 끝 안전장치(`.reveal-sentinel`)가 여기서 작동한다.
+- **reduced-motion**: 즉시 표시. 이 구간 캔버스는 숨긴다(1-6).
 
 ---
 
@@ -352,7 +768,7 @@ function step(zone, dt, sprites, canSpawn) {
 
 | 항목 | 값 |
 |---|---|
-| 위치 | 컨셉 지정 3곳: greeting 하단, gallery 헤더 위, share 상단. 표시 폭 120px |
+| 위치 | 컨셉 지정 3곳: greeting 하단, gallery 헤더 위, 맺음(closing) 상단(2026-10-12 보케 B안: share/closing 분리로 맺음 섹션으로 옮겨 갔다). 표시 폭 120px |
 | 삽입 방식 | **인라인 SVG** 3벌(`<img>`로는 내부 path에 CSS를 걸 수 없다). 원본은 `images/deco/sprig-divider.svg`. 각 루트 `<svg class="sprig" aria-hidden="true" focusable="false">` |
 | 트리거 | `IntersectionObserver`, `threshold: 0.5`, `rootMargin: '0px 0px -10% 0px'`, 1회 → `.is-drawn` |
 | 원리 | 모든 선 path에 `pathLength="1"` → `stroke-dasharray: 1 1; stroke-dashoffset: 1` → 0 |
@@ -1065,7 +1481,8 @@ QA 확인값:
 | 토스트 | 등장 / 퇴장 | opacity + translateY 8px | 200ms / 200ms | `--ease-out` / `--ease-in` | 즉시 |
 | BGM 아이콘 | 토글 | 꺼짐 ↔ 켜짐 opacity | 200ms | `--ease-standard` | 즉시 |
 | BGM 링 | 재생 중 | opacity 0.45↔1 + scale 0.97↔1.05 | 3000ms | `--ease-in-out` | 정지(opacity 0.8) |
-| 보케 캔버스 | 구간 진입·이탈 | 캔버스 opacity | 600ms (hero 첫 등장 1200ms) | linear | 정적 점 5개(hero만) |
+| 보케 캔버스 | 구간 진입·이탈 | 캔버스 opacity | 600ms (hero 첫 등장 1200ms) | linear | 정지 불빛 7개(hero만) (2026-10-12 보케 B안) |
+| 보케 불빛 (2026-10-12 보케 B안) | 생성·소멸 / 반짝임 | 캔버스 `globalAlpha`(밝기) | 페이드 1.2s / 주기 2.4~4.8s | smoothstep / cos | 정지 그림(밝기 0.85) |
 
 **쓰지 않는 것 (QA 확인용)**: 꽃잎·컨페티·하트 파티클, 터치·클릭 반응 파티클, 패럴랙스, hero 사진 scale·Ken Burns, 사진 위 색 오버레이·그라데이션·filter, 마스킹 텍스트 리빌, split char, 카운트업, 달력 펄스·발광, 갤러리 자동 슬라이드, 슬라이드 전환 햅틱, 캐러셀 순환·스와이프 힌트 흔들기·이웃 사진 흐리게/축소·사진 위 화살표 (2026-10-10 갤러리 캐러셀로 변경), 클릭 ripple, hover lift + 그림자, 첫 화면 게이트(봉투 열기), BGM 자동재생, `box-shadow`·`filter`·`backdrop-filter` 애니메이션, 캔버스 `shadowBlur`·`ctx.filter`, `scroll-behavior: smooth`.
 
@@ -1144,7 +1561,7 @@ QA 확인값:
 | 우선순위 | 항목 |
 |---|---|
 | **Must** | 6 토큰 + reduced-motion CSS·JS 분기 + `html.js` 게이트 |
-| **Must** | 1 보케 배경: 구간 3곳, 입자 상한, 겹침 방지, 정지 조건(구간 밖·탭 숨김·라이트박스), 1-6 정적 점 5개 |
+| **Must** | 1 보케 배경 B안 (2026-10-12 보케 B안): 구간 3곳(hero·calendar·closing), 구간당 8·합산 12/16, 흰 심 + glow 후광 스프라이트, 페이드·반짝임, 궤적 상자 겹침 방지(`BOX_GAP` 10), 글자 회피(`data-bokeh-exclude="text"` 줄 상자 / 값 없는 요소 상자, 1-3의 속성 12개, hero BGM 자리, `transitionend` 재측정), 캔버스 DPR `min(dpr, 2)`, 정지 조건(구간 밖·탭 숨김·라이트박스), 1-6 정지 불빛 7개(고정 시드) |
 | **Must** | 2-0 공통 섹션 reveal (안전장치 포함) |
 | **Must** | 2-1 hero 로드 시퀀스 (사진 scale 금지) |
 | **Must** | 3-1 sprig-divider stroke-draw 3곳 |
@@ -1161,7 +1578,7 @@ QA 확인값:
 | Should | 4-4 계좌 접기 |
 | Should | 4-6 카카오 공유 폴백, 4-7 길찾기, 4-8 방명록 상태 문구 |
 | Should | 4-9 hero 스크롤 큐 |
-| Should | 1-7 `window.__bokeh` QA 훅 |
+| **Must** | 1-7 `window.__bokeh` QA 훅과 `stats()`의 회피 검증값(`excludeHits`, `pairHits`, `minExcludeGap`, `still`). 대비를 실행 중 회피로 지키므로 Should에서 올렸다 (2026-10-12 보케 B안) |
 | Nice-to-have | 4-2 `+`/`-`/`0` 키 줌, `ctrl + wheel` 줌 |
 | Nice-to-have | 4-1 전환 중 잡기, 트랙패드 가로 휠 (2026-10-10 갤러리 캐러셀로 변경) |
 
@@ -1171,12 +1588,13 @@ QA 확인값:
 
 | 무한 루프 | 도는 조건 | 멈추는 조건 | 방식 |
 |---|---|---|---|
-| 보케 hero / calendar / share | 구간이 뷰포트 가운데 70% 띠 안, 탭 보임, lightbox 닫힘, reduced 아님 | 하나라도 어긋나면 정지(구간 이탈만 600ms 페이드 후) | Canvas 2D 30fps, DPR 1 |
+| 보케 hero / calendar / closing (2026-10-12 보케 B안) | 구간이 뷰포트 가운데 70% 띠 안, 탭 보임, lightbox 닫힘, reduced 아님 | 하나라도 어긋나면 정지(구간 이탈만 600ms 페이드 후) | Canvas 2D 30fps, DPR `min(dpr, 2)`, 직전 자리만 지우기 |
 | 전구 호흡 | calendar가 뷰포트와 겹침, lightbox 닫힘 | `animation-play-state: paused` | CSS opacity (SVG `<g>` 7개) |
 | BGM 링 | `aria-pressed="true"` | 끄면 제거 | CSS transform + opacity |
 | 스크롤 큐 | 첫 `scrollY > 24` 전, lightbox 닫힘 | 스크롤 후 제거 | CSS transform |
 
 - 한 화면에서 동시에 도는 루프는 최대 3개(hero: 보케 + 스크롤 큐 + BGM 링 / calendar: 보케 + 전구 + BGM 링).
+- 보케 캔버스 메모리는 3개 합계 DPR 2에서 14MB 이하(실측 10.8~13.7MB), 보케 스크립트는 프레임당 1ms 이하(4x throttle 실측 최대 0.7ms). 자세한 값은 1-8 (2026-10-12 보케 B안).
 - scroll 이벤트 리스너는 스크롤 큐 1개뿐(passive, 1회 후 해제). 나머지는 전부 IntersectionObserver·ResizeObserver.
 - `will-change`는 lightbox·캐러셀 드래그 중 각 트랙에만 잠깐. 그 밖에는 쓰지 않는다. (2026-10-10 갤러리 캐러셀로 변경: 캐러셀 트랙 추가. 캐러셀은 무한 루프가 아니라 위 표에 넣지 않는다)
 - 목표: Lighthouse Mobile Performance 90 이상, LCP 2.5초 이하(hero 227KB preload), CLS 0.05 이하, INP 200ms 이하, 보케 구간 스크롤 중 60fps 유지(DevTools 4x throttle에서 드롭 프레임 5% 이하).
@@ -1204,12 +1622,12 @@ QA 확인값:
 
 ## 10. 접근성 체크리스트 (QA용)
 
-- [ ] `prefers-reduced-motion: reduce`에서: 보케는 hero 정적 점 5개만(calendar·share 캔버스 숨김), 섹션·hero 즉시 표시, 디바이더 완성 상태, 전구 opacity 1 정지, BGM 링 정지, 스크롤 큐 정지 선, lightbox 전환 즉시, 캐러셀 전환·이미지 페이드 즉시(드래그 중 따라오기만 유지), 토스트·라벨 즉시 (2026-10-10 갤러리 캐러셀로 변경: 캐러셀 추가)
+- [ ] `prefers-reduced-motion: reduce`에서: 보케는 hero 정지 불빛 7개만(calendar·closing 캔버스 숨김, 2026-10-12 보케 B안), 섹션·hero 즉시 표시, 디바이더 완성 상태, 전구 opacity 1 정지, BGM 링 정지, 스크롤 큐 정지 선, lightbox 전환 즉시, 캐러셀 전환·이미지 페이드 즉시(드래그 중 따라오기만 유지), 토스트·라벨 즉시 (2026-10-10 갤러리 캐러셀로 변경: 캐러셀 추가)
 - [ ] 설정을 런타임에 바꿔도 새로고침 없이 전환되고 BGM이 끊기지 않는다
 - [ ] JS가 꺼져도 모든 콘텐츠가 보이고 디바이더·전구가 완성 상태다(`html.js` 게이트)
 - [ ] BGM이 로드·스크롤·첫 탭으로 시작되지 않고 토글로만 시작된다. 켜기 전 `bgm.mp3` 요청이 없다
 - [ ] BGM 토글 `aria-pressed`가 실제 재생 상태와 일치하고, 꺼짐(사선 음표)과 켜짐(음표 + 링)이 모양으로 구분된다
-- [ ] 3Hz 이상 점멸 없음. 가장 빠른 주기는 스크롤 큐 2.4초, 전구 4.2초, 보케 호흡 5초
+- [ ] 3Hz 이상 점멸 없음. 가장 빠른 주기는 보케 반짝임 2.4초(0.42Hz)와 스크롤 큐 2.4초, 그다음 전구 4.2초. 보케 페이드(1.2초)는 불빛마다 9~16초 수명에 한 번씩 켜지고 꺼지는 것이다 (2026-10-12 보케 B안)
 - [ ] lightbox: `showModal` 포커스 트랩, Esc 닫기, 닫은 뒤 캐러셀이 lightbox에서 마지막으로 보던 번호로 맞춰지고 그 슬라이드 버튼으로 포커스 복귀, ←/→ 이동, "n / 15" `aria-live`, 슬라이드 alt, 포커스 링 `#FBF6F1` (2026-10-10 갤러리 캐러셀로 변경)
 - [ ] 캐러셀 구조: `.g-carousel`에 `role="group"` + `aria-roledescription="슬라이드"` + `aria-label`. 현재 슬라이드만 노출되고 나머지 14장은 `inert` + `aria-hidden="true"`(JS 꺼짐에서는 붙지 않음). 탭 순서는 현재 슬라이드 버튼 → 이전 → 다음 (2026-10-10 갤러리 캐러셀로 변경)
 - [ ] 캐러셀 조작: 버튼 이름 "이전 사진"·"다음 사진", 처음·끝에서 `aria-disabled="true"`이고 포커스가 사라지지 않는다. 포커스가 캐러셀 안에 있을 때 ←/→로 이동한다. 버튼·스와이프로 바뀌면 `.g-status`가 "15장 중 n번째 사진, {alt}"를 읽는다. 슬라이드 버튼에서 ←/→를 누르면 포커스가 새 슬라이드 버튼으로 옮겨 가고 같은 내용을 두 번 읽지 않는다 (2026-10-10 갤러리 캐러셀로 변경)
@@ -1219,11 +1637,25 @@ QA 확인값:
 - [ ] 복사 성공·실패가 `role="status"` 영역으로 낭독된다(시각 토스트는 `aria-hidden`)
 - [ ] 모든 아이콘 버튼 `aria-label`, 터치 영역 44x44 이상
 - [ ] 장식 SVG·캔버스 모두 `aria-hidden="true"`
+- [ ] 보케 제외 속성 12개가 1-3 표대로 붙어 있다: `document.querySelectorAll('[data-bokeh] [data-bokeh-exclude="text"]').length === 6`(`.hero__top`, `.hero__bottom`, calendar `.section-head`, `.calendar__when`, `.dday`, `.closing__thanks`), 값 없는 것 6개(`.hero__photo`, `.scroll-cue`, `.lights`, `.cal`, closing `.sprig`, `.monogram`). wreath `<img>`에는 없다 (2026-10-12 보케 B안)
+- [ ] 보케 불빛이 글자 줄, hero 사진, 장식, 첫 화면의 BGM 버튼 위에 그려지지 않는다(아래 자동 확인의 `excludeHits === 0`) (2026-10-12 보케 B안)
 
-**보케 상한 자동 확인 (QA 참고)**: Playwright에서 hero·calendar·share 구간마다 10초씩 머물며 250ms 간격으로 `__bokeh.stats()`를 수집한다. `living ≤ 12`(768px 미만) / `≤ 16`, 구간별 수 ≤ 8, `maxPeak.glow ≤ 0.28`, `maxPeak.primary ≤ 0.18`, greeting·gallery·guestbook에 머무는 동안 `running`이 빈 배열인지, lightbox를 연 동안 `running`이 빈 배열인지 확인한다. 코드에서는 `BOKEH` 상수를 1-7 값과 grep으로 대조한다.
+**보케 상한·회피 자동 확인 (QA 참고) (2026-10-12 보케 B안)**: Playwright(또는 CDP)로 아래를 잰다. 화면은 최소 390 x 664(DPR 3)와 375 x 548(DPR 2) 두 가지, 가능하면 768px 이상 하나를 더한다. 확인값은 1-7 코드로 1-8에서 실제로 잰 값이다.
+
+| # | 방법 | 통과 기준 |
+|---|---|---|
+| 1 | 로드 4.2초 뒤 hero(스크롤 0), calendar·closing(섹션 머리로 스크롤 후 2.6초)에서 10초 동안 250ms마다 `__bokeh.stats()` 40회 | 모든 샘플에서 `living ≤ 12`(768px 미만) / `≤ 16`, `zones`의 각 값 ≤ 8, `excludeHits === 0`, `pairHits === 0`, `minExcludeGap`이 `null`이거나 13.0 이상, `running`이 그 구간 이름 하나 |
+| 2 | gallery·venue·notice·account·guestbook 머리, 그리고 머리 + 200px로 스크롤해 1.3초 뒤 `stats().running` | `[]`. couple을 볼 때 `["calendar"]`, 공유하기를 볼 때 `["closing"]`, 세로 844px 이상에서 greeting 아래쪽을 볼 때 `["calendar"]`는 의도한 동작이므로 FAIL이 아니다(1-4) |
+| 3 | hero에서 lightbox 열기, 탭 숨김(`visibilitychange`) | 그동안 `running`이 `[]`, 닫거나 다시 보이면 `["hero"]` |
+| 4 | 각 구간 캔버스의 `width`·`height` | `Math.round(섹션 clientWidth × Math.min(devicePixelRatio, 2))`, 높이도 같은 식. 390 x 664 DPR 3이면 hero 780 x 1328, calendar 780 x 1684, closing 780 x 986 |
+| 5 | reduced-motion으로 로드 2.5초 뒤 `stats()` | `still === 7`, `running` `[]`, `excludeHits === 0`, `minExcludeGap ≥ 13`. calendar·closing 캔버스 `display: none`, hero 캔버스 `opacity: 1` |
+| 6 | reduced-motion으로 같은 창 크기에서 두 번 로드해 hero 캔버스 `getImageData` 비교 | 픽셀이 같다(고정 시드) |
+| 7 | 로드 뒤 reduce → no-preference → reduce 전환(새로고침 없이) | no-preference에서 `running` `["hero"]`·`still` 0, 다시 reduce에서 `still` 7이고 그림이 6번과 같다. BGM이 끊기지 않는다 |
+| 8 | `script.js`의 `BOKEH`와 `__bokeh.config`를 1-7과 대조 | 1-7 "지금 `script.js`에서 바뀌는 것" 표의 키와 값이 그대로다. 없어진 키(`D_MIN`, `GLOW_RATIO`, `ALPHA`, `BREATH`, `DPR` 등)가 남아 있지 않다. 코드에 `primary` 불빛, `ctx.filter`, `shadowBlur`가 없다 |
+| 9 | DevTools Performance, CPU 4x throttle, 각 구간 5초 | 보케 rAF 콜백이 프레임당 1ms 이하, 30fps 유지 |
 
 ---
 
 ## 11. 한 줄 정리
 
-배경은 hero·calendar·share의 background 위에서만 숨 쉬는 흐린 전구빛 보케(겹침 없음, glow 0.28·primary 0.18 이하, 모바일 12개 이하, 화면 밖·탭 숨김·라이트박스에서 정지)이고, 그 밖의 모션은 섹션 fade-in 하나와 디바이더 그리기·전구 호흡·BGM 링뿐이다. prefers-reduced-motion에서는 hero 여백의 정지한 점 5개만 남고 나머지는 모두 즉시 표시된다.
+배경은 hero·calendar·closing의 background 위에서 거의 제자리에서 반짝이는 작은 전구 불빛(흰 심 + glow 후광, 구간당 8개, 모바일 합산 12개 이하, 서로 겹치지 않고 글자·사진·장식에서 13px 이상 떨어짐, 화면 밖·탭 숨김·라이트박스에서 정지)이고, 그 밖의 모션은 섹션 fade-in 하나와 디바이더 그리기·전구 호흡·BGM 링뿐이다. prefers-reduced-motion에서는 hero에 정지한 불빛 7개만 남고 나머지는 모두 즉시 표시된다. (2026-10-12 보케 B안)

@@ -63,7 +63,7 @@
     <!-- 1. Hero: top text / full-bleed 3:2 photo (no crop, no overlay) / bottom text -->
     <header class="hero bokeh-zone" data-bokeh="hero">
       <canvas class="bokeh" aria-hidden="true"></canvas>
-      <div class="hero__top reveal" data-reveal="hero">
+      <div class="hero__top reveal" data-reveal="hero" data-bokeh-exclude="text">
         <p class="hero__eyebrow" lang="en">WE’RE GETTING MARRIED</p>
         <p class="hero__date" lang="en">2027 · 01 · 03</p>
         <p class="hero__time" lang="en">SUNDAY · 3 PM</p>
@@ -71,12 +71,12 @@
       <img class="hero__photo" src="images/photos/hero.jpg" width="1600" height="1066"
            fetchpriority="high" decoding="async" data-bokeh-exclude
            alt="꽃 장식과 전구 줄이 걸린 아이보리색 문 앞에서 서로를 향해 몸을 기울인 두 사람">
-      <div class="hero__bottom reveal" data-reveal="hero">
+      <div class="hero__bottom reveal" data-reveal="hero" data-bokeh-exclude="text">
         <h1 class="hero__names" aria-label="방인혁과 손유민">방인혁<span class="hero__amp" aria-hidden="true">&amp;</span>손유민</h1>
         <p class="hero__when">2027년 1월 3일 일요일 오후 3시</p>
         <p class="hero__where">더컨벤션 송파문정 13층 아모르홀</p>
       </div>
-      <span class="scroll-cue" aria-hidden="true"></span>
+      <span class="scroll-cue" aria-hidden="true" data-bokeh-exclude></span>
     </header>
 
     <!-- 2. Greeting -->
@@ -133,7 +133,7 @@
     <!-- 4. Calendar + D-day (bokeh zone) -->
     <section class="section calendar bokeh-zone" id="calendar" data-bokeh="calendar" aria-labelledby="calendar-title">
       <canvas class="bokeh" aria-hidden="true"></canvas>
-      <div class="section-head reveal" data-lights-trigger>
+      <div class="section-head reveal" data-lights-trigger data-bokeh-exclude="text">
         <!-- Source: images/deco/string-lights.svg, inlined for the bulb breathing animation
              (data-i added per bulb; halo opacity moved to fill-opacity so CSS owns group opacity). -->
         <svg class="lights" viewBox="0 0 240 44" width="200" height="37" aria-hidden="true" focusable="false" data-bokeh-exclude>
@@ -153,8 +153,8 @@
         <h2 class="section-title" id="calendar-title">예식일</h2>
       </div>
       <div class="calendar__body reveal">
-        <p class="calendar__when">2027년 1월 3일 일요일 오후 3시</p>
-        <table class="cal">
+        <p class="calendar__when" data-bokeh-exclude="text">2027년 1월 3일 일요일 오후 3시</p>
+        <table class="cal" data-bokeh-exclude>
           <caption>
             <span class="cal__caption-en" lang="en">JANUARY 2027</span>
           </caption>
@@ -172,7 +172,7 @@
         </table>
       </div>
       <!-- D-day is computed in KST by script.js; hidden without JS. -->
-      <div class="dday reveal" id="dday" data-wedding-date="2027-01-03" hidden>
+      <div class="dday reveal" id="dday" data-bokeh-exclude="text" data-wedding-date="2027-01-03" hidden>
         <p class="dday__message" id="dday-message"></p>
         <p class="dday__count" id="dday-count" lang="en" aria-hidden="true"></p>
       </div>
@@ -404,12 +404,12 @@
         <circle class="sp-dot sp-dot--end" cx="145" cy="12.6" r="1.2" fill="#A2AA92"/>
       </svg>
       <div class="closing__mono reveal">
-        <div class="monogram" role="img" aria-label="인혁과 유민의 이니셜">
-          <img class="monogram__wreath" src="images/deco/wreath.svg" width="120" height="120" alt="" loading="lazy" decoding="async" data-bokeh-exclude>
+        <div class="monogram" data-bokeh-exclude role="img" aria-label="인혁과 유민의 이니셜">
+          <img class="monogram__wreath" src="images/deco/wreath.svg" width="120" height="120" alt="" loading="lazy" decoding="async">
           <span class="monogram__text" lang="en" aria-hidden="true">I<span class="monogram__amp">&amp;</span>Y</span>
         </div>
       </div>
-      <div class="closing__thanks reveal">
+      <div class="closing__thanks reveal" data-bokeh-exclude="text">
         <h2 class="closing__title" id="closing-title" lang="en">Thank you</h2>
         <p class="closing__date" lang="en">2027.01.03</p>
         <p class="closing__names" lang="en">Inhyeok &amp; Yumin</p>

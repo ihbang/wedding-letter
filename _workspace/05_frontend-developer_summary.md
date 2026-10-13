@@ -6,6 +6,7 @@
 - 갱신: 2026-10-12, 오시는 길에 카카오맵 고정 지도를 넣고 카카오 키를 `<head>` 메타 태그 한 곳으로 옮겼다(12장). venue 섹션과 카카오 공유의 키 읽는 줄만 고쳤다.
 - 갱신: 2026-10-12, 디자인 감사(`07_concept-director_design-audit.md`) D1~D4 (a)와 수정 목록 M1~M18을 반영하고, 갤러리를 파일 번호 순서(01~15)로 바꿨다(13장). 2장 표의 배경·그릇 칸과 갤러리 순서 문단을 함께 고쳤다.
 - 갱신: 2026-10-12, 마지막 share 섹션을 공유하기(`#share`)와 맺음(`#closing`)으로 나누고 보케 구간을 맺음으로 옮겼다(14장). 2장 표의 10·11행을 고쳤다.
+- 갱신: 2026-10-13, 보케를 B안 "작은 전구 불빛"으로 바꿨다(15장). 3장 표의 보케 행, 4장의 보케 행, 7장의 보케·reduced-motion 행을 고쳤다.
 - 입력: `00_user-input.md`, `01_concept-director_concept-sheet.md`, `02_copy-writer_copy.md`, `03_image-artist_manifest.md`, `04_motion-designer_motion-spec.md`
 - 산출물: `index.html`(454줄), `style.css`(1,099줄), `script.js`(1,442줄). 줄 수와 3장의 `파일:줄`은 캐러셀 반영 후 기준이다. 어제의 "Warm Paper & Ink" 파일을 전부 새로 썼다.
 - 이전 컨셉 자산(`jo--*`, `op1789048062-*`, `divider-hairline.svg`, `og-thumbnail.jpg`, `monogram-iy.svg`, `floral-*`, `gallery-placeholder-*`, `hero-illustration.png`)은 세 파일 어디에서도 참조하지 않는다(grep 0건). 파일 자체는 지우지 않았다.
@@ -52,10 +53,12 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 6 토큰 (`--ease-*` 5종, `--dur-*` 12종, `--reveal-distance`, `--stagger`, `--bulb-stagger`) + 캐러셀 치수 `--g-gap`·`--g-side`·`--g-chrome`·`--g-w`(`@supports (height: 100svh)` 분기) + `@property --g-i`·`--g-dx` + reduced 0ms 재정의 | 구현 | style.css:38-83 |
 | `html.js` 게이트 | `<head>` 첫 인라인 스크립트 | index.html:5 |
 | reduced-motion CSS·JS 분기 | CSS 블록 + `@media (no-preference)` 안에 루프 배치, JS `matchMedia` + 런타임 `change` 처리(새로고침 없음). 캐러셀은 토큰만 따라가고 JS 분기 없음 | style.css:1026-1099, script.js:1430 |
-| 1 보케: 구간 3곳, `BOKEH` 상수(명세와 글자 단위 동일), 스프라이트, 30fps, DPR 1, 겹침 방지, 제외 영역, 합산 상한 12/16 | 구현. `makeSprite`/`pickDiameter`/`spawn`/`step`은 1-7 참고 코드 그대로(`step` 끝에 `globalAlpha = 1` 한 줄만 추가) | script.js:106-446 |
-| 1-4 정지 조건: 구간 이탈(600ms 페이드 후 정지), 탭 숨김, 라이트박스 | `pauses` Set(`'hidden'`, `'lightbox'`) | script.js:225, 324, 418 |
-| 1-5 pre-seed, hero 첫 등장 1200ms, ResizeObserver 150ms 디바운스, fonts.ready·사진 load 재측정 | 구현. window resize 이벤트는 쓰지 않음 | script.js:159, 368-383 |
-| 1-6 reduced 정적 점 5개(hero만), calendar·share 캔버스 숨김 | 구현 | script.js:126, 291, 393 |
+| 1 보케 B안(2026-10-13 교체, 15장): 구간 3곳(hero·calendar·closing), 구간당 8·합산 12/16, 흰 심 `#FFFCF8` + glow 후광 7단 스프라이트(지름 0.1px 단위 캐시, 화면 DPR로 렌더), 페이드 1.2s·반짝임 2.4~4.8s, 궤적 상자 겹침 방지(`BOX_GAP` 10), 30fps, 캔버스 DPR `min(dpr, 2)`, 직전 자리만 지우기 | 구현. 1-7 참고 코드를 글자 단위로 그대로 옮겼다(`BOKEH` 포함) | script.js:110-520 |
+| 1-3 글자 회피: `data-bokeh-exclude="text"`는 텍스트 노드 줄 상자(공백·`.sr-only` 제외), 값 없음은 요소 상자, hero만 BGM 토글의 스크롤 0 자리, 사방 `EXCLUDE_MARGIN` 8 | 구현. HTML 속성 12개(`"text"` 6: `.hero__top`, `.hero__bottom`, calendar `.section-head`, `.calendar__when`, `.dday`, `.closing__thanks` / 값 없음 6: `.hero__photo`, `.scroll-cue`, `.lights`, `.cal`, closing `.sprig`, `.monogram`). wreath `<img>`에는 없다 | script.js:258-276, 315; index.html:66, 72, 74, 79, 136, 139, 156, 157, 175, 388, 407, 412 |
+| 1-4 정지 조건: 구간 이탈(600ms 페이드 후 정지), 탭 숨김, 라이트박스 | `pauses` Set(`'hidden'`, `'lightbox'`) | script.js:283, 379, 392, 449 |
+| 1-5 pre-seed, hero 첫 등장 1200ms, ResizeObserver 150ms 디바운스(폭 변화·높이 40px 초과면 재배치, 아니면 `dropBlocked`), fonts.ready·사진 load·구간 안 transform `transitionend`(100ms 디바운스) 재측정 | 구현. window resize 이벤트는 쓰지 않음 | script.js:321, 353, 423-447 |
+| 1-6 reduced 정지 불빛 7개(hero만, `mulberry32(5)` 고정 시드, 최대 21회 시도, 밝기 0.85), calendar·closing 캔버스 숨김, 런타임 전환 | 구현 | script.js:134, 340, 455-475 |
+| 1-7 `window.__bokeh = { config, stats() }`. `stats()`는 `living`, `zones`, `still`, `running`, `excludeHits`, `pairHits`, `minExcludeGap` (2026-10-13 명세에서 Should → Must) | 구현 | script.js:493, 1593 |
 | 2-0 공통 reveal(threshold 0.15, rootMargin -10%, 1회, 콜백 단위 stagger 최대 2) + 안전장치 | 구현 | script.js:452, style.css:1005 |
 | 2-1 hero 로드 시퀀스 0/300/600/900/1700ms, 사진 opacity만, `decode()` 대기, preload | 구현 | script.js:9, 495; index.html:26 |
 | 2-5 gallery reveal 2그룹(헤더 / 캐러셀 전체), 슬라이드 개별 등장 없음 | 구현. reveal은 `.g-carousel`, 슬라이드 이동은 안쪽 `.g-track`이라 서로 덮어쓰지 않는다 | index.html:203, 208 |
@@ -82,7 +85,6 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 4-7 지도 임베드(지연 로딩, 지도 위 모션 없음) | 구현(2026-10-12). 카카오맵 고정 지도, 12장 | index.html:258-262, style.css:681-696, script.js:1373-1443 |
 | 4-8 방명록 상태 문구(200ms 페이드), 제출 중 비활성 | 구현 | script.js:1364 |
 | 4-9 스크롤 큐(1700ms 등장, 2400ms 루프, 첫 스크롤 후 제거, 압축 화면 숨김) | 구현 | style.css:406-437, 1055-1059; script.js:534-543 |
-| 1-7 `window.__bokeh = { config, stats() }` | 구현 | script.js:1441 |
 
 ### Nice-to-have
 
@@ -101,11 +103,7 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 장식 루프 CSS 위치 | 명세 블록은 미디어 쿼리 없이 작성됨 | sprig·전구·BGM 링·스크롤 큐의 숨김 상태와 애니메이션을 `@media (prefers-reduced-motion: no-preference)` 안에 두고, 명세의 reduce 블록도 그대로 유지(선택자 명시도를 올림) | 명세의 reduce 규칙(`.sprig :is(...)`, `.lights .bulb`)은 명시도가 `.js .sprig :is(...)`, `.lights.is-on .bulb`보다 낮아서, 그대로 두면 reduce에서 디바이더가 숨겨진 채로 남고 전구가 계속 깜빡인다 |
 | reduce에서 reveal | 토큰 0ms로 "즉시 표시" | 토큰 0ms + JS가 시작 시 모든 `.reveal`에 `.is-visible`을 붙임(IO 생략) | 0ms 토큰만으로는 아직 화면에 안 들어온 그룹이 opacity 0으로 남는다 |
 | 페이지 끝 안전장치 | `scrollY + innerHeight >= scrollHeight - 2` | 페이지 끝 1px 센티널(`.reveal-sentinel`)을 IntersectionObserver로 감시 | 명세 8장이 scroll 리스너를 스크롤 큐 1개로 제한한다 |
-| 보케 30fps 게이트 | 33ms 미만 프레임 건너뜀 | `1000/30 - 1` = 32.3ms | 60Hz에서 33.3ms 간격이 vsync 지터로 32.9ms가 되면 프레임이 하나 더 밀려 20fps대로 떨어진다 |
-| 보케 합산 상한과 pre-seed | 새 입자 생성만 상한으로 막음 | 구간이 켜질 때(캔버스 opacity 0인 순간) 상한을 넘는 미리 뿌린 입자를 지움 | 구간마다 pre-seed하면 두 구간이 동시에 켜질 때(세로로 긴 창) 8 + 6 = 14 > 12가 된다 |
-| 보케 제외 영역 측정 | 요소 사각형 + 12px | 같은 값에서 상위 `.reveal`의 아직 남은 translateY를 빼고 잰다 | 측정 시점에 그룹이 12px 아래에 있으면 최종 위치와 어긋난다 |
-| 높이 40px 이하 변화 | 재배치 조건만 명시 | 재배치는 안 하고 새 높이를 벗어나는 입자만 지움 | 캔버스 아래 경계에서 원이 잘려 직선 모서리가 생기지 않게 |
-| `stats()` 정의 | `living`, `zones`, `maxPeak`, `running` | `living`과 `maxPeak`는 켜진 구간만, `zones`는 구간별 보유 입자 수 | 꺼진 구간의 멈춘 입자가 상한 판정에 섞이지 않게 |
+| 보케 (2026-10-13 B안) | 1-7 참고 코드 | 다른 곳 없음. 예전 이 표에 있던 보케 차이 5행(30fps 게이트 32.3ms, 구간이 켜질 때 합산 상한 맞추기, 제외 영역의 reveal 이동분 보정, 높이 40px 이하 변화, `stats()` 정의)은 명세 1-7 코드에 모두 들어가 지웠다(15장) | - |
 | 복사 성공 라벨 | "복사됨" | "복사했습니다"(카피 시트). 토스트 문구도 카피 시트(마침표 포함) | 문구는 카피 시트 기준 |
 | BGM `aria-label` | "배경 음악" | "배경음악"(카피 시트) | 같음 |
 | BGM 재생 실패 | 오류 문구 없음 | 화면 토스트 없이 `role="status"` 낭독만("음악을 재생하지 못했습니다. 다시 한번 눌러 주세요.") | 카피 시트의 상태 메시지를 쓰되 시각 피드백은 명세대로 없음 |
@@ -173,11 +171,11 @@ placeholder(`[[TODO:...]]`)는 모두 채워졌고(2026-10-11), placeholder를 �
 | 375x548 (압축 규칙) | 장소 줄 끝 y 501, 스크롤 큐 숨김 |
 | 1280x900 데스크톱 | 480px 컬럼 가운데, 바깥 surface, BGM 토글이 컬럼 안 오른쪽 위 |
 | 폰트 | 9종 모두 로드 확인(Allura, Cormorant 300/500/400i, Gowun Batang 400/700, Pretendard 400/500/600) |
-| 보케 | 구간별 하나씩만 실행(hero → calendar → share), gallery·guestbook에서 `running: []`, 최대 생존 8(hero)·6, `maxPeak` glow ≤ 0.279, primary ≤ 0.180. 사진·카드 위에는 나타나지 않음 |
+| 보케 | (2026-10-13 B안 기준, 15장) 구간마다 그 구간 하나만 실행(hero → calendar → closing), gallery·venue·notice·account·guestbook에서 `running: []`. 구간별 최대 생존 8, `excludeHits` 0, `pairHits` 0, 제외 상자까지 최소 14.4px 이상. 사진·글자 줄·장식 위에는 나타나지 않음 |
 | 전구 | 점등 후 opacity 0.85–0.99 사이에서 호흡 |
 | 스크롤 완주 후 | 숨은 reveal 0개, 안 그려진 디바이더 0개, D-day "D-85 / 인혁과 유민의 결혼식까지 85일 남았습니다." |
 | 라이트박스 | 2번 셀 탭 → 2/15로 열림, 첫 포커스 닫기 버튼, `html.lb-open`, 원본 01.jpg 로드, → 키 3/15, 왼쪽 스와이프 4/15, 더블탭 2배 / 다시 더블탭 1배, 핀치 3배에서 clamp, Esc 닫기 후 2번 셀로 포커스 복귀·history 원복, 아래로 끌어 닫기 동작 |
-| reduced-motion | 모든 섹션 즉시 표시, hero 사진 opacity 1, 디바이더 완성, 전구 opacity 1·animation none, calendar·share 캔버스 `display: none`, hero에 정지 점 5개. 런타임에 설정을 되돌리면 새로고침 없이 hero 보케 재개 |
+| reduced-motion | 모든 섹션 즉시 표시, hero 사진 opacity 1, 디바이더 완성, 전구 opacity 1·animation none, calendar·closing 캔버스 `display: none`, hero에 정지 불빛 7개(2026-10-13 B안, 새로고침해도 같은 픽셀). 런타임에 설정을 되돌리면 새로고침 없이 hero 보케 재개 |
 | 복사·폼·공유 | 주소 복사 라벨 "✓ 복사했습니다", 방명록 빈 값 검증(`aria-invalid`), 카카오 폴백 문구 |
 | BGM | 탭 전 `bgm.mp3` 요청 없음. 탭 후 재생, volume 0.60, 링 표시. 다시 탭하면 정지 |
 | 콘솔 | 모든 시나리오에서 오류·예외 0건 |
@@ -551,3 +549,81 @@ wreath.svg 위쪽에 여백이 있어 sprig와 화환 잎 사이는 24보다 넓
 - `shots/share-{motion-360,motion-390,motion-430,reduced-390,nojs-390}.png`
 - `shots/closing-{motion-360,motion-390,motion-430,reduced-390,nojs-390}.png`
 - 원자료 `result-*.json`, 검사 스크립트 `check.mjs`(구조·여백·보케·복사), `draw.mjs`(sprig 시간 표본)
+
+## 15. 보케 B안: 작은 전구 불빛 (2026-10-13)
+
+사용자가 보케를 "디스플레이가 눌린 자국 같다"고 지적했고 개선안 중 B안 "작은 전구 불빛"을 골랐다(`00_user-input.md` 맨 아래 "보케를 작은 전구 불빛으로"). 모션 명세 1장(2026-10-12 보케 B안, 전면 교체)과 10장 확인값을 반영했다. 보케만 바꿨고, 다른 섹션·문구·모션은 그대로다.
+
+### 바꾼 범위
+
+| 파일 | 바꾼 것 |
+|---|---|
+| script.js | `/* ---------- Bokeh background (spec 1) ---------- */`부터 `/* ---------- Section reveal (spec 2-0) ---------- */` 바로 앞까지(이전 110-451행)를 명세 1-7 코드로 바꿨다(지금 110-520행). 이 블록은 명세 1-7 코드 블록, `scratchpad/bokeh-redesign/spec/bokeh-section.js`와 바이트 단위로 같다. 블록 밖은 한 줄도 바꾸지 않았다. 블록이 69행 길어져서 3장 표에서 보케가 아닌 행의 script.js 줄 번호(521행 뒤)는 69씩 밀렸다 |
+| index.html | 1-3 표대로 `data-bokeh-exclude`를 8개 붙였다. `"text"` 6개: `.hero__top`, `.hero__bottom`, calendar `.section-head[data-lights-trigger]`, `.calendar__when`, `.dday`, `.closing__thanks`. 값 없음 2개: `.scroll-cue`, `.cal`. wreath `<img>`의 속성은 `.monogram`으로 옮겼다. `.hero__photo`, `.lights`, closing `.sprig`는 그대로다 |
+| style.css | 바꾸지 않았다(아래) |
+
+### 블록 밖 코드를 그대로 둔 근거
+
+- `initBokeh()`가 돌려주는 객체의 키는 `pause`, `resume`, `openHeroGate`, `toStatic`, `toLive`, `stats`로 이전과 같다. 블록 밖에서 이 객체를 쓰는 곳은 `initHero`의 `bokeh?.openHeroGate()`(587행), lightbox의 `bokeh?.pause('lightbox')`·`resume('lightbox')`(1009·1033행), 부트의 `toStatic`·`toLive`(1586·1588행), `window.__bokeh`의 `BOKEH`·`stats()`(1593행)뿐이다.
+- 새 블록이 쓰는 파일 위쪽 헬퍼는 `rand`와 `isReduced`다. 옛 블록이 쓰던 `clamp`는 캐러셀·lightbox·BGM에서 계속 쓰므로 남는다. 옛 블록에만 있던 `BOKEH_STATIC`, `sprites` 객체, `maxPeak`는 블록 밖 참조가 0건이다.
+- motion-designer의 시험 사이트(`scratchpad/bokeh-redesign/site-spec/`)와 비교했다. 바꾼 script.js는 시험용 훅(`__bz`, `__bokehPerf`, `__bokehMem`, `__bokehSim`)을 뺀 것과 같고, index.html과 style.css는 같다.
+
+### CSS를 바꾸지 않은 이유
+
+`.bokeh-zone`(relative, isolate), 캔버스(absolute, inset 0, 100%, z-index 0, `--dur-zone-fade` opacity 페이드, `.is-intro`는 `--dur-bokeh-intro`), reduced에서 calendar·closing 캔버스 `display: none`이 명세 1-1·1-5·1-6 요구와 같다. 캔버스 픽셀 크기는 JS가 DPR로 맞추고 CSS 크기는 100%라서 DPR 상한 변경(1 → `min(dpr, 2)`)에도 CSS가 필요 없다. `data-bokeh-exclude`를 선택자로 쓰는 CSS 규칙도 없다.
+
+### 명세와 다르게 처리한 부분
+
+코드에는 없다. 확인 방법만 명세 10장과 조금 다르다.
+
+- 9번(성능): DevTools Performance 대신 CDP로 rAF를 감싸, 보케 캔버스에 그린 콜백 수와 콜백 시간을 쟀다(`Page.addScriptToEvaluateOnNewDocument`로 주입, script.js는 그대로).
+- 3번 탭 숨김: `document.hidden`·`visibilityState`를 덮어쓰고 `visibilitychange`를 보내 흉내 냈다(motion-designer `stop.mjs`와 같은 방식).
+- 3Hz 미만: 설정값 대조에 더해 그려진 픽셀로 쟀다. 매 프레임 캔버스에서 불빛마다 가장 진한 알파(= 밝기)를 따라가며, 0.1 이상 오르내림의 방향이 바뀐 시각을 셌다.
+
+### 확인 (headless Chrome CDP, 터치 에뮬레이션)
+
+로컬 서버 `python3 -m http.server 8786 --bind 127.0.0.1`. Chrome은 Bash 샌드박스 밖에서 실행했고, 끝난 뒤 서버와 Chrome을 모두 종료했다. 모든 실행에서 `*kakao*`, `*formspree*` 요청을 막았다.
+
+명세 10장 자동 확인 9항목. 화면은 390x664 DPR 3, 375x548 DPR 2, 360x700 DPR 3, 430x750 DPR 3, 1280x900 DPR 1(데스크톱)이다.
+
+| # | 항목 | 결과 |
+|---|---|---|
+| 1 | 구간별 10초, 250ms마다 `stats()` 40회 | 5개 화면 × 3구간 모두 구간 최대 생존 8, `living` 최대 8, `excludeHits` 0, `pairHits` 0, `running`은 그 구간 하나. `minExcludeGap` 최솟값 14.8(390x664 calendar) ~ 24.1px(390x664 closing), 모두 13.0 이상 |
+| 2 | 멈춤 위치(머리, 머리 + 200px, 1.3초 뒤) | gallery·venue·notice·account·guestbook에서 5개 화면 모두 `[]`. couple → `["calendar"]`, 공유하기 → `["closing"]`, 1280x900의 greeting + 200 → `["calendar"]`(1-4가 적은 의도한 동작). greeting 머리 `[]` |
+| 3 | 탭 숨김, lightbox | 5개 화면 모두 숨김 동안 `[]`이고 1.5초 동안 그린 프레임 0, 보이면 `["hero"]`. lightbox 열린 동안 `[]`, 프레임 0, 닫으면 `["hero"]`(scrollY 0 그대로) |
+| 4 | 캔버스 픽셀 크기 | 5개 화면 모두 `round(섹션 크기 × min(dpr, 2))`와 같다. 390x664: 780x1328 / 780x1684 / 780x986(합계 11.9MB). 375x548: 750x1096 / 750x1684 / 750x986(10.8MB). 360x700: 720x1400 / 720x1684 / 720x986(11.2MB). 430x750: 860x1500 / 860x1684 / 860x986(13.7MB). 1280x900: 480x900 / 480x842 / 480x493(4.1MB). 명세 1-8 표와 같다 |
+| 5 | reduced 로드 2.5초 뒤 | 390x664·375x548: `still` 7, `running` `[]`, `excludeHits` 0, `pairHits` 0, `minExcludeGap` 13.2 / 13.9px. calendar·closing 캔버스 `display: none`, hero 캔버스 opacity 1 |
+| 6 | reduced 두 번 로드(캐시 끔) | hero 캔버스 픽셀 서명이 같다(390x664 `10648:328324978`, 375x548 `8608:327588356`) |
+| 7 | reduce → no-preference → reduce(새로고침 없음) | no-preference에서 `running ["hero"]`, `still` 0. 다시 reduce에서 `still` 7, 서명이 6번과 같다. 실제 클릭으로 켠 BGM이 전환 내내 `paused: false`, `currentTime` 1.12 → 2.63 → 3.47초로 계속 늘었다 |
+| 8 | `BOKEH` 대조 | `__bokeh.config`가 명세 1-7 `BOKEH`와 JSON으로 같다. 없어진 키(`D_MIN`, `D_MAX`, `CENTER_D_MAX`, `EDGE_BIAS`, `EDGE_BAND`, `GLOW_RATIO`, `ALPHA`, `BREATH`, `DPR`), `BOKEH_STATIC`, `primary`, `ctx.filter`, `shadowBlur`가 script.js에 없다(grep) |
+| 9 | 성능, 구간마다 5초 | 390x664 DPR 3·375x548 DPR 2, CPU 1x와 4x throttle 모두 30.0fps(5초에 150프레임). 보케 rAF 콜백 최대 0.2~0.3ms(1x), 0.2~0.7ms(4x) |
+
+3Hz 미만: 390x664 DPR 1에서 구간마다 20초(표본 1,201개, 불빛 18~19개 추적). 밝기 반전 사이 최단 간격은 hero 1,133ms, calendar 800ms, closing 700ms였다. 가장 빠른 오르내림이 0.71Hz이고, 1초 안의 반전은 최대 2번(깜빡임 1회/초)이다. 반짝임 단독 최고치(0.42Hz)보다 빠른 값은 페이드(1.2초)와 반짝임이 겹치는 순간에서 나왔다. 3Hz보다 한참 낮다.
+
+회귀 확인: 360x780, 390x844, 430x932(모션), 390x844 reduced-motion, DPR 2.
+
+| 항목 | 결과 |
+|---|---|
+| 가로 스크롤 | 4회 모두 처음·끝·조작 뒤 scrollWidth = 화면 폭 |
+| 콘솔 | 4회 모두 오류·경고·예외 0건. 위 9항목 실행에서도 페이지 오류 0건이다. reduced 실행의 `getImageData` willReadFrequently 경고는 확인 스크립트가 캔버스를 읽어서 난 것이다. 처음 회귀 실행에서 복사 버튼을 `.click()`으로 눌렀을 때 `navigator.vibrate` 차단 안내가 1건 떴는데, 사용자 활성화가 없는 가짜 클릭 때문이었다. 실제 탭(`Input.dispatchTouchEvent`)으로 바꾸자 0건이다 |
+| reveal | 끝까지 스크롤한 뒤 숨은 reveal 0(4회) |
+| 갤러리 캐러셀·lightbox | 다음 두 번 → 3, 이전 → 2, `.g-status` "15장 중 2번째 사진, …". 2번을 열면 lightbox "2 / 15", 다음 → "3 / 15", 닫으면 캐러셀 3, 포커스는 "사진 3 / 15 …" 버튼. lightbox 동안 보케 `[]` |
+| 계좌 접기·복사 | 신랑측을 누르면 `[true, false]`, 복사(실제 탭) → 클립보드 "110-335-546640", 토스트·상태 "계좌번호가 복사되었습니다.", 버튼 `.is-copied`. 다시 누르면 접힘 |
+| 맺음 stroke-draw | `.is-drawn`, 선 9개 dashoffset 최대 0, 점 3개 opacity 1 |
+| 속성 수 | `[data-bokeh] [data-bokeh-exclude="text"]` 6개, 값 없는 것 6개(`.hero__photo`, `.scroll-cue`, `.lights`, `.cal`, `.sprig`, `.monogram`), wreath `<img>`에는 없음 |
+| 문법 | `node --check script.js` 통과. script.js·style.css에 한글 0줄 |
+
+### 알아 둘 점 (고치지 않음)
+
+- `stats().zones`는 구간이 꺼져 있어도 슬롯에 남은 불빛 수를 센다. reduced에서 `living` 0인데 `zones`가 hero 8, calendar 7, closing 8로 나온다. 명세 1-7 코드 그대로의 동작이고, 10장 확인값(1번은 모션 상태의 각 값 ≤ 8, 5번은 `still`·`running`)과 어긋나지 않는다.
+- 14장 "명세 문서와 어긋나는 곳"의 `share` 표기는 이번 명세 개정으로 `closing`이 되어 해소됐다.
+
+### 스크린샷 (scratchpad, 저장소에 넣지 않음)
+
+`/private/tmp/claude-501/-Users-inhyeok-Workspace-wedding-letter/cc1402ba-2bf0-4475-9039-e013d45393f0/scratchpad/fe-bokeh/`
+
+- `shots/{hero,calendar,closing}-f0~f3.png`: 390x844 DPR 2, 1초 간격 연속 프레임. `bokeh-redesign/shots/site-b/`와 같은 화면 크기·스크롤 위치
+- `shots/{hero,calendar,closing}-zoom0~1.png`: 불빛 3배 확대
+- `shots/hero-reduced.png`: reduced-motion 정지 불빛 7개
+- site-b 시험 화면과 비교: 흰 심과 금빛 후광, 크기, 개수(구간 7~8개), 글자 줄·hero 사진·장식·hero BGM 버튼과 떨어진 배치, 프레임 사이에 한두 개가 켜지고 꺼지는 모습이 같다. 불빛 자리는 무작위라 다르다
+- 원자료 `out-*.json`(1~4·9번), `reduced-*.json`(5~7번), `flicker-390x664.json`(3Hz), `regress-*.json`(회귀). 스크립트 `cdp.mjs`, `measure.mjs`, `reduced.mjs`, `flicker.mjs`, `regress.mjs`, `shoot.mjs`, `reduced-shot.mjs`
