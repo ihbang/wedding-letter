@@ -794,11 +794,17 @@ html:not(.js) .venue__map { display: none; }
   margin-top: 16px;
 }
 
-/* ===== 9. Guestbook ===== */
+/* ===== 9. Guestbook: form + public list (design 08, motion spec 4-8, 4-8-1) ===== */
+
+.guestbook [hidden] { display: none; } /* .btn and .gb-form set display, which beats the UA [hidden] rule */
 
 .guestbook__message {
   margin-top: 20px;
   font: 400 15px/1.95 var(--font-ko-serif);
+}
+.gb-noscript {
+  color: var(--color-muted);
+  font: 400 14px/1.6 var(--font-ko-sans);
 }
 
 .gb-form {
@@ -835,6 +841,19 @@ html:not(.js) .venue__map { display: none; }
   min-height: 140px;
   resize: none; /* the resize grip would sit on the 16px rounded corner; 500 chars scroll inside */
 }
+.gb-help {
+  margin-top: 8px;
+  color: var(--color-muted);
+  font: 400 14px/1.6 var(--font-ko-sans);
+}
+/* Off screen rather than display: none, which simple bots skip; .page clips the overflow. */
+.gb-trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
 .gb-submit { width: 100%; }
 .gb-status {
   min-height: 1.6em;
@@ -845,9 +864,115 @@ html:not(.js) .venue__map { display: none; }
 }
 .gb-status.is-shown { opacity: 1; }
 .guestbook__note {
-  margin-top: 16px;
   color: var(--color-muted);
   font: 400 14px/1.6 var(--font-ko-sans);
+  text-align: center;
+}
+
+/* List: a ruled list like the venue routes, not cards (design 6-3) */
+.gb-board { margin-top: 32px; }
+.gb-list-title {
+  color: var(--color-text);
+  font: 700 17px/1.6 var(--font-ko-serif);
+}
+.gb-list-title:focus { outline: none; } /* focused only by script, as the fallback target after a delete or during a retry */
+.gb-list-state { margin-top: 20px; }
+.gb-list-state__text,
+.gb-more-status {
+  color: var(--color-muted);
+  font: 400 14px/1.6 var(--font-ko-sans);
+}
+.gb-list-retry,
+.gb-more {
+  width: 100%;
+  margin-top: 16px;
+}
+.gb-more-status:not(:empty) { margin-top: 8px; }
+.gb-list {
+  margin-top: 20px;
+  border-top: 1px solid var(--color-line);
+  text-align: left;
+}
+.gb-list:empty { display: none; }
+.gb-item {
+  position: relative;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-line);
+}
+.gb-item__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+  padding-right: 40px; /* room for the delete button */
+}
+.gb-item__name {
+  min-width: 0;
+  color: var(--color-sage-deep);
+  font: 600 14px/1.6 var(--font-ko-sans);
+  overflow-wrap: anywhere;
+}
+.gb-item__date {
+  color: var(--color-muted);
+  font: 400 14px/1.6 var(--font-ko-sans);
+  white-space: nowrap;
+}
+.gb-item__message {
+  margin-top: 4px;
+  font: 400 14px/1.7 var(--font-ko-sans);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+/* Text button on the first line, its 44 x 44 hit area centred on that line; the label ends at the column edge. */
+.gb-item__delete {
+  position: absolute;
+  top: 5px;
+  right: -10px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  font: 500 14px/1.2 var(--font-ko-sans);
+  text-decoration: underline transparent;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--dur-press) var(--ease-standard),
+    text-decoration-color var(--dur-fast) var(--ease-standard);
+}
+.gb-item__delete:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  .gb-item__delete:hover { text-decoration-color: var(--color-accent); }
+}
+.gb-del { margin-top: 16px; }
+.gb-del__error {
+  margin-top: 8px;
+  font: 400 14px/1.6 var(--font-ko-sans);
+}
+.gb-del__error:empty { display: none; }
+.gb-del__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.gb-del__actions .btn {
+  flex: 1 1 0;
+  padding: 0 12px;
+}
+
+/* Motion spec 4-8-1: opacity only, no height animation; tokens are 0ms under reduced motion. */
+@keyframes gb-in { from { opacity: 0; } }
+.gb-item.is-new,
+.gb-del:not([hidden]) { animation: gb-in var(--dur-modal) var(--ease-out); }
+.gb-list-state:not([hidden]),
+.gb-del__error:not(:empty),
+.gb-more-status:not(:empty) { animation: gb-in var(--dur-fast) var(--ease-out); }
+.gb-item.is-leaving {
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-in);
 }
 
 /* ===== 10. Share ===== */
@@ -1167,7 +1292,8 @@ html:not(.js) .venue__map { display: none; }
 
   /* Press feedback without scale */
   .btn:active,
-  .g-nav:not([aria-disabled="true"]):active { transform: none; opacity: 0.85; }
+  .g-nav:not([aria-disabled="true"]):active,
+  .gb-item__delete:active { transform: none; opacity: 0.85; }
 
   /* Toast appears and leaves in place */
   .toast,

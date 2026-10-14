@@ -20,6 +20,9 @@
   <meta name="twitter:card" content="summary_large_image">
   <!-- Kakao JavaScript key, read by script.js for the Kakao share button and the venue map. -->
   <meta name="kakao-js-key" content="5c503e2afc05ed84b3c650f91f8c7bc3">
+  <!-- Guestbook web app (apps-script/guestbook.gs), read by script.js. A new deployment changes this URL;
+       "Manage deployments > Edit > New version" keeps it. -->
+  <meta name="guestbook-endpoint" content="https://script.google.com/macros/s/AKfycbxbY_psN3qRlm1c9Ztek-CN-DQlxrWtAn1pYQ-8w_7Z2HslM-RnwXdAB8Gv6egkDCmV/exec">
 
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
   <link rel="preload" as="image" href="images/photos/hero.jpg" fetchpriority="high">
@@ -340,15 +343,17 @@
       </details>
     </section>
 
-    <!-- 9. Guestbook -->
+    <!-- 9. Guestbook: the web app in <meta name="guestbook-endpoint"> saves entries and lists them publicly.
+         The form and the list stay hidden until script.js wires them up (the web app answers JSON only,
+         so there is no plain form fallback); without JS only the noscript line shows. -->
     <section class="section guestbook" id="guestbook" aria-labelledby="guestbook-title">
       <div class="section-head reveal">
         <p class="eyebrow" lang="en">GUESTBOOK</p>
         <h2 class="section-title" id="guestbook-title">방명록</h2>
         <p class="guestbook__message">축하의 한마디를 남겨 주세요.<br>한 줄씩 소중히 읽겠습니다.</p>
       </div>
-      <form class="gb-form reveal" action="https://formspree.io/f/mgaoypya" method="POST" novalidate>
-        <input type="hidden" name="_subject" value="[청첩장] 인혁 · 유민 방명록">
+      <noscript><p class="gb-noscript">JavaScript를 켜시면 방명록을 이용하실 수 있습니다.</p></noscript>
+      <form class="gb-form reveal" novalidate hidden>
         <div class="gb-field">
           <label class="gb-label" for="gb-name">성함</label>
           <input class="gb-input" id="gb-name" type="text" name="name" autocomplete="name" maxlength="40" required>
@@ -357,10 +362,33 @@
           <label class="gb-label" for="gb-message">남기실 말씀</label>
           <textarea class="gb-input gb-textarea" id="gb-message" name="message" rows="5" maxlength="500" required placeholder="두 사람에게 전하고 싶은 이야기를 적어 주세요."></textarea>
         </div>
-        <button type="submit" class="btn btn--primary gb-submit">남기기</button>
+        <div class="gb-field">
+          <label class="gb-label" for="gb-password">비밀번호</label>
+          <input class="gb-input" id="gb-password" type="password" name="password" autocomplete="new-password" minlength="4" maxlength="20" required aria-describedby="gb-password-help">
+          <p class="gb-help" id="gb-password-help">글을 삭제할 때 필요합니다. 4~20자로 정해 주세요.</p>
+        </div>
+        <!-- Trap for bots: off screen and out of the tab order, so people leave it empty. -->
+        <div class="gb-trap" aria-hidden="true">
+          <label for="gb-extra">이 칸은 비워 두세요.</label>
+          <input id="gb-extra" type="text" name="gb_extra" tabindex="-1" autocomplete="off">
+        </div>
+        <!-- Right above the button, so guests read that entries are public before they send. -->
+        <p class="guestbook__note" id="gb-note">남겨 주신 성함과 말씀은<br>이 페이지에 공개됩니다.<br>정하신 비밀번호로<br>직접 삭제하실 수 있습니다.</p>
+        <button type="submit" class="btn btn--primary gb-submit" aria-describedby="gb-note">남기기</button>
         <p class="gb-status" role="status" aria-live="polite"></p>
       </form>
-      <p class="guestbook__note reveal">남겨 주신 글은 두 사람에게만 전해집니다.</p>
+      <div class="gb-board" hidden>
+        <div class="gb-board__head reveal">
+          <h3 class="gb-list-title" id="gb-list-title" tabindex="-1">남겨 주신 말씀</h3>
+          <div class="gb-list-state" hidden>
+            <p class="gb-list-state__text"></p>
+            <button type="button" class="btn btn--secondary gb-list-retry" hidden>다시 불러오기</button>
+          </div>
+        </div>
+        <ul class="gb-list" aria-labelledby="gb-list-title"></ul>
+        <button type="button" class="btn btn--secondary gb-more" hidden>말씀 더 보기</button>
+        <p class="gb-more-status" role="status" aria-live="polite"></p>
+      </div>
     </section>
 
     <!-- 10. Share -->
@@ -443,7 +471,7 @@
   <div class="toast" aria-hidden="true"><svg class="toast__check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="toast__text"></span></div>
   <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
 
-  <!-- Runtime UI copy read by script.js ({n} and {total} are filled in at runtime). -->
+  <!-- Runtime UI copy read by script.js ({n}, {total}, {name}, {y}, {m} and {d} are filled in at runtime). -->
   <template id="ui-text">
     <span data-key="copy-done-account">계좌번호가 복사되었습니다.</span>
     <span data-key="copy-done-address">주소를 복사했습니다.</span>
@@ -459,9 +487,30 @@
     <span data-key="lb-counter">{total}장 중 {n}번째 사진</span>
     <span data-key="gb-name-empty">성함을 적어 주세요.</span>
     <span data-key="gb-message-empty">남기실 말씀을 적어 주세요.</span>
-    <span data-key="gb-sending">보내는 중…</span>
-    <span data-key="gb-success">소중한 말씀이 잘 전달되었습니다. 감사합니다.</span>
-    <span data-key="gb-failed">말씀을 보내지 못했습니다. 잠시 후 다시 눌러 주세요.</span>
+    <span data-key="gb-password-empty">비밀번호를 정해 주세요.</span>
+    <span data-key="gb-password-short">비밀번호는 4자 이상으로 정해 주세요.</span>
+    <span data-key="gb-sending">남기는 중…</span>
+    <span data-key="gb-success">소중한 말씀이 방명록에 남았습니다. 감사합니다.</span>
+    <span data-key="gb-failed">말씀을 남기지 못했습니다. 잠시 후 다시 눌러 주세요.</span>
+    <span data-key="gb-error-rate-limited">지금 말씀을 남기시는 분이 많습니다. 잠시 후 다시 눌러 주세요.</span>
+    <span data-key="gb-error-duplicate">같은 말씀을 이미 남기셨습니다.</span>
+    <span data-key="gb-error-closed">방명록은 이제 새 글을 받지 않습니다. 마음 써 주셔서 감사합니다.</span>
+    <span data-key="gb-list-loading">말씀을 불러오는 중입니다.</span>
+    <span data-key="gb-list-empty">아직 남겨진 말씀이 없습니다.<br>가장 먼저 축하를 전해 주세요.</span>
+    <span data-key="gb-list-failed">말씀을 불러오지 못했습니다.</span>
+    <span data-key="gb-date-sr">{y}년 {m}월 {d}일</span>
+    <span data-key="gb-delete">삭제</span>
+    <span data-key="gb-delete-aria">{name}님의 글 삭제</span>
+    <span data-key="gb-delete-password-label">남기실 때 정하신 비밀번호</span>
+    <span data-key="gb-delete-confirm">삭제하기</span>
+    <span data-key="gb-delete-cancel">취소</span>
+    <span data-key="gb-deleting">삭제하는 중…</span>
+    <span data-key="gb-delete-success">글을 삭제했습니다.</span>
+    <span data-key="gb-delete-password-empty">비밀번호를 적어 주세요.</span>
+    <span data-key="gb-error-wrong-password">비밀번호가 맞지 않습니다. 다시 확인해 주세요.</span>
+    <span data-key="gb-error-too-many-attempts">비밀번호가 여러 번 맞지 않았습니다. 10분 뒤에 다시 시도해 주세요.</span>
+    <span data-key="gb-error-not-found">이미 삭제된 글입니다.</span>
+    <span data-key="gb-delete-failed">글을 삭제하지 못했습니다. 잠시 후 다시 눌러 주세요.</span>
   </template>
 </body>
 </html>

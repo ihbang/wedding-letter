@@ -222,6 +222,7 @@
 | T13 표 제목 | Cormorant Garamond | 500 | 16 / 20 | text | 0.16em, lining. 맺음 날짜 '2027.01.03'도 이 모양(2026-10-13 7차 QA: 컨셉 시트 `table_title`과 맞춤) | `.cal__caption-en`, `.closing__date` |
 | T14 입력 | Pretendard | 400 | 16 / 1.5 | text, placeholder muted | iOS 확대 방지 | `.gb-input` |
 | T15 맺음 이름 | Cormorant Garamond | 400 italic | 22 / 1.4 | text | 'Inhyeok & Yumin'. 한글 이탤릭 명조가 없어 영문 이탤릭(사용자 결정). 2026-10-13 7차 QA: 컨셉 시트 `closing_names`와 맞춤 | `.closing__names` |
+| T16 섹션 안 한글 소제목 | Gowun Batang | 700 | 17 / 1.6 | text | 섹션 제목(T2 20)보다 한 단계 낮춘다. 방명록 목록 제목 "남겨 주신 말씀"(2026-10-13 방명록 공개, 8차 QA W14) | `.gb-list-title` |
 | 스크립트 | Allura | 400 | 3곳 | accent | 컨셉 시트 그대로(hero `&`, 모노그램 `&`, Thank you) | |
 
 eyebrow 모양(T1)은 섹션 머리에서만 쓴다. 섹션 안에 소제목이 필요하면 T13처럼 text 색으로 한 단계 낮춘다.

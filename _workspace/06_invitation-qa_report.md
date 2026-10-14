@@ -13,6 +13,8 @@
 > 5차 QA(오시는 길 카카오맵, 2026-10-12) 결과는 문서 맨 끝 "5차 QA" 절에 있다: PASS 38 / FAIL 0 / 새 WARNING 0. 검증 중 찾은 데스크톱 더블클릭 글자 선택 1건은 `style.css`에서 직접 고쳤다. W5는 해소됐고 W6·W7은 그대로다.
 >
 > 7차 QA(인사말·섹션 분리·보케 B안, 2026-10-13) 결과는 문서 맨 끝 "7차 QA" 절에 있다: PASS 52 / FAIL 0 / WARNING 3(새로 생긴 W11·W12·W13, 모두 문서). W6·W8·W9·W10은 해소됐고 W7은 그대로다.
+>
+> 8차 QA(방명록 공개 목록, 2026-10-13) 결과는 문서 맨 끝 "8차 QA" 절에 있다: PASS 50 / FAIL 0 / WARNING 2(새로 생긴 W14·W15, 모두 문서). 검증 중 찾은 화면 낭독기 알림 결함 1건은 `script.js`에서 직접 고쳤다. W11·W12·W13은 해소됐고 W7은 그대로다.
 
 ## 요약
 
@@ -1028,3 +1030,207 @@ R8 단계 밖 값(섹션 안 margin·padding·gap 전체를 뽑아 단계 값과
 | calendar 보케 | `shots/cur/calendar.png` |
 | 맺음 날짜 lining / 기본 숫자, 이름 이탤릭 | `shots/closing-date-lining.png`, `shots/closing-date-default.png`, `shots/closing-names.png` |
 | 원자료 | `b7-*.json`(1~4·9번), `r7-*.json`(5~7번), `f7-390x664.json`(3Hz), `t7-*.json`(reveal 전환), `l7.json`(공유하기·맺음·인사말), `x7.json`(JS 꺼짐·reduced·지도 자리), `static7.out`, `compare7.out`, `cur/`(회귀) |
+
+## 8차 QA (방명록 공개 목록) — 2026-10-13
+
+7차 뒤 바뀐 것은 방명록 하나다. Formspree 전송 폼을 Google 시트 + Apps Script 웹 앱 기반 공개 목록으로 바꿨다(작업 트리, 미커밋). 웹 앱 코드는 `apps-script/guestbook.gs`(새 파일, 이미 배포됨), 페이지 쪽은 `index.html`(`<meta name="guestbook-endpoint">`, 방명록 섹션, `ui-text` 방명록 키 26개), `style.css` 9장 블록, `script.js`의 `GB` 상수와 `guestbookRequest`·`initGuestbook`이다. 기준 문서는 설계 `08_guestbook-list-design.md`, 결정 기록 `00_user-input.md` 맨 아래 절, 카피 시트 `## guestbook`, 모션 명세 2-6·4-8-1, frontend 요약 `05` 16장(오케스트레이터 결정 6가지), 감사 문서 R1~R9다.
+
+### 요약
+
+- 전체 결과: **PASS** (FAIL 0)
+- 8차 판정 52항목: PASS 50 / FAIL 0 / WARNING 2 (새 W14·W15, 둘 다 문서)
+- **검증 중 찾은 FAIL 수준 결함 1건은 직접 고쳤다.** 삭제 펼침에서 비밀번호 칸에 포커스를 둔 채 Enter로 보내면 오류 문구(`wrong_password`, `too_many_attempts`, 빈 칸, 4자 미만, 그 밖의 실패)가 어떤 live region에도 들어가지 않았다. 포커스가 이미 그 칸에 있어 `input.focus()`는 아무 일도 하지 않고, 이미 포커스된 칸의 `aria-describedby` 내용이 바뀐 것은 화면 낭독기가 읽지 않는다. 휴대폰 키보드의 "이동/완료" 키가 이 경로다. 고친 뒤 재시험 PASS(아래 "8차 직접 수정")
+- **`guestbook.gs`의 새 필터는 의도대로 동작한다.** id가 빈 행, 날짜가 빈 행, 날짜로 읽히지 않는 글자 행이 섞여 있어도 목록이 성공하고 그 행만 빠진다(API와 페이지 둘 다). 숫자 id 행은 문자열 id로 나와 페이지에 그려진다. `05` 16장 "guestbook.gs에서 찾은 점" 1·2는 이 필터로 해소됐다. 고쳐야 할 결함은 없고 참고 3건을 아래에 적었다(G1~G3)
+- 경계면: 카피 시트 ↔ `index.html` 39/39 글자 단위 일치. 서버 `error` 값의 모든 경로가 맞는 문구로 간다. 하객 글은 `textContent`·`setAttribute`로만 들어가고 `script.js`에 `innerHTML`류 0건. 첫 화면 웹 앱 요청 0건, 섹션 접근 시 목록 1건(모의 사이트 3폭 + 실제 `index.html`)
+- 기존 WARNING: **W11·W12·W13 해소**, W7 그대로
+- 실제 웹 앱 URL(`script.google.com/macros/s/AKfycbxbY…/exec`)로 나간 요청은 0건이다. 실제 `index.html`을 연 시험에서는 Google 요청을 CDP `Fetch`에서 멈춘 뒤 `failRequest`로 실패시켰고(멈춘 요청 1건 = 목록 GET), 나머지 시험은 모두 모의 사이트에서 Google 주소를 막고 돌렸다
+- 검증 방법
+  - 정적: `qa8/copy_check.py`(카피 시트 `## guestbook` ↔ `ui-text`·마크업 글자 단위, 키 사용 대조), grep(`innerHTML`류, `formspree`, `http://`, 레이아웃 속성 transition, 코드 파일 한글 문자 수), `node --check script.js`, 설계 4장 API ↔ `guestbook.gs` ↔ `guestbookRequest`·`initGuestbook` 코드 대조
+  - API: `qa8/api.mjs` 46항목. frontend 모의 서버(`gb-mock/server.mjs`, `guestbook.gs`를 `node:vm`으로 그대로 실행)에 HTTP로 직접 보냈다. 모의 서버의 시트 대역(빈 칸 `''`, 앞 작은따옴표 제거, Date 저장)과 302 → 다른 출처 echo, OPTIONS 거부가 Apps Script 모양과 맞는지 코드로 먼저 확인했다
+  - 브라우저: `qa8/ui.mjs` 9개 시나리오 126항목(headless Chrome CDP, DPR 2, 터치 에뮬레이션, 모의 사이트 `:8792`, 실제 `index.html`은 `python3 -m http.server 8793`). frontend의 `gb-test.mjs`를 믿지 않고 따로 짰다. 키보드는 `Input.dispatchKeyEvent`로 실제 키를 보냈고, 접근성 이름·설명·상태는 `Accessibility.getPartialAXTree`로, 알림은 페이지의 모든 `role=status`·`aria-live` 요소에 MutationObserver를 붙여 기록했다. 직접 수정 뒤 frontend `gb-test.mjs all`도 다시 돌려 120/120이었다
+  - 회귀: 7차 드라이버(`qa.mjs` 12개 시나리오 + `firstscreen` + `widths 1280x900`, `account.mjs` motion·reduced × 4폭, `carousel-check.mjs`)의 사본(`qa8/r7/`, 막을 주소에 `*script.google.com*`, `*googleusercontent.com*`을 더함)을 모의 사이트(글 0건)에 돌려 HEAD 결과(frontend가 같은 드라이버로 만든 `gb-regress/base/`)와 비교했다(`qa8/compare8.py`)
+  - Chrome과 서버는 Bash 샌드박스 밖에서 실행했고, 끝난 뒤 모의 서버(8790·8791·8792), 정적 서버(8793), QA용 Chrome을 모두 종료했다. 스크립트·출력·스크린샷은 scratchpad `qa8/`에만 있다
+
+### 8-1. 카피·정보 정합성
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 1 | 카피 시트 ↔ `index.html` | `## guestbook`의 키 붙은 문구 33개 + 키 없는 폼 문구 6개(성함, 남기실 말씀, 남기기, placeholder, 섹션 문구 2행 등)가 글자 단위로 같다(39/39). 여러 줄 문구(`gb-note` 4행, `gb-list-empty` 2행)는 `<br>` 위치까지 같다 | PASS |
+| 2 | 키 사용 | `ui-text`의 방명록 키 26개를 `script.js`가 모두 쓰고, `script.js`가 찾는 방명록 키 중 템플릿에 없는 것 0. 카피 시트에 없는 템플릿 키 0 | PASS |
+| 3 | Formspree 정리·주소 | 세 파일에 `formspree` 0건, `_subject` 없음, `http://` 리소스 0. `guestbook-endpoint`는 `https://script.google.com/macros/s/…/exec` 형식 | PASS |
+| 4 | 공개 안내 위치 | 남기기 버튼 바로 위, 버튼의 `aria-describedby="gb-note"`(오케스트레이터 결정, `05` 16장 결정 2). 비밀번호 도움말 → 안내 16, 안내 → 버튼 16(R8). 설계 6-1의 "폼 바로 아래"와 다른 점은 문서 표기 문제로 W15에 넣었다 | PASS |
+
+### 8-2. API 경계면 (`guestbook.gs` ↔ `script.js`)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 5 | 요청 모양 | 목록 `GET ?action=list&limit=20&cursor=N`, 새 글·삭제 `POST` `Content-Type: text/plain;charset=utf-8` + JSON 문자열, `credentials: 'omit'`, `cache: 'no-store'`, 15초 `AbortController`. 모의 서버는 OPTIONS를 CORS 헤더 없이 거부하는데 모든 시나리오가 통과했으므로 사전 요청이 없다. 결과 판단은 본문 `ok`·`error`만 쓴다(Apps Script는 늘 200) | PASS |
+| 6 | 응답 필드 | 목록 `entries[]`와 새 글 `entry`의 키가 `createdAt, id, message, name`뿐이다(`salt`·`passwordHash` 없음). `nextCursor`는 정수 또는 `null`이고 `setNextCursor`가 그대로 받는다 | PASS |
+| 7 | 서버 `error` → 화면 문구 | 새 글: `invalid`(제어 문자만 있는 성함 → 서버에서 빈 값), `server`, HTML 오류 페이지, 연결 끊김, 시트 예외 → `gb-failed` / `rate_limited` → `gb-error-rate-limited` / `duplicate` → `gb-error-duplicate` + 첫 페이지 다시 불러옴 / `closed` → `gb-error-closed`. 모두 입력값 유지. 삭제: `wrong_password` → 문구·칸 비움·`aria-invalid` / 6번째 시도 `too_many_attempts` → 문구 / `not_found`(두 사람이 시트에서 숨김) → 항목 제거 + "이미 삭제된 글입니다." 알림 / `server`·HTML·연결 끊김 → `gb-delete-failed`, 비밀번호 유지. 목록: `server` → `gb-list-failed` + 다시 불러오기, 더보기 실패 → 버튼 아래 `role=status`. `unknown_action`은 코드상 "그 밖의 실패"로 간다 | PASS |
+| 8 | 새 필터 (API) | 빈 id·빈 날짜·"not a date" 행이 섞여도 `ok: true`, 세 행만 빠짐. 숫자 id 12345 → `"12345"`. `hidden` 행 제외. 최신순. 해시 없는 행(Formspree에서 옮긴 글 가정) 삭제 → `wrong_password` 5번 → `too_many_attempts` | PASS |
+| 9 | 새 필터 (페이지) | 같은 손 입력 행 2개를 넣고 목록 실패 → 다시 불러오기: 시드 글 3건만 그려지고 콘솔 오류 0 | PASS |
+| 10 | 저장 정리·검사 | CRLF → LF, 빈 줄 3개 이상 → 2개, 앞뒤 공백 제거. `=HYPERLINK(…)`·`+1-2`가 글자 그대로 저장(작은따옴표 접두). 성함 40/41, 말씀 500/501, 비밀번호 3/21 경계. 함정 칸·`elapsed` 2999·없음·NaN → `ok` + `entry: null`, 저장·메일 0. 메일 실패해도 저장 성공. 1분 21번째 → `rate_limited`. `limit` 100 → 50, `cursor` -5 → 0, 끝 너머 → 빈 페이지 `null`. 잘못된 JSON → `invalid`, `null` 본문 → `server` | PASS |
+
+### 8-3. 동작 (모의 서버 + headless Chrome)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 11 | 지연 로딩 (모의 사이트) | 360x640·390x844·430x932: 첫 화면 2.5초 동안 웹 앱 요청 0. 200px씩 내리면 첫 목록 요청은 섹션 위끝이 화면 높이의 1.72·1.81·1.80배 아래일 때(rootMargin 한 화면, 200px 단위 표본). 끝까지 내렸다 맨 위로 올라가 다시 섹션으로 와도 목록 요청은 정확히 1건(`cursor=0`). 콘솔 0 | PASS |
+| 12 | 지연 로딩 (실제 `index.html`) | 390x844, meta는 실제 URL 그대로. 첫 화면 2.5초 동안 Google 요청 0. 섹션으로 가면 멈춘 요청 정확히 1건, `GET {meta}?action=list&limit=20&cursor=0`, POST 0. 실패로 돌려준 결과 "말씀을 불러오지 못했습니다." + 다시 불러오기 | PASS |
+| 13 | 새 글 | 폼이 보이고 3초 뒤 제출 → `gb-success`, 입력칸 비움, 응답 `entry`가 맨 위, 포커스는 남기기 그대로(모션 명세 4-8-1) | PASS |
+| 14 | 더보기·커서 보정 | 45건: 첫 20건 → 내 글 1건(+1), Guest 04 삭제(-1), 그사이 다른 하객 글 1건 → 더보기 두 번. 보낸 커서 0, 20, 40. 최종 목록이 서버 목록에서 "다른 하객 글"만 뺀 것과 순서까지 같다(빠짐·중복 0, 겹친 Guest 20은 id로 버림). 마지막 페이지에서 더보기 숨김. 요청 중 `disabled` + "말씀을 불러오는 중입니다." | PASS |
+| 15 | XSS | 다른 하객 글 `<img src=x onerror=alert(1)>` / `</p><script>…</script><svg/onload=…>`, 폼으로 `"><b>bold</b>` / `<iframe src="javascript:…">{name} $& $1`: 목록 안 img·script·svg·iframe·b 0개, 대화상자 0, `document.title` 그대로, 글자 그대로 표시. 삭제 버튼 `aria-label`도 원문 그대로이고 `{name}`·`$&`가 치환되지 않는다(`fillVars`가 함수 치환). `script.js`에 `innerHTML`·`insertAdjacentHTML`·`outerHTML`·`document.write` 0건 | PASS |
+| 16 | 함정 칸 | `website`를 채워 제출: 겉으로 `gb-success`, 목록에 없음, 시트 0행 | PASS |
+
+### 8-4. 키보드·화면 낭독기
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 17 | 접근성 이름 | 삭제 버튼: role button, 이름 "Guest 01님의 글 삭제"(보이는 "삭제" 포함), collapsed. 목록: role list, 이름 "남겨 주신 말씀". h3 "남겨 주신 말씀". 날짜: 보이는 "2026. 10. 13."은 `aria-hidden`, 낭독 문장 "2026년 10월 13일". 펼침 칸 이름 "남기실 때 정하신 비밀번호" | PASS |
+| 18 | 펼침 열기 | 목록 제목에서 Tab → 첫 "삭제" 버튼(항목 `li`는 Tab 순서에 없음). Enter → `aria-expanded="true"`, `aria-controls` = 펼침 id, 포커스 비밀번호 칸 | PASS |
+| 19 | Tab 순서 | 비밀번호 칸 → 취소 → 삭제하기 → 다음 항목 "삭제" | PASS |
+| 20 | 펼침 닫기 | Esc, 취소, "삭제" 다시 누름 → 즉시 `hidden`, `aria-expanded="false"`, 포커스는 그 항목의 "삭제". 다른 항목을 열면 앞 펼침이 닫힌다(한 번에 하나) | PASS |
+| 21 | 삭제 성공 뒤 포커스·알림 | 다음 항목 `li`로 포커스, `#live-status`에 "글을 삭제했습니다.", 토스트 체크 아이콘. 목록 마지막 항목 → 포커스 목록 제목. 모두 지우면 `gb-list-empty` + 제목 포커스 | PASS |
+| 22 | 더보기 뒤 포커스 | 키보드 Enter → 새로 붙은 첫 항목(Guest 21, 다음 Guest 40)으로 포커스, `:focus-visible` 윤곽선 보임. 실패하면 포커스는 더보기 버튼에 남음 | PASS |
+| 23 | 알림 (`role=status`) | 새 글 결과는 `.gb-status`, 더보기 실패는 `.gb-more-status`, 삭제 성공·`not_found`는 `#live-status`로 알린다. 삭제 펼침 오류는 **처음에 Enter로 보낸 경우 알림 0건이었다**(위 요약). 직접 고친 뒤 Enter 경로는 `#live-status`로 한 번 알리고, "삭제하기" 버튼 경로는 전처럼 칸으로 포커스가 돌아와 설명으로 읽히며 live region에는 넣지 않아 두 번 읽히지 않는다. 칸의 접근성 설명 = 오류 문구, `invalid` true | PASS (직접 수정 후) |
+
+### 8-5. 모션 명세 4-8-1·reduced-motion
+
+| # | 항목 | 명세 | 구현(계산값) | 결과 |
+|---|------|------|------|------|
+| 24 | 새 항목·첫 페이지 | `opacity 0→1` 250ms `--ease-out`, 순차 등장 없음 | `.gb-item.is-new` `gb-in 0.25s cubic-bezier(0.33, 1, 0.68, 1)`, 20건 동시 | PASS |
+| 25 | 삭제 펼침 열기·닫기 | 열기 250ms 페이드, 닫기 즉시 | `.gb-del:not([hidden])` `gb-in 0.25s`, 닫기는 `hidden`만 | PASS |
+| 26 | 오류·상태 문구 | 200ms `--dur-fast`, 사라질 때 즉시 | `.gb-del__error:not(:empty)`·`.gb-list-state:not([hidden])` `gb-in 0.2s`(같은 문구를 다시 보여도 다시 페이드) | PASS |
+| 27 | 삭제 퇴장 | `inert` + `opacity 1→0` 200ms `--ease-in`, 아래 항목은 한 번에 | `.is-leaving` `opacity 0.2s cubic-bezier(0.32, 0, 0.67, 0)`, `token('--dur-fast')` 뒤 제거 | PASS |
+| 28 | 레이아웃 속성·무한 루프 | 높이·위치 애니메이션 없음, 무한 루프 없음 | 9장 블록의 transition은 opacity·transform·text-decoration-color뿐. 방명록 안 무한 애니메이션 0(모션·reduced 둘 다) | PASS |
+| 29 | reveal 그룹 (2-6) | ① 머리 ② 폼 + 공개 안내 ③ 목록 머리, `ul`·더보기·항목은 대상 아님 | `.section-head`, `.gb-form`, `.gb-board__head` 3개. `hidden`으로 시작해도 풀린 뒤 보인다(390, 모션) | PASS |
+| 30 | reduced | 모두 즉시 | 항목·펼침·오류·상태 0s, 퇴장 0s(응답 뒤 63ms 안에 제거), reveal 3그룹 opacity 1 | PASS |
+
+### 8-6. 반응형·JS 꺼짐
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 31 | 가로 스크롤·잘림 | 360/375/390/430에 40자 성함(한글, 영문 각 1), 공백 없는 500자 말씀, 긴 URL + 빈 줄, 펼친 삭제 폼과 오류 문구: `scrollWidth` = 화면 폭, 방명록 안 화면 밖 요소 0(함정 칸 제외), 콘솔 0 | PASS |
+| 32 | 삭제 버튼 자리 | 모든 폭에서 44.2 x 44, 글자 끝 = 컬럼 오른쪽 끝(360: 336), 성함과 겹침 없음, 목록 시작 x 24 = 폼 시작 | PASS |
+| 33 | JS 꺼짐 | 360/390/430: 폼·목록 상자 없음(`hidden`), `<noscript>` 안내 표시(T8 muted 14/1.6, 가운데, 섹션 머리 아래 40), 웹 앱 요청 0, 가로 스크롤 없음 | PASS |
+
+### 8-7. 디자인 통일 규칙 R1~R9
+
+| # | 규칙 | 측정 | 결과 |
+|---|------|------|------|
+| 34 | R1·R2·R3 | 섹션 바탕 background, 카드 없음. 목록은 교통편과 같은 구분선 목록(위 선 + 항목마다 아래 선), 펼침도 카드 없음. 폼·목록 왼쪽(x 24), 공개 안내·상태 문구·noscript 가운데 | PASS |
+| 35 | R4 텍스트 역할 | 성함 T7(600 14/1.6 sage_deep), 날짜 T8(muted), 말씀 T6(400 14/1.7 text, `pre-line`), 도움말·상태·noscript T8, 입력 T14(16px), 버튼 T9 | PASS |
+| 36 | R4 목록 제목 h3 | Gowun Batang 700 17px/1.6 text, 가운데(`style.css:874-877`). R4는 "섹션 안 소제목은 T13처럼 text 색으로 한 단계 낮춘다"고만 적고 표에 해당 역할 행이 없다. 화면에서는 섹션 제목(T2 20px)보다 한 단계 아래로 읽히고 T4(400 17)와 굵기로 구별된다 | WARNING (W14) |
+| 37 | R5·R6·R7 | 라벨 sage_deep 600. 다시 불러오기·더보기 secondary 컬럼 폭 44. 펼침 취소·삭제하기 secondary 2분할(gap 8). primary는 남기기 하나. 입력 모서리 16. 삭제는 설계 6-3대로 텍스트 버튼(accent 500 14, 44x44) | PASS |
+| 38 | R8 여백 | 폼 → 목록 32, 제목 → 상태 문구·목록 20, 버튼 위 16, 항목 안 위아래 16, 성함 → 말씀 4(붙은 두 줄), 펼침 16 / 라벨 → 칸 8 / 오류 8 / 버튼 줄 16, 도움말 8, 비밀번호 → 안내 → 버튼 16·16 | PASS |
+| 39 | R9 대비 | 새 색 조합 없음(text 12.26, muted 5.17, sage_deep 5.44, accent 5.45, 모두 background 위) | PASS |
+
+### 8-8. 문서 정합성
+
+| # | 문서 | 확인한 것 | 결과 |
+|---|------|------|------|
+| 40 | 모션 명세 2-6·4-8-1·8장 ↔ 코드 | 예시 클래스·규칙이 `style.css:966-977`과 같다(구현은 `.gb-more-status`에도 같은 200ms 페이드를 더했다). 8장 Should 행, "새 토큰 없음" 맞음 | PASS |
+| 41 | `05` 16장 ↔ 구현 | 바꾼 범위, 결정 6가지(커서 보정 +1/-1/`not_found` -1과 id 중복 제거, 안내 위치, 오류 처리, 지연 로딩, XSS, Formspree 정리), 설계·명세에 없어 정한 6가지가 코드와 같다. 직접 수정으로 `script.js` 방명록 블록이 1516~1887행이 됐다(요약은 1884) | PASS |
+| 42 | 설계·요약의 현재 상태 표기 | `08_guestbook-list-design.md:1-4` 제목·상태 줄이 아직 "미착수", 6-1(`:252`)은 안내 "폼 바로 아래", 8장(`:316-328`)은 시험용 URL 절차다. `05` 16장 "guestbook.gs에서 찾은 점"(`:725-728`)은 새 필터로 해소된 문제를 열린 문제로 적고 있다 | WARNING (W15) |
+
+### 8-9. 회귀 (HEAD `gb-regress/base/` ↔ 지금, 같은 드라이버)
+
+섹션 높이는 방명록만 바뀌었다: 744 → 1062px(글 0건, 360/375/390/430/1280 모두). 나머지 섹션 높이·패딩은 같고, 방명록 아래(공유하기·맺음)는 318px 내려갔다. 아래 차이 밖의 결과는 HEAD와 같다.
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 43 | hero 첫 화면 | `firstscreen` 390x664 / 375x548 / 390x844 HEAD와 같다 | PASS |
+| 44 | 갤러리 캐러셀 | `carousel-check.mjs` 110/110 PASS, 검사 이름 목록이 HEAD와 같다. 다른 값은 플릭 표본 좌표·시각 몇 ms | PASS |
+| 45 | lightbox | `lbkeys` HEAD와 같다. `lightbox`는 첫 실행에서 Tab 6번 중 "브라우저 밖(body)"으로 나가는 순번이 3번째(HEAD는 6번째)라, 그 뒤 화살표·`0` 키가 닿는 곳이 달라져 `afterRight`·`pinchMax`가 달랐다. 같은 작업 트리로 3번 더 돌리니 2번은 HEAD와 완전히 같고 1번은 첫 실행과 같았다. Chrome 모달 `<dialog>`의 Tab 순환 쪽 흔들림이고 lightbox 코드는 바뀌지 않았다(`git diff`). 포커스 가둠·스크롤 잠금·뒤로가기·Esc·끌어 닫기 결과는 모든 실행에서 같다 | PASS |
+| 46 | 계좌 접기·복사 | `account` motion·reduced × 4폭: reduced는 HEAD와 같고, motion은 페이드 표본 시각 ±1ms와 중간 불투명도 표본만 다르다 | PASS |
+| 47 | couple·notice·D-day·BGM | `copyedit2` couple 행·줄·칸의 left/right/width 같음(세로 좌표만 아래 기준이라 318px 차이), `reducednotice`·`dday`·`bgmnet` 같음, `interact`의 BGM 부분 같음 | PASS |
+| 48 | 가로 스크롤 | 360/375/390/430/1280에서 `scrollWidth` = 화면 폭. 예전 overflow 검사기와 작은 터치 대상 목록에 새로 잡히는 것은 화면 밖 함정 칸(`.gb-trap`, left -9999, `.page`가 잘라 스크롤 없음)과 `hidden`인 다시 불러오기·더보기(0x0)뿐이다 | PASS |
+| 49 | 콘솔 | 새 오류 0. 남은 것은 시나리오가 일부러 낸 `audio/missing.mp3` 404와 픽셀 읽기의 Canvas2D `willReadFrequently` 경고(HEAD에도 있음) | PASS |
+| 50 | 접근성 트리·JS 꺼짐 | heading 목록에 "3 남겨 주신 말씀"이 "2 방명록" 다음에 하나 늘었고 나머지는 같다(h1 1, h2 10, h3 1). `nojs` HEAD와 같다 | PASS |
+| 51 | reduced·보케 | `reduced`의 다른 값은 보케 구간별 불빛 수·`minExcludeGap`뿐(무작위 배치, 7차 기록과 같은 종류). 숨은 reveal 0, 실행 중 애니메이션 0은 같다 | PASS |
+| 52 | 외부 요청 | 새 도메인 없음(모의 웹 앱 `127.0.0.1:8790`·`8791`만 더해졌다. 실제 페이지에서는 이 자리가 `https://script.google.com`). 모두 https, 글꼴 하위 집합 순서만 다르다 | PASS |
+
+예전 방명록 시나리오(`interact`·`copyedit2`의 Formspree 전송)는 비밀번호 칸이 생겨 "비밀번호를 정해 주세요."에서 멈춘다. 낡은 시나리오이고 8-3·8-4가 대신한다.
+
+### 8차 직접 수정
+
+- `script.js:1769-1772` `showDeleteError`: 비밀번호 칸에 이미 포커스가 있으면(Enter로 보낸 경우) 오류 문구를 페이지 공용 알림 영역(`#live-status`, `announce()`)으로 한 번 알리고, 아니면 전처럼 칸으로 포커스를 옮긴다. 버튼으로 보낸 경우는 포커스 이동 때 칸 설명으로 읽히므로 알림을 더하지 않는다(두 번 읽힘 방지). 재시험: `ui.mjs kbd` 26/26(Enter 경로 알림 1건, 버튼 경로 live region 0건, 클라이언트 검사 2건도 알림), frontend `gb-test.mjs all` 120/120
+
+```js
+      if (openDelete?.panel !== panel) return;
+      // Submitting with Enter leaves focus in the field, and a changed description alone is not read out.
+      if (document.activeElement === input) announce(error.textContent);
+      else input.focus();
+```
+
+### 기존 WARNING 현황
+
+- W11: **해소**. 감사 문서 R8 관계표(`07_concept-director_design-audit.md:270-271`)에 맺음 관계 두 줄이 들어갔다
+- W12: **해소**. `02_copy-writer_copy.md:64`가 "(아래 `closing` 참고)"다
+- W13: **해소**. `01_concept-director_concept-sheet.md:6-7`이 "사용자 확인(2026-10-12)"이다
+- W7: 그대로. 위치 `script.js:837`(가로 휠 450ms 잠금, `GAL.WHEEL_LOCK` `:24`)
+
+### 8차에서 나온 이슈와 수정 제안
+
+- [ ] **W14 (문서, concept-director) 감사 문서 R4 표에 섹션 안 소제목 역할이 없다** → `07_concept-director_design-audit.md` R4 표(`:209-225`)에 한 행을 더한다. 예: "T16 섹션 안 소제목 | Gowun Batang | 700 | 17 / 1.6 | text | 가운데. 섹션 제목(T2)보다 한 단계 아래 | `.gb-list-title`". 다른 모양으로 정하면 `style.css:874-877` `.gb-list-title` 한 규칙만 고친다
+- [ ] **W15 (문서, 오케스트레이터·frontend) 착수 뒤 상태가 문서에 없다** → `08_guestbook-list-design.md:1-4`의 "(미착수)"와 상태 줄을 "2026-10-13 착수·구현, 결정은 `00` 맨 아래 절과 `05` 16장"으로, 6-1(`:252`) 안내 위치를 "남기기 버튼 바로 위(오케스트레이터 결정)"로, 8장(`:316-328`)의 시험용 URL 절차에 "로컬 모의 서버로 대신함(`00` 맨 아래 절)"을 덧붙인다. `05` 16장 "guestbook.gs에서 찾은 점" 1·2(`:727-728`)에는 "`visibleEntries` 필터로 해소(8차 QA 확인)"를 붙인다
+
+### `guestbook.gs` 참고 (고치지 않음, 판정 대상 아님)
+
+고치려면 사용자가 Apps Script에 다시 붙여 넣고 [배포 관리 > 수정 > 새 버전]으로 갱신해야 한다. 셋 다 지금 바로 고칠 만큼 급하지 않다.
+
+- **G1 메일 발송이 lock 안에서 일어난다** (`apps-script/guestbook.gs:111-128`, `notify` 호출 `:124`). `MailApp.sendEmail`이 걸리는 시간(보통 수백 ms) 동안 다른 쓰기와 삭제가 기다린다. 1분 20건 제한이 있어 경합은 작다. 고친다면 `appendRow`와 캐시 갱신 뒤 `lock.releaseLock()`을 먼저 하고 `notify`를 부른다
+- **G2 `limit=`(빈 값)이면 1건만 준다** (`:50-53`, `:80`). `toInt('')`가 0을 돌려주고 1로 올려진다. 페이지는 늘 `limit=20`을 보내므로 영향이 없다
+- **G3 함정 칸 이름이 `website`다** (`:100`, `index.html:373`). 브라우저 자동 완성이나 비밀번호 관리자가 이 이름의 칸을 채우면 실제 하객의 글이 조용히 버려지고, 화면에는 성공 문구가 나오지만 목록에는 안 나온다. 확률은 낮다. 그런 신고가 생기면 두 파일의 칸 이름을 흔하지 않은 이름으로 함께 바꾼다
+
+### 배포 후 확인 (이 환경에서 확인할 수 없는 것)
+
+- 실제 URL로 글 1건 쓰고 지우기, 알림 메일 도착(오케스트레이터 예정)
+- 실제 시트에서 작은따옴표 접두 글이 텍스트로 저장되고 읽을 때 따옴표가 빠지는지, `createdAt` Date가 그대로 되돌아오는지(모의 서버는 이 동작을 흉내만 낸다)
+- 실제 302 → `script.googleusercontent.com` 응답에 `Access-Control-Allow-Origin`이 붙는지(모의 서버는 흉내만 낸다)
+- 설계 8장 6: 전환을 마치면 Formspree 폼을 대시보드에서 비활성화
+
+### 참고 (판정 대상 아님)
+
+- 목록 상태 문구(`.gb-list-state`)는 live region이 아니다. 첫 불러오기 실패와 다시 불러오기 실패는 화면 낭독기에 알려지지 않고, 다시 불러오기를 누른 사용자에게는 포커스가 그 버튼으로 돌아오는 것만 전달된다. 바꾸고 싶으면 `.gb-list-retry`에 `aria-describedby`로 상태 문구를 잇는다
+- `style.css:878`의 주석 "focused only as the fallback target after a delete"는 다시 불러오기와 더보기에서도 목록 제목에 포커스를 주므로 정확하지 않다(주석만)
+- 공개 안내(가운데)와 비밀번호 도움말(왼쪽)이 같은 muted 14px로 16px 간격에 붙어 있다. 안내 위치는 오케스트레이터 결정이라 판정하지 않았다(`shots/form-empty-390.png`)
+
+### 대표 스크린샷·원자료 (scratchpad, 저장소에 넣지 않음)
+
+`/private/tmp/claude-501/-Users-inhyeok-Workspace-wedding-letter/cc1402ba-2bf0-4475-9039-e013d45393f0/scratchpad/qa8/` 아래.
+
+| 대상 | 파일 |
+|---|---|
+| 폼 + 빈 목록 (390, 모션) | `shots/form-empty-390.png` |
+| 긴 글 3건 + 펼친 삭제 폼과 오류 문구 | `shots/gb-360.png`, `shots/gb-390.png` |
+| JS 꺼짐 | `shots/nojs-guestbook-390.png` |
+| 원자료 | `api.out`(46), `copy_check.out`(39), `ui-all.out`·`results-*.json`(126), `cmp-base.out`(HEAD 비교), `cmp-cur.out`(frontend 실행과 비교), `r7out/`(회귀), `r7lb/`(lightbox 재실행) |
+
+### 8차 후속 처리 (2026-10-13, 오케스트레이터)
+
+- **W14 해소:** 감사 문서 R4에 T16(섹션 안 한글 소제목, Gowun Batang 700 17/1.6 text, `.gb-list-title`)을 더했다.
+- **W15 해소:** `08_guestbook-list-design.md` 머리말을 "구현함"으로 바꾸고 구현에서 달라진 점을 적었다. `05` 16장의 `guestbook.gs` 문제 1·2는 해소됐다고 표시했다.
+- **G1 고침:** `create`가 `lock.releaseLock()` 뒤에 `notify`를 부른다.
+- **G3 고침:** 함정 칸 입력의 id·name을 `gb-extra`·`gb_extra`로 바꿨다(`index.html:372-373`, `script.js:1712`). 보내는 JSON 키는 `website` 그대로라 웹 앱 쪽 변경은 없다. 시험 스크립트(`gb-mock/gb-test.mjs`, `qa8/ui.mjs`)의 선택자도 같이 바꿨다.
+- **G2:** 페이지에 영향이 없어 그대로 둔다.
+- `style.css:878` 주석을 실제 동작(삭제 뒤 대체 포커스, 다시 불러오기 중 포커스)에 맞게 고쳤다.
+- **재시험:** `qa8/api.mjs` 46/46, `gb-mock/gb-test.mjs all` 120/120, `qa8/ui.mjs all` 126/126. 모의 서버와 정적 서버는 종료했다.
+- G1과 함께 `guestbook.gs`가 바뀌었으므로, 사용자가 Apps Script에 다시 붙여 넣고 [배포 관리 > 수정 > 새 버전]으로 갱신해야 한다.
+
+### 실제 웹 앱 확인 (2026-10-14, 오케스트레이터, 사용자 승인 후)
+
+사용자가 수정된 `guestbook.gs`를 같은 URL에 새 버전으로 다시 배포한 뒤 확인했다.
+
+| 항목 | 결과 |
+|---|---|
+| 새 글 쓰기 | PASS. `ok: true`, 응답 4.3초(첫 실행 + 메일 포함) |
+| 목록에서 글자 그대로 돌아옴 | PASS. 성함 `=QA 시험`, 말씀 `=1+1` / `2026-12-01` / `'따옴표` / `<img …>`가 보낸 값과 정확히 같다. 작은따옴표 접두가 수식·날짜 변환을 막고, 읽을 때 접두가 빠진다 |
+| `createdAt` | PASS. 쓰기 응답과 목록 값이 같다. 응답 키는 `id`, `name`, `message`, `createdAt`뿐이다(salt·해시 없음) |
+| 틀린 비밀번호 삭제 | PASS. `wrong_password` |
+| 맞는 비밀번호 삭제 | PASS. `ok: true`, 뒤이은 목록이 비었다(캐시 무효화) |
+| 같은 글 다시 삭제 | PASS. `not_found` |
+| 브라우저 CORS | PASS. 다른 출처(`127.0.0.1`) 페이지에서 headless Chrome `fetch`로 GET 목록과 POST(`text/plain`, 저장하지 않는 `action: noop`) 응답을 모두 읽었다 |
+| 알림 메일 도착 | 이 환경에서 확인할 수 없음. 사용자 확인 필요 |
+
+시트에는 `deleted` 상태의 시험 행 1개가 남는다.

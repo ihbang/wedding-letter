@@ -25,6 +25,8 @@
   // Venue map (spec 4-7). Level 4 is about 2 m per CSS px, so a 340 x 255 map spans about 680 x 510 m:
   // the streets around the venue and Munjeong station (3 minutes on foot). SDK fetch starts one screen ahead.
   const MAP = Object.freeze({ LEVEL: 4, NEAR_MARGIN: '100% 0px', TIMEOUT: 10000 });
+  // Guestbook (design 08 section 6). The first page is fetched one screen ahead, like the map.
+  const GB = Object.freeze({ PAGE: 20, TIMEOUT: 15000, NEAR_MARGIN: '100% 0px', PASSWORD_MIN: 4 });
 
   const root = document.documentElement;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -1511,16 +1513,70 @@
     io.observe(box);
   }
 
-  /* ---------- Guestbook (spec 4-8) ---------- */
+  /* ---------- Guestbook: form, public list, self-delete (design 08, spec 4-8, 4-8-1) ---------- */
+
+  // The Apps Script web app answers 200 for everything; the outcome is the body's { ok, error }.
+  // POST bodies go as text/plain: application/json would trigger a CORS preflight the web app cannot answer.
+  // Resolves to the parsed body; rejects on a network error, a non-JSON reply or GB.TIMEOUT.
+  async function guestbookRequest(endpoint, payload) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), GB.TIMEOUT);
+    const init = { credentials: 'omit', cache: 'no-store', signal: controller.signal };
+    try {
+      const res = payload.action === 'list'
+        ? await fetch(`${endpoint}?${new URLSearchParams(payload)}`, init)
+        : await fetch(endpoint, { ...init, method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+      if (!res.ok) throw new Error(`Guestbook endpoint responded ${res.status}`);
+      const data = await res.json();
+      if (!data || typeof data !== 'object') throw new Error('Guestbook endpoint sent no object');
+      return data;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
 
   function initGuestbook() {
-    const form = document.querySelector('.gb-form');
-    if (!form) return;
-    const nameField = form.querySelector('#gb-name');
-    const messageField = form.querySelector('#gb-message');
+    const section = document.getElementById('guestbook');
+    const form = section?.querySelector('.gb-form');
+    const board = section?.querySelector('.gb-board');
+    const endpoint = metaContent('meta[name="guestbook-endpoint"]');
+    if (!form || !board || !endpoint) return;
+    const fields = form.elements;
     const submit = form.querySelector('.gb-submit');
     const status = form.querySelector('.gb-status');
     const idleLabel = submit.textContent;
+    const title = board.querySelector('.gb-list-title');
+    const state = board.querySelector('.gb-list-state');
+    const stateText = state.querySelector('.gb-list-state__text');
+    const retry = state.querySelector('.gb-list-retry');
+    const list = board.querySelector('.gb-list');
+    const more = board.querySelector('.gb-more');
+    const moreStatus = board.querySelector('.gb-more-status');
+    const moreLabel = more.textContent;
+    const CREATE_ERRORS = { rate_limited: 'gb-error-rate-limited', duplicate: 'gb-error-duplicate', closed: 'gb-error-closed' };
+    const DELETE_ERRORS = { wrong_password: 'gb-error-wrong-password', too_many_attempts: 'gb-error-too-many-attempts' };
+
+    const shown = new Set();   // ids in the list; "more" pages drop ids already here
+    // Offset of the next page, kept in step with our own writes: the server's cursor is a position
+    // in the newest-first list, so a new entry pushes everything down one and a deletion pulls it up one.
+    let nextCursor = null;
+    let listSeq = 0;           // bumped by every first-page load; replies to older loads are dropped
+    let stateKey = '';
+    let openDelete = null;     // { item, toggle, panel }: at most one panel is open
+    let panelCount = 0;
+    let formShownAt = 0;       // elapsed (bot check) counts from the form's first appearance on screen
+
+    const request = (payload) => guestbookRequest(endpoint, payload).catch(() => null);
+    const el = (tag, className, content) => {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (content !== undefined) node.textContent = content; // guest text is never parsed as HTML
+      return node;
+    };
+    // A focused button that turns disabled leaves focus on <body>; put it back on that control.
+    const keepFocus = (control) => {
+      if (!document.activeElement || document.activeElement === document.body) control.focus({ preventScroll: true });
+    };
 
     function say(key) {
       status.classList.remove('is-shown');
@@ -1528,37 +1584,306 @@
       requestAnimationFrame(() => requestAnimationFrame(() => status.classList.add('is-shown')));
     }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const checks = [[nameField, 'gb-name-empty'], [messageField, 'gb-message-empty']];
-      checks.forEach(([field]) => field.removeAttribute('aria-invalid'));
-      const missing = checks.find(([field]) => !field.value.trim());
-      if (missing) {
-        missing[0].setAttribute('aria-invalid', 'true');
-        missing[0].focus();
-        say(missing[1]);
+    function setState(key, withRetry = false) {
+      stateKey = key;
+      state.hidden = true;
+      if (!key) return;
+      void state.offsetWidth; // restarts the fade-in when one message replaces another
+      stateText.replaceChildren(richText(key));
+      retry.hidden = !withRetry;
+      state.hidden = false;
+    }
+
+    function setNextCursor(value) {
+      nextCursor = Number.isInteger(value) && value > 0 ? value : null;
+      more.hidden = nextCursor === null;
+    }
+
+    // "2026. 12. 1." in KST on screen; the gb-date-sr sentence for screen readers (they read the dots).
+    function dateFor(iso) {
+      const t = Date.parse(iso);
+      if (Number.isNaN(t)) return null;
+      const kst = new Date(t + 9 * 3600e3);
+      const [y, m, d] = [kst.getUTCFullYear(), kst.getUTCMonth() + 1, kst.getUTCDate()];
+      const time = el('time', 'gb-item__date');
+      time.dateTime = iso;
+      const visible = el('span', null, `${y}. ${m}. ${d}.`);
+      visible.setAttribute('aria-hidden', 'true');
+      time.append(visible, el('span', 'sr-only', text('gb-date-sr', { y, m, d })));
+      return time;
+    }
+
+    // Reading order: name, date, message, then the delete button (placed top right by CSS).
+    function itemFor(entry) {
+      const item = el('li', 'gb-item is-new');
+      item.tabIndex = -1;
+      item.dataset.id = entry.id;
+      const head = el('div', 'gb-item__head');
+      head.append(el('p', 'gb-item__name', entry.name));
+      const date = dateFor(entry.createdAt);
+      if (date) head.append(date);
+      const toggle = el('button', 'gb-item__delete', text('gb-delete'));
+      toggle.type = 'button';
+      toggle.setAttribute('aria-label', text('gb-delete-aria', { name: entry.name }));
+      toggle.setAttribute('aria-expanded', 'false');
+      item.append(head, el('p', 'gb-item__message', entry.message), toggle);
+      return item;
+    }
+
+    // Builds item elements for entries not shown yet; the caller inserts them.
+    function newItems(entries) {
+      const items = [];
+      entries.forEach((e) => {
+        if (!e || typeof e.id !== 'string' || !e.id || shown.has(e.id)) return;
+        shown.add(e.id);
+        items.push(itemFor({ id: e.id, name: String(e.name ?? ''), message: String(e.message ?? ''), createdAt: String(e.createdAt ?? '') }));
+      });
+      return items;
+    }
+
+    const validPage = (reply) => reply && reply.ok === true && Array.isArray(reply.entries);
+
+    // First page (also the retry and the reload after "duplicate"): replaces the whole list.
+    async function loadFirst() {
+      const seq = ++listSeq;
+      setState('gb-list-loading');
+      const reply = await request({ action: 'list', limit: GB.PAGE, cursor: 0 });
+      if (seq !== listSeq) return false;
+      if (!validPage(reply)) {
+        setState('gb-list-failed', true);
+        return false;
+      }
+      closeDelete(false);
+      shown.clear();
+      moreStatus.textContent = '';
+      list.replaceChildren(...newItems(reply.entries));
+      setNextCursor(reply.nextCursor);
+      setState(list.children.length ? '' : 'gb-list-empty');
+      return true;
+    }
+
+    async function loadMore() {
+      const seq = listSeq;
+      more.disabled = true;
+      more.textContent = text('gb-list-loading');
+      moreStatus.textContent = '';
+      const reply = await request({ action: 'list', limit: GB.PAGE, cursor: nextCursor });
+      more.disabled = false;
+      more.textContent = moreLabel;
+      if (seq !== listSeq) return;
+      if (!validPage(reply)) {
+        moreStatus.textContent = text('gb-list-failed');
+        keepFocus(more);
         return;
       }
-      const endpoint = form.getAttribute('action');
+      const items = newItems(reply.entries);
+      list.append(...items);
+      setNextCursor(reply.nextCursor);
+      const target = items[0] || (more.hidden ? list.lastElementChild || title : more);
+      target.focus();
+    }
+
+    /* New entry */
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = fields.password.value;
+      const checks = [
+        [fields.name, !fields.name.value.trim() && 'gb-name-empty'],
+        [fields.message, !fields.message.value.trim() && 'gb-message-empty'],
+        [fields.password, !password ? 'gb-password-empty' : password.length < GB.PASSWORD_MIN && 'gb-password-short'],
+      ];
+      checks.forEach(([field]) => field.removeAttribute('aria-invalid'));
+      const invalid = checks.find(([, key]) => key);
+      if (invalid) {
+        invalid[0].setAttribute('aria-invalid', 'true');
+        invalid[0].focus();
+        say(invalid[1]);
+        return;
+      }
 
       submit.disabled = true;
       submit.textContent = text('gb-sending');
-      try {
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          body: new FormData(form),
-          headers: { Accept: 'application/json' },
-        });
-        if (!res.ok) throw new Error(`Guestbook endpoint responded ${res.status}`);
-        form.reset();
-        say('gb-success');
-      } catch (err) {
-        say('gb-failed');
-      } finally {
-        submit.disabled = false;
-        submit.textContent = idleLabel;
+      const reply = await request({
+        action: 'create',
+        name: fields.name.value,
+        message: fields.message.value,
+        password,
+        website: fields.gb_extra.value,
+        elapsed: Math.round(performance.now() - formShownAt),
+      });
+      submit.disabled = false;
+      submit.textContent = idleLabel;
+      keepFocus(submit);
+
+      if (!reply || reply.ok !== true) {
+        say(CREATE_ERRORS[reply?.error] || 'gb-failed');
+        // The first send may have been saved with its reply lost; the list shows whether it was.
+        if (reply?.error === 'duplicate') loadFirst();
+        return;
       }
+      form.reset();
+      say('gb-success');
+      // entry is null when the web app quietly dropped the post as a bot (trap field or under 3 s).
+      const [item] = reply.entry ? newItems([reply.entry]) : [];
+      if (!item) return;
+      list.prepend(item);
+      if (nextCursor !== null) nextCursor += 1;
+      if (stateKey === 'gb-list-empty') setState('');
     });
+
+    /* Self-delete: one inline panel per entry, built on first open */
+
+    function panelFor(item, toggle) {
+      const n = ++panelCount;
+      const panel = el('form', 'gb-del');
+      panel.noValidate = true;
+      panel.id = `gb-del-${n}`;
+      const label = el('label', 'gb-label', text('gb-delete-password-label'));
+      label.htmlFor = `gb-del-password-${n}`;
+      const input = el('input', 'gb-input');
+      Object.assign(input, { type: 'password', id: label.htmlFor, name: 'password', autocomplete: 'current-password', maxLength: 20 });
+      const error = el('p', 'gb-del__error');
+      error.id = `gb-del-error-${n}`;
+      input.setAttribute('aria-describedby', error.id);
+      const cancel = el('button', 'btn btn--secondary gb-del__cancel', text('gb-delete-cancel'));
+      cancel.type = 'button';
+      const confirm = el('button', 'btn btn--secondary gb-del__confirm', text('gb-delete-confirm'));
+      confirm.type = 'submit';
+      const actions = el('div', 'gb-del__actions');
+      actions.append(cancel, confirm);
+      panel.append(label, input, error, actions);
+      item.append(panel);
+      toggle.setAttribute('aria-controls', panel.id);
+      return panel;
+    }
+
+    function showDeleteError(panel, key, invalid) {
+      const input = panel.elements.password;
+      const error = panel.querySelector('.gb-del__error');
+      if (invalid) input.setAttribute('aria-invalid', 'true');
+      else input.removeAttribute('aria-invalid');
+      error.textContent = '';
+      void error.offsetWidth; // the same message again still fades in
+      error.textContent = text(key);
+      if (openDelete?.panel !== panel) return;
+      // Submitting with Enter leaves focus in the field, and a changed description alone is not read out.
+      if (document.activeElement === input) announce(error.textContent);
+      else input.focus();
+    }
+
+    // Closing is instant (spec 4-8-1): a fade-out would leave an empty band that then snaps shut.
+    function closeDelete(refocus) {
+      if (!openDelete) return;
+      const { toggle, panel } = openDelete;
+      openDelete = null;
+      panel.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+      if (refocus) toggle.focus();
+    }
+
+    function toggleDelete(item) {
+      if (openDelete?.item === item) {
+        closeDelete(true);
+        return;
+      }
+      closeDelete(false);
+      const toggle = item.querySelector('.gb-item__delete');
+      const panel = item.querySelector('.gb-del') || panelFor(item, toggle);
+      panel.reset();
+      panel.elements.password.removeAttribute('aria-invalid');
+      panel.querySelector('.gb-del__error').textContent = '';
+      panel.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      openDelete = { item, toggle, panel };
+      panel.elements.password.focus();
+    }
+
+    // Fades the entry out, then drops it; focus moves to the next entry, or the list title after the last.
+    function removeItem(item, key, done) {
+      if (openDelete?.item === item) openDelete = null;
+      let next = item.nextElementSibling;
+      while (next && next.classList.contains('is-leaving')) next = next.nextElementSibling;
+      shown.delete(item.dataset.id);
+      if (nextCursor !== null) nextCursor = Math.max(nextCursor - 1, 0);
+      item.inert = true;
+      item.classList.add('is-leaving');
+      (next || title).focus();
+      setTimeout(() => {
+        item.remove();
+        if (!list.children.length && nextCursor === null) setState('gb-list-empty');
+      }, token('--dur-fast'));
+      notify(text(key), done);
+    }
+
+    async function confirmDelete(item) {
+      const panel = item.querySelector('.gb-del');
+      const password = panel.elements.password.value;
+      // Shorter than the minimum can never match, so it is not sent (copy sheet guestbook_delete).
+      if (!password) { showDeleteError(panel, 'gb-delete-password-empty', true); return; }
+      if (password.length < GB.PASSWORD_MIN) { showDeleteError(panel, 'gb-error-wrong-password', true); return; }
+
+      const buttons = panel.querySelectorAll('button');
+      const confirm = panel.querySelector('.gb-del__confirm');
+      const confirmLabel = confirm.textContent;
+      buttons.forEach((b) => { b.disabled = true; });
+      confirm.textContent = text('gb-deleting');
+      const reply = await request({ action: 'delete', id: item.dataset.id, password });
+      buttons.forEach((b) => { b.disabled = false; });
+      confirm.textContent = confirmLabel;
+      if (!item.isConnected) return; // the list was reloaded meanwhile
+
+      if (reply?.ok === true) {
+        removeItem(item, 'gb-delete-success', true);
+      } else if (reply?.error === 'not_found') {
+        // Already deleted by the guest or hidden by the couple in the sheet.
+        removeItem(item, 'gb-error-not-found', false);
+      } else {
+        const key = DELETE_ERRORS[reply?.error];
+        if (key) panel.elements.password.value = '';
+        showDeleteError(panel, key || 'gb-delete-failed', Boolean(key));
+      }
+    }
+
+    list.addEventListener('click', (e) => {
+      const toggle = e.target.closest('.gb-item__delete');
+      if (toggle) toggleDelete(toggle.closest('.gb-item'));
+      else if (e.target.closest('.gb-del__cancel')) closeDelete(true);
+    });
+    list.addEventListener('submit', (e) => {
+      e.preventDefault();
+      confirmDelete(e.target.closest('.gb-item'));
+    });
+    list.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && openDelete?.panel.contains(e.target)) closeDelete(true);
+    });
+    more.addEventListener('click', loadMore);
+    retry.addEventListener('click', async () => {
+      title.focus(); // the retry button hides while loading
+      if (!(await loadFirst())) retry.focus();
+    });
+
+    // No request to the web app until the section is about one screen away (spec: lazy, like the venue map).
+    if ('IntersectionObserver' in window) {
+      const near = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        near.disconnect();
+        loadFirst();
+      }, { rootMargin: GB.NEAR_MARGIN });
+      near.observe(section);
+      const seen = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        seen.disconnect();
+        formShownAt = performance.now();
+      });
+      seen.observe(form);
+    } else {
+      formShownAt = performance.now();
+      loadFirst();
+    }
+
+    form.hidden = false;
+    board.hidden = false;
   }
 
   /* ---------- Boot ---------- */
