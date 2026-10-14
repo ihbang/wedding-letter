@@ -386,8 +386,19 @@
           </div>
         </div>
         <ul class="gb-list" aria-labelledby="gb-list-title"></ul>
-        <button type="button" class="btn btn--secondary gb-more" hidden>말씀 더 보기</button>
-        <p class="gb-more-status" role="status" aria-live="polite"></p>
+        <!-- Page numbers are built by script.js; the pager shows only from two pages up. -->
+        <nav class="gb-pager" aria-label="방명록 페이지" hidden>
+          <button type="button" class="gb-pager__nav gb-pager__prev" aria-label="이전 페이지" aria-disabled="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span class="gb-pager__pages"></span>
+          <button type="button" class="gb-pager__nav gb-pager__next" aria-label="다음 페이지">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </nav>
+        <p class="gb-page-status sr-only" role="status" aria-live="polite"></p>
+        <!-- Fold arrow under a message longer than three lines; its name comes from gb-expand-aria / gb-collapse-aria. -->
+        <template class="gb-fold-template"><button type="button" class="gb-fold" aria-expanded="false" hidden><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></template>
       </div>
     </section>
 
@@ -499,6 +510,10 @@
     <span data-key="gb-list-empty">아직 남겨진 말씀이 없습니다.<br>가장 먼저 축하를 전해 주세요.</span>
     <span data-key="gb-list-failed">말씀을 불러오지 못했습니다.</span>
     <span data-key="gb-date-sr">{y}년 {m}월 {d}일</span>
+    <span data-key="gb-page-number-aria">{n}페이지</span>
+    <span data-key="gb-page-status">{total}페이지 중 {n}페이지</span>
+    <span data-key="gb-expand-aria">{name}님의 글 펼치기</span>
+    <span data-key="gb-collapse-aria">{name}님의 글 접기</span>
     <span data-key="gb-delete">삭제</span>
     <span data-key="gb-delete-aria">{name}님의 글 삭제</span>
     <span data-key="gb-delete-password-label">남기실 때 정하신 비밀번호</span>

@@ -20,7 +20,7 @@
 | Pretendard v1.3.9 dynamic-subset (jsDelivr) | 주소·계좌·버튼·폼 | `<head>` |
 | Kakao JS SDK 2.7.2 (`t1.kakaocdn.net`) | 카카오톡 공유 | 키가 설정된 경우에만, 버튼을 처음 누를 때 동적 로드 |
 | 카카오맵 JavaScript API (`dapi.kakao.com/v2/maps/sdk.js?autoload=false&libraries=services`, 이어서 `t1.kakaocdn.net/mapjsapi`의 본체·services) | 오시는 길 고정 지도 + 주소 검색 | 지도 상자가 한 화면 거리 안에 들어올 때 1회 동적 로드(2026-10-12) |
-| 방명록 Apps Script 웹 앱 (`script.google.com/macros/s/…/exec`, 응답은 `script.googleusercontent.com`으로 302) | 방명록 목록·새 글·본인 삭제(`fetch`, 스크립트 로드 없음) | 방명록 섹션이 한 화면 거리 안에 들어올 때 목록 첫 페이지 1회. 그 뒤로는 하객이 더보기·남기기·삭제를 누를 때만(2026-10-13, 16장) |
+| 방명록 Apps Script 웹 앱 (`script.google.com/macros/s/…/exec`, 응답은 `script.googleusercontent.com`으로 302) | 방명록 목록·새 글·본인 삭제(`fetch`, 스크립트 로드 없음) | 방명록 섹션이 한 화면 거리 안에 들어올 때 목록 첫 페이지 1회. 그 뒤로는 하객이 더보기·남기기·삭제를 누를 때만(2026-10-13, 16장). **2026-10-14 17장: 처음에 `limit=50`으로 목록 전체를 받고, 그 뒤로는 남기기·삭제와 다시 불러오기 때만** |
 
 애니메이션 라이브러리와 jQuery는 쓰지 않았다. 모션은 Canvas 2D, CSS, rAF로 구현했다.
 
@@ -36,7 +36,7 @@
 | 6 | venue (`#venue`) | background. surface 카드는 지도(`#venue-map`)만 | ① 헤더 ② 장소명·주소 맨 텍스트(`.venue__info`, 가운데) + 전체 폭 주소 복사 + 카카오맵 고정 지도 카드(2026-10-12) + 지도 버튼 2분할 ③ 교통편 구분선 목록(왼쪽, 들여쓰기 0) | 없음 (지도 위 모션 없음) |
 | 7 | notice (`#notice`) | background | ① 헤더(NOTICE / 축하 화환 안내) ② 본문 2행 | 없음 (보케 구간 아님) |
 | 8 | account (`#account`) | background + surface 카드 | ① 헤더 + 안내문 ② 신랑측 카드 ③ 신부측 카드. 카드는 `details.card.account__card.reveal`이고 기본으로 접혀 있다(2026-10-11) | 계좌 접기: summary 화살표 회전 200ms, 펼친 내용 opacity 250ms |
-| 9 | guestbook (`#guestbook`) | background (2026-10-12까지 surface 밴드) | (2026-10-13 공개 목록) ① 헤더 + 안내 ② 폼(성함·말씀·비밀번호 필드 `#FFFDFB` 면 + field_border 테두리, 모서리 16, 숨은 함정 칸, 남기기 바로 위 공개 안내) ③ 목록 머리(h3 "남겨 주신 말씀" + 상태 문구). 목록 항목과 더보기 버튼은 reveal 밖 | 목록 항목·삭제 펼침 opacity 250ms, 상태·오류 문구 200ms, 삭제한 항목 200ms 페이드 아웃(모션 명세 4-8-1) |
+| 9 | guestbook (`#guestbook`) | background (2026-10-12까지 surface 밴드) | (2026-10-13 공개 목록) ① 헤더 + 안내 ② 폼(성함·말씀·비밀번호 필드 `#FFFDFB` 면 + field_border 테두리, 모서리 16, 숨은 함정 칸, 남기기 바로 위 공개 안내) ③ 목록 머리(h3 "남겨 주신 말씀" + 상태 문구). 목록 항목과 더보기 버튼은 reveal 밖(17장: 더보기 대신 페이지 번호 줄, 역시 reveal 밖) | 목록 항목·삭제 펼침 opacity 250ms, 상태·오류 문구 200ms, 삭제한 항목 200ms 페이드 아웃(모션 명세 4-8-1) |
 | 10 | share 공유하기 (`#share`, 2026-10-12 분리) | background | ① 헤더(SHARE / 공유하기) + 문구 2행 ② 카카오톡 공유(primary)·링크 복사(secondary) 전체 폭 세로 쌓기, 사이 8 | 없음 (보케 구간 아님) |
 | 11 | closing 맺음 (`#closing[data-bokeh=closing]`, 마지막 섹션) | background | ① 장식 + wreath 모노그램(sprig는 `.reveal` 밖에서 stroke-draw, 모노그램만 `.reveal`) ② Allura Thank you(h2) + 2027.01.03 + Inhyeok & Yumin(이탤릭) | 상단 sprig-divider ③, 보케 |
 | - | lightbox (`dialog#lightbox`) | scrim #1C1514 / 0.96 | - | 스와이프·핀치·더블탭·끌어 닫기. 캐러셀 현재 장과 같은 번호로 열리고, 닫으면 캐러셀이 마지막으로 본 번호로 맞춰진다 |
@@ -86,7 +86,7 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 4-7 길찾기 버튼 | 네이버 지도, 카카오맵 2개. 티맵은 미구현(아래 4장) | index.html:263-266 |
 | 4-7 지도 임베드(지연 로딩, 지도 위 모션 없음) | 구현(2026-10-12). 카카오맵 고정 지도, 12장 | index.html:258-262, style.css:681-696, script.js:1373-1443 |
 | 4-8 방명록 상태 문구(200ms 페이드), 제출 중 비활성 | 구현 | script.js:1516-1884 `guestbookRequest`·`initGuestbook` (2026-10-13 다시 씀) |
-| 4-8-1 방명록 목록: 첫 페이지·새 글·더보기 묶음 250ms 페이드(순차 등장 없음), 삭제 펼침 250ms·닫기 즉시, 오류 문구 200ms, 삭제 성공 `inert` + 200ms 페이드 아웃 뒤 제거, 상태 문구 200ms(스피너·스켈레톤 없음), 포커스 이동 | 구현(2026-10-13, 16장) | style.css:966-976, script.js:1516-1884 |
+| 4-8-1 방명록 목록: 첫 페이지·새 글·더보기 묶음 250ms 페이드(순차 등장 없음. 더보기는 17장에서 페이지 넘김·긴 글 접기로 바뀜), 삭제 펼침 250ms·닫기 즉시, 오류 문구 200ms, 삭제 성공 `inert` + 200ms 페이드 아웃 뒤 제거, 상태 문구 200ms(스피너·스켈레톤 없음), 포커스 이동 | 구현(2026-10-13, 16장) | style.css:966-976, script.js:1516-1884 |
 | 4-9 스크롤 큐(1700ms 등장, 2400ms 루프, 첫 스크롤 후 제거, 압축 화면 숨김) | 구현 | style.css:406-437, 1055-1059; script.js:534-543 |
 
 ### Nice-to-have
@@ -640,13 +640,13 @@ wreath.svg 위쪽에 여백이 있어 sprig와 화환 잎 사이는 24보다 넓
 
 | 파일 | 바꾼 것 |
 |---|---|
-| index.html | `<head>`에 `<meta name="guestbook-endpoint">`(실제 웹 앱 URL). `.gb-form`에서 Formspree `action`·`method`와 `_subject` 숨은 입력을 지우고 `hidden`을 붙였다(script.js가 준비를 마치면 푼다). 폼에 비밀번호 칸(`type=password`, `autocomplete=new-password`, `minlength=4`, `maxlength=20`, 도움말 `#gb-password-help`를 `aria-describedby`로 연결)과 함정 칸(`.gb-trap[aria-hidden=true]` 안의 `name=website`, `tabindex=-1`, `autocomplete=off`, 라벨 "이 칸은 비워 두세요.")을 더했다. 공개 안내 `p.guestbook__note#gb-note`(4행)는 폼 아래에서 남기기 버튼 바로 위로 옮기고, 버튼의 `aria-describedby`로 이었다. 폼 아래 `.gb-board[hidden]`: `.gb-board__head.reveal`(h3 `#gb-list-title[tabindex=-1]` "남겨 주신 말씀", `.gb-list-state` 문구 + "다시 불러오기"), `ul.gb-list`, "말씀 더 보기" `.gb-more`, `.gb-more-status[role=status]`. `<noscript><p class="gb-noscript">`. `ui-text`에 방명록 키 24개를 더하고 `gb-sending`·`gb-success`·`gb-failed`를 새 문구로 바꿨다 |
-| style.css | 9장 블록(797~976행): `.guestbook [hidden]`(`.btn`·`.gb-form`의 `display`가 UA의 `[hidden]` 규칙을 이기므로), `.gb-noscript`·`.gb-help`(T8), `.gb-trap`(화면 밖 -9999px. `.page`가 잘라서 가로 스크롤이 생기지 않는다), `.guestbook__note`(폼 안 가운데 T8, 위 여백은 폼 gap 16). 목록: `.gb-board` 위 32(블록 → 블록), h3 Gowun Batang 700 17px/1.6 text, 상태 문구 T8 위 20, 다시 불러오기·더보기 secondary 전체 폭 위 16, 교통편과 같은 구분선 목록(`.gb-list` 위 선, `.gb-item` 위아래 16, 아래 선). 항목: 성함 T7(sage_deep 600 14/1.6), 날짜 T8(muted), 말씀 T6(400 14/1.7, `white-space: pre-line`), 긴 글자는 `overflow-wrap: anywhere`. 삭제 텍스트 버튼(accent 500 14, 44x44 이상, 글자 끝이 컬럼 가장자리). 삭제 펼침(라벨 → 필드 8, 오류 문구 위 8, 취소·삭제하기 secondary 2분할 gap 8, 위 16). 4-8-1 모션 규칙(966~976행). 공통 reduced-motion 블록의 누름 규칙 선택자에 `.gb-item__delete:active`를 더했다 |
+| index.html | `<head>`에 `<meta name="guestbook-endpoint">`(실제 웹 앱 URL). `.gb-form`에서 Formspree `action`·`method`와 `_subject` 숨은 입력을 지우고 `hidden`을 붙였다(script.js가 준비를 마치면 푼다). 폼에 비밀번호 칸(`type=password`, `autocomplete=new-password`, `minlength=4`, `maxlength=20`, 도움말 `#gb-password-help`를 `aria-describedby`로 연결)과 함정 칸(`.gb-trap[aria-hidden=true]` 안의 `name=website`, `tabindex=-1`, `autocomplete=off`, 라벨 "이 칸은 비워 두세요.")을 더했다. 공개 안내 `p.guestbook__note#gb-note`(4행)는 폼 아래에서 남기기 버튼 바로 위로 옮기고, 버튼의 `aria-describedby`로 이었다. 폼 아래 `.gb-board[hidden]`: `.gb-board__head.reveal`(h3 `#gb-list-title[tabindex=-1]` "남겨 주신 말씀", `.gb-list-state` 문구 + "다시 불러오기"), `ul.gb-list`, "말씀 더 보기" `.gb-more`, `.gb-more-status[role=status]`(17장에서 지우고 페이지 번호 줄로 바꿈). `<noscript><p class="gb-noscript">`. `ui-text`에 방명록 키 24개를 더하고 `gb-sending`·`gb-success`·`gb-failed`를 새 문구로 바꿨다 |
+| style.css | 9장 블록(797~976행): `.guestbook [hidden]`(`.btn`·`.gb-form`의 `display`가 UA의 `[hidden]` 규칙을 이기므로), `.gb-noscript`·`.gb-help`(T8), `.gb-trap`(화면 밖 -9999px. `.page`가 잘라서 가로 스크롤이 생기지 않는다), `.guestbook__note`(폼 안 가운데 T8, 위 여백은 폼 gap 16). 목록: `.gb-board` 위 32(블록 → 블록), h3 Gowun Batang 700 17px/1.6 text, 상태 문구 T8 위 20, 다시 불러오기·더보기(17장에서 지움) secondary 전체 폭 위 16, 교통편과 같은 구분선 목록(`.gb-list` 위 선, `.gb-item` 위아래 16, 아래 선). 항목: 성함 T7(sage_deep 600 14/1.6), 날짜 T8(muted), 말씀 T6(400 14/1.7, `white-space: pre-line`), 긴 글자는 `overflow-wrap: anywhere`. 삭제 텍스트 버튼(accent 500 14, 44x44 이상, 글자 끝이 컬럼 가장자리). 삭제 펼침(라벨 → 필드 8, 오류 문구 위 8, 취소·삭제하기 secondary 2분할 gap 8, 위 16). 4-8-1 모션 규칙(966~976행). 공통 reduced-motion 블록의 누름 규칙 선택자에 `.gb-item__delete:active`를 더했다 |
 | script.js | 맨 위 `GB` 상수(29행). `guestbookRequest`를 더하고 `initGuestbook`을 다시 썼다(1516~1884행). 다른 init 함수와 부트 순서는 그대로다 |
 
 ### 결정 사항 반영
 
-1. **커서 보정:** 로컬 `nextCursor`를 새 글이 성공하면 +1, 삭제가 성공하면 -1 한다. 더보기로 받은 항목 중 이미 보이는 id(`Set`)는 버린다. `not_found`로 항목을 뺄 때도 -1 한다. 그 글도 이 페이지가 받을 때는 서버 목록 앞쪽에 있었으므로 이유가 같다.
+1. **커서 보정(17장에서 없앰: 목록 전체를 받아 id로 거른다):** 로컬 `nextCursor`를 새 글이 성공하면 +1, 삭제가 성공하면 -1 한다. 더보기로 받은 항목 중 이미 보이는 id(`Set`)는 버린다. `not_found`로 항목을 뺄 때도 -1 한다. 그 글도 이 페이지가 받을 때는 서버 목록 앞쪽에 있었으므로 이유가 같다.
 2. **공개 안내 위치:** 폼 안, 남기기 버튼 바로 위다. 버튼의 `aria-describedby="gb-note"`로 화면 낭독기도 버튼에서 안내를 함께 읽는다.
 3. **오류 처리:** `duplicate`이면 `gb-error-duplicate`를 보이고 목록 첫 페이지를 다시 불러온다(입력값 유지). 삭제 `not_found`이면 항목을 목록에서 빼고 `gb-error-not-found`를 알린다. 응답 `entry`가 `null`이면 목록에 넣지 않는다(겉으로는 `gb-success`, 입력칸 비움).
 4. **불러오는 시점:** 섹션에 IntersectionObserver(`rootMargin: '100% 0px'`)를 걸었다. `initVenueMap`과 같은 방식이다. IntersectionObserver가 없는 브라우저는 바로 불러온다.
@@ -655,10 +655,10 @@ wreath.svg 위쪽에 여백이 있어 sprig와 화환 잎 사이는 24보다 넓
 
 ### 동작 요약
 
-- **요청:** 목록은 `GET ?action=list&limit=20&cursor=N`이다. 새 글과 삭제는 `POST`에 `Content-Type: text/plain;charset=utf-8`, 본문은 JSON 문자열이다(CORS 사전 요청 없음). `credentials: 'omit'`, `cache: 'no-store'`이고, `AbortController`로 15초에 끊는다. 결과는 JSON의 `ok`·`error`로만 판단하고, 네트워크 오류·JSON이 아닌 응답·시간 초과는 모두 "그 밖의 실패"로 본다.
+- **요청:** 목록은 `GET ?action=list&limit=20&cursor=N`이다(17장: `limit=50`으로 `nextCursor`가 null이 될 때까지). 새 글과 삭제는 `POST`에 `Content-Type: text/plain;charset=utf-8`, 본문은 JSON 문자열이다(CORS 사전 요청 없음). `credentials: 'omit'`, `cache: 'no-store'`이고, `AbortController`로 15초에 끊는다. 결과는 JSON의 `ok`·`error`로만 판단하고, 네트워크 오류·JSON이 아닌 응답·시간 초과는 모두 "그 밖의 실패"로 본다.
 - **새 글:** 검증 순서는 성함 → 말씀 → 비밀번호다(비었으면 `gb-password-empty`, 4자 미만이면 `gb-password-short`). 첫 오류 칸에 `aria-invalid`를 붙이고 포커스를 옮긴다. `elapsed`는 폼이 처음 화면에 보인 시각(IntersectionObserver)부터 잰다. 성공하면 입력칸을 비우고 `gb-success`를 보이고, 응답 `entry`를 목록 맨 위에 넣는다(그 항목만 250ms 페이드, 포커스·스크롤 이동 없음). `rate_limited`·`duplicate`·`closed`는 각 문구, 나머지 실패는 `gb-failed`이고 입력값은 남긴다.
 - **목록:** 첫 페이지(다시 불러오기와 `duplicate` 뒤 재로드 포함)는 목록 전체를 바꾼다. 늦게 도착한 이전 응답은 순번(`listSeq`)으로 버린다. 글이 없으면 `gb-list-empty`, 실패하면 `gb-list-failed`와 다시 불러오기 버튼이다. 다시 불러오기를 누르면 포커스를 목록 제목으로 옮기고, 또 실패하면 버튼으로 돌린다.
-- **더보기:** `nextCursor`가 있을 때만 보인다. 요청 중에는 `disabled`와 라벨 `gb-list-loading`이다. 성공하면 새로 붙은 항목만 페이드하고 포커스는 새 첫 항목(`li[tabindex=-1]`)으로 간다. 실패하면 버튼 바로 아래에 `gb-list-failed`(`role=status`)를 보이고, 버튼을 다시 누르면 재시도다.
+- **더보기(17장에서 없앰):** `nextCursor`가 있을 때만 보인다. 요청 중에는 `disabled`와 라벨 `gb-list-loading`이다. 성공하면 새로 붙은 항목만 페이드하고 포커스는 새 첫 항목(`li[tabindex=-1]`)으로 간다. 실패하면 버튼 바로 아래에 `gb-list-failed`(`role=status`)를 보이고, 버튼을 다시 누르면 재시도다.
 - **본인 삭제:** "삭제" 버튼(`aria-label` "{name}님의 글 삭제", `aria-expanded`, `aria-controls`)을 처음 누를 때 그 항목 안에 펼침 폼을 만든다. 항목마다 비밀번호 칸을 미리 만들지 않는다. 열면 포커스는 비밀번호 칸이고, 열려 있던 다른 펼침은 즉시 닫힌다. 취소, Esc, "삭제"를 다시 누르면 즉시 닫히고 포커스는 그 "삭제" 버튼이다. 비밀번호가 비면 `gb-delete-password-empty`, 4자 미만이면 요청 없이 `gb-error-wrong-password`다. 요청 중에는 확인·취소가 `disabled`이고 라벨은 `gb-deleting`이다. `wrong_password`·`too_many_attempts`는 문구를 보이고 칸을 비우고 `aria-invalid`를 붙이고 칸으로 포커스를 옮긴다. 그 밖의 실패는 `gb-delete-failed`이고 칸을 그대로 둔다. 성공과 `not_found`는 `inert` + 200ms 페이드 뒤 항목을 지우고, 포커스는 다음 항목, 없으면 목록 제목으로 간다. 마지막 글이 사라지면 `gb-list-empty`다.
 - **날짜:** `createdAt`을 KST로 바꿔 화면에는 "2026. 10. 13."(`aria-hidden`), 화면 낭독기에는 `gb-date-sr` "2026년 10월 13일"(`sr-only`)을 `<time datetime>` 안에 둔다.
 - **JS 꺼짐:** 폼과 목록은 `hidden` 그대로이고 `<noscript>` 안내만 보인다. JS는 켜졌는데 script.js가 실패한 경우에도 폼이 숨겨져 있으므로, 비밀번호가 주소창 쿼리로 나가는 일반 폼 제출이 생기지 않는다.
@@ -669,7 +669,7 @@ wreath.svg 위쪽에 여백이 있어 sprig와 화환 잎 사이는 24보다 넓
 |---|---|---|
 | 목록 제목 h3 모양 | Gowun Batang 700 17px/1.6, text, 가운데 | 감사 문서 R4는 "섹션 안 소제목은 한 단계 낮춘다"고만 적었다. T2(20px)보다 한 단계 아래로 T4와 같은 17px에 굵기로 제목을 표시했다. concept-director가 다르게 정하면 `.gb-list-title` 한 규칙만 고치면 된다 |
 | 삭제 성공·`not_found` 알림 | 기존 토스트 + 상태 영역(`notify()`). 성공에만 체크 아이콘 | 설계 6-2는 "결과를 알린다"고만 적었다. 항목이 사라지면 그 안의 문구도 사라지므로 항목 밖의 토스트를 썼다. 토스트 모션은 4-4 그대로다 |
-| 더보기 실패 문구 위치 | 버튼 바로 아래 `.gb-more-status` | 목록 머리의 상태 문구는 20건 위에 있어서 누른 자리에서 보이지 않는다 |
+| 더보기 실패 문구 위치(17장에서 없앰) | 버튼 바로 아래 `.gb-more-status` | 목록 머리의 상태 문구는 20건 위에 있어서 누른 자리에서 보이지 않는다 |
 | 삭제 텍스트 버튼 누름·hover | 누름 `scale(0.97)` 120ms(reduced는 opacity 0.85), hover는 밑줄 색 transparent → accent | 모션 명세 5장 "모든 버튼"과 "텍스트 링크" 행 |
 | 펼침 Esc 닫기 | 취소와 같은 동작 | 키보드 사용자가 펼침을 닫는 방법 |
 | 포커스 복귀 | 요청 중 `disabled`가 된 버튼이 포커스를 잃으면 요청이 끝난 뒤 그 버튼으로 되돌린다 | 시험에서 남기기 요청 중 Chrome의 `activeElement`가 `<body>`였다 |
@@ -702,7 +702,7 @@ wreath.svg 위쪽에 여백이 있어 sprig와 화환 잎 사이는 24보다 넓
 | form | 26/26 | 공개 안내가 폼 안 남기기 바로 위 + `aria-describedby`. Formspree `action`·`_subject` 없음. 비밀번호·함정 칸 속성. 빈 성함(공백만 포함)·빈 말씀·빈 비밀번호·3자 비밀번호 → 각 문구, `aria-invalid`, 포커스, 요청 0건. 성공: "남기는 중…" + disabled → `gb-success`, 입력칸 비움, 맨 위 항목(서버가 정리한 말씀), 날짜 KST와 낭독 문장, 포커스는 남기기 버튼 그대로, `pre-line`, `elapsed` ≥ 3000, `website` 빈 값, 행 1·메일 1. XSS: `<img src=x onerror=alert(1)>`, `<script>alert(2)</script><b>bold</b>`, `onerror="document.title=…"`가 글자로만 보이고 목록 안 img·script·b 0개, dialog 0, `document.title` 그대로. 삭제 버튼 이름도 원문 그대로. 같은 성함·말씀 다시 → `gb-error-duplicate`, 입력 유지, 목록 다시 불러옴 |
 | bots | 3/3 | 폼이 보이자마자 제출(`elapsed` < 3000), 함정 칸 채움: 둘 다 저장 0, 메일 0, 목록 그대로, 겉으로는 `gb-success` |
 | delete | 16/16 | 펼침 `aria-expanded`·`aria-controls`, 비밀번호 칸 포커스, 라벨·버튼 문구. 다른 항목을 열면 앞 것 닫힘. Esc·취소 → 즉시 닫힘, 포커스 "삭제" 버튼. 빈 칸·2자 → 요청 없이 문구. 틀림 → 문구, 칸 비움, `aria-invalid`, 포커스, 버튼 복구. 맞음 → `inert` + 페이드 → 제거, 포커스 다음 항목, 토스트·상태 "글을 삭제했습니다.", 시트 `deleted`. 6번 틀리면 5번째까지 `wrong_password`, 6번째 `too_many_attempts`, 그 뒤에는 맞는 비밀번호도 거부. 두 사람이 숨긴 글 삭제 → `not_found` → 목록에서 빠짐, "이미 삭제된 글입니다.", 포커스 다음 항목. 마지막 글 삭제 → 포커스 목록 제목, `gb-list-empty` |
-| more (45건) | 11/11 | 첫 페이지 20건 + 더보기. 내 새 글 1건과 다른 하객 글 1건 뒤 더보기: 커서 21, 겹친 Guest 20은 버리고 Guest 21~39가 붙음(빠짐·중복 없음), 포커스 Guest 21. Guest 05 삭제 뒤 더보기: 커서 40, Guest 40~45. 최종 목록이 Mine + Guest 01~45(05 제외)와 정확히 같고 더보기 숨김. 보낸 커서 0, 21, 40. 요청 중 라벨 "말씀을 불러오는 중입니다." + disabled. 더보기 실패 → 버튼 아래 `gb-list-failed`, 라벨 복구, 포커스 유지 → 다시 누르면 성공하고 문구가 지워짐 |
+| more (45건, 17장에서 시나리오를 pages·pagedelete·pagefetch로 바꿈) | 11/11 | 첫 페이지 20건 + 더보기. 내 새 글 1건과 다른 하객 글 1건 뒤 더보기: 커서 21, 겹친 Guest 20은 버리고 Guest 21~39가 붙음(빠짐·중복 없음), 포커스 Guest 21. Guest 05 삭제 뒤 더보기: 커서 40, Guest 40~45. 최종 목록이 Mine + Guest 01~45(05 제외)와 정확히 같고 더보기 숨김. 보낸 커서 0, 21, 40. 요청 중 라벨 "말씀을 불러오는 중입니다." + disabled. 더보기 실패 → 버튼 아래 `gb-list-failed`, 라벨 복구, 포커스 유지 → 다시 누르면 성공하고 문구가 지워짐 |
 | failures | 11/11 | 첫 목록 `server` → `gb-list-failed` + 다시 불러오기 → 성공, 포커스 목록 제목. 새 글 `server`·HTML 오류 페이지·연결 끊김 → `gb-failed`, `closed` → `gb-error-closed`, 시트 예외(gs catch 경로) → `gb-failed`, 1분 안의 21번째 글 → `gb-error-rate-limited`. 모두 입력 유지. 삭제 연결 끊김·`server` → `gb-delete-failed`, 비밀번호 유지 |
 | timeout | 4/4 | 새 글 응답 16.5초 지연 → 15.0초에 `gb-failed`(입력 유지), 시트에는 저장됨 → 다시 누르면 `duplicate` → 다시 불러온 목록 맨 위에 그 글. 목록 응답 지연 → 약 15초 뒤 `gb-list-failed` + 다시 불러오기 |
 | motion | 5/5 | 항목 `gb-in 0.25s`, 펼침 0.25s `--ease-out`, 오류 문구 0.2s, 지우는 항목 `opacity 0.2s` `--ease-in`, 방명록 안 무한 애니메이션 0 |
@@ -731,7 +731,7 @@ wreath.svg 위쪽에 여백이 있어 sprig와 화환 잎 사이는 24보다 넓
 
 ### 알아 둘 점
 
-- 다른 하객이 그사이 지운 글은 보정하지 못한다. 커서가 한 칸 앞서서 더보기에서 한 건을 건너뛸 수 있다(새로고침하면 보인다). 결정 1의 보정은 이 페이지에서 일어난 쓰기와 삭제만 반영한다. 다른 하객이 그사이 쓴 글로 생기는 겹침은 id 중복 제거가 막는다(시험함).
+- (17장에서 해소: 커서 보정을 없앴다) 다른 하객이 그사이 지운 글은 보정하지 못한다. 커서가 한 칸 앞서서 더보기에서 한 건을 건너뛸 수 있다(새로고침하면 보인다). 결정 1의 보정은 이 페이지에서 일어난 쓰기와 삭제만 반영한다. 다른 하객이 그사이 쓴 글로 생기는 겹침은 id 중복 제거가 막는다(시험함).
 - 두 사람이 시트에서 숨긴 글은 목록 캐시(60초) 때문에 최대 60초 동안 보인다. 그사이 하객이 삭제를 누르면 `not_found`로 목록에서 빠진다(시험함).
 - 첫 목록 요청이 진행 중일 때 새 글을 쓰면, 늦게 온 첫 페이지가 목록을 바꾸면서 그 글이 잠시 빠질 수 있다(첫 페이지가 그 글보다 먼저 계산된 경우). 목록은 한 화면 앞에서 미리 받으므로 실제로는 생기기 어렵다.
 
@@ -742,4 +742,83 @@ wreath.svg 위쪽에 여백이 있어 sprig와 화환 잎 사이는 24보다 넓
 - `gb-{360,390,430}.png`: 긴 글 3건 + 펼친 삭제 폼과 오류 문구
 - `form-after-390.png`: XSS 문자열 글과 `duplicate` 문구
 - `nojs-390.png`: JS 꺼짐(머리 + noscript 안내)
+- 원자료 `results-*.json`
+
+## 17. 방명록 페이지 번호와 긴 글 접기 (2026-10-14)
+
+`00_user-input.md` 마지막 절 "방명록 목록을 페이지 번호 방식으로"(덧붙인 줄 포함), 카피 시트 `### guestbook_pager`·`### guestbook_expand`, 모션 명세 4-8-1(2026-10-14), 감사 문서 R1~R9를 반영했다. 웹 앱(`apps-script/guestbook.gs`)은 고치지 않았고 다시 배포할 필요가 없다. 방명록 밖의 코드는 공통 reduced-motion 누름 규칙의 선택자 목록만 바꿨다.
+
+### 바꾼 범위
+
+| 파일 | 바꾼 것 |
+|---|---|
+| index.html | `.gb-more`(말씀 더 보기)와 `.gb-more-status`를 지웠다. 목록 아래에 `nav.gb-pager[aria-label="방명록 페이지"][hidden]`(원형 이전·다음 버튼 + 번호 자리 `.gb-pager__pages`), `p.gb-page-status.sr-only[role=status]`, 화살표 버튼 원본 `template.gb-fold-template`(16px SVG `M3 6l5 5 5-5`, stroke 1.4, round)을 두었다. `ui-text`에 `gb-page-number-aria`, `gb-page-status`, `gb-expand-aria`, `gb-collapse-aria`를 더했다 |
+| style.css | `.gb-more`·`.gb-more-status` 규칙을 지웠다. 긴 글 접기(`.gb-item__message.is-foldable` 3줄 높이 + `height` 전환, `::after` 흐림, `.gb-fold` 24x24 + 44x44 터치 영역), 페이지 번호 줄(`.gb-pager`, `.gb-pager__nav`, `.gb-pager__page`), `.gb-pager` 페이드, 안전선(`.gb-list-title`·`.gb-item`의 `scroll-margin-top`)을 더했다. 공통 reduced-motion 누름 규칙에 `.gb-fold`, `.gb-pager__nav`, `.gb-pager__page`를 더했다 |
+| script.js | `GB`에 `PAGE: 5`, `FETCH: 50`, `PAGE_LINKS: 5`, `FOLD_LINES: 3`. `initGuestbook`에서 더보기와 커서 보정(`shown`, `nextCursor`, `setNextCursor`, `newItems`, `loadMore`)을 지우고 `loadAll`, `renderPage`, `renderPager`, `turnPage`, `alignToSafeLine`, `measureFold`, `toggleFold`를 더했다. 새 글·삭제는 받아 둔 목록(`entries`)을 고친 뒤 페이지를 다시 그린다 |
+
+### 동작
+
+- **불러오기:** 섹션이 한 화면 앞에 오면(기존 IntersectionObserver, 그 전에는 요청 0건) `GET ?action=list&limit=50&cursor=0`부터 `nextCursor`가 `null`이 될 때까지 차례로 받는다. 커서가 앞으로 가지 않는 응답도 끝으로 본다(무한 반복 방지). id로 중복을 거른다: 두 요청 사이에 새 글이 들어오면 서버 목록이 한 칸 밀려 한 건이 겹친다. 모두 받은 뒤 1페이지를 그린다. 요청이 하나라도 실패하면 받은 것을 버리고 `gb-list-failed` + 다시 불러오기다. 다시 불러오기와 `duplicate` 뒤 재로드도 같은 함수다.
+- **페이지 그리기:** 페이지에 남는 항목은 그대로 두고(접힘 상태, 삭제 펼침, 포커스 유지) 새로 넣는 항목만 `.is-new`로 페이드한다. 지워지는 중인 항목은 페이드가 끝날 때까지 자리에 둔다. 페이지를 넘길 때는 네트워크 요청이 없다.
+- **번호 줄:** 2페이지 이상일 때만 보인다. 번호는 최대 5개이고 현재 페이지를 가운데 두되 양 끝에서는 멈춘다(24페이지에서 1→1~5, 4→2~6, 23·24→20~24). 현재 번호는 `aria-current="page"`, 번호 이름은 `gb-page-number-aria`. 첫·마지막 페이지의 이전·다음은 `aria-disabled="true"` + opacity 0.3이고 눌러도 아무 일이 없다. `disabled`를 쓰지 않은 것은 갤러리 버튼과 같은 이유(포커스를 잃지 않게)다. 현재 번호를 눌러도 아무 일이 없다.
+- **페이지 넘김:** 새 페이지 항목을 모두 250ms 페이드(`--dur-modal`), 목록 제목이 안전선(`scroll-margin-top`, 보통 72px) 위에 있을 때만 즉시 `scrollIntoView({ block: 'start' })`, 제목에 `focus({ preventScroll: true })`, 50ms 뒤 `.gb-page-status`에 "{total}페이지 중 {n}페이지".
+- **새 글 성공:** 받아 둔 목록 맨 앞에 넣고 1페이지를 그린다. 새 글만 페이드하고 다른 4건은 바로 보인다. 스크롤·포커스 이동은 없다.
+- **삭제 성공·`not_found`:** 받아 둔 목록에서 빼고 같은 페이지를 바로 다시 채운다(다음 페이지에서 당겨 온 항목만 페이드). 포커스는 다음 항목, 없으면 목록 제목. 그 페이지가 비면(마지막 페이지의 유일한 글) 200ms 페이드 동안 포커스를 제목에 두었다가(스크롤 없이) 이전 페이지로 넘긴다. 넘김은 위 "페이지 넘김"과 같다.
+- **긴 글 접기:** 페이지를 그릴 때, 그린 뒤 `document.fonts.ready`, `.gb-list` 너비가 바뀔 때(ResizeObserver, 너비만 비교) 잰다. `scrollHeight > 줄 높이 × 3 + 1`이면 `.is-foldable`과 화살표를 붙이고, 3줄 이하가 되면 뗀다(펼친 글은 펼친 채 둔다). 펼침은 높이를 `scrollHeight`px로 350ms(`--dur-snap`, `--ease-standard`), 끝나면 `--dur-snap` + 50ms 타이머로 `auto`. 접기는 시작할 때 항목 위 끝이 안전선 위면 먼저 맞추고, 지금 높이 px → reflow → 인라인 높이 제거로 3줄로 간다. 전환 중에 다시 누르면 지금 높이에서 반대로 간다. 글 블록 클릭도 같은 토글이지만 선택된 글자가 있거나 `event.detail > 1`이면 무시한다. 화살표는 `aria-expanded`, `aria-controls`(말씀 `p`의 id), 이름 `gb-expand-aria`/`gb-collapse-aria`이고 탭 순서에는 화살표만 있다.
+
+### 명세와 다르게 정하거나 명세에 없던 것
+
+| 항목 | 정한 것 | 이유 |
+|---|---|---|
+| 페이지 넘김 알림 | 제목 포커스와 `gb-page-status` 알림을 **둘 다** 쓴다 | 카피 시트는 "포커스를 목록으로 옮기면 알림을 쓰지 않는다"고 적었고, 모션 명세 4-8-1은 제목 포커스와 `role=status` 알림을 함께 정했다. 제목 "남겨 주신 말씀"만으로는 몇 페이지인지 알 수 없어 모션 명세를 따랐다. copy-writer와 motion-designer가 한쪽으로 맞춰야 한다 (2026-10-14 오케스트레이터: 카피 시트를 이 구현에 맞췄다) |
+| 알림 요소 | `p.gb-page-status.sr-only`, 화면에는 보이지 않음 | 현재 번호가 화면에 이미 보인다. 토스트가 쓰는 `#live-status`와 나눠서, 삭제 → 이전 페이지 흐름에서 두 알림이 서로 지우지 않게 했다 |
+| 번호 모양 | Cormorant Garamond 400 16px, `lining-nums tabular-nums`, muted. 현재 번호는 text 색 + accent 1px 밑줄(offset 6). hover(정밀 포인터만)는 밑줄 accent 200ms | 바로 옆 원형 버튼과 함께 갤러리 조작 줄(T12 카운터)과 같은 모양으로 맞췄다. 현재 번호를 색만으로 구분하지 않으려고 밑줄을 썼다. concept-director가 바꾸면 `.gb-pager__page` 규칙만 고치면 된다 |
+| 번호 버튼 크기 | 40x44(이전·다음 44x44, 사이 8) | 360 폭의 컬럼 312px에 원형 버튼 2개 + 번호 5개를 넣으면 304px. 번호도 44 폭이면 324px로 넘친다 |
+| 이전·다음 CSS | 갤러리 `.g-nav`와 같은 값을 `.gb-pager__nav`로 따로 둠 | 갤러리 규칙을 고치지 않으려고 |
+| 넘김 중에 온 삭제 응답 | 항목이 화면에 없어도 성공·`not_found`면 목록에서 빼고 지금 페이지를 다시 그리고 토스트를 띄운다 | 예전처럼 무시하면 지운 글이 그 페이지로 돌아갔을 때 다시 보인다 |
+| 글꼴 재측정 | 그릴 때마다 `document.fonts.ready` 뒤 한 번 | 명세는 "한 번"이다. Pretendard dynamic subset은 하객 글의 글자에 따라 새 subset을 그때 받으므로, 페이지마다 다시 잰다(5건이라 비용이 작다) |
+| 화살표 버튼 모서리 | `border-radius: 50%` | 키보드 포커스 링이 원으로 보이게 |
+
+### 확인 (headless Chrome CDP, DPR 2, 터치 에뮬레이션)
+
+실제 웹 앱 URL에는 요청을 한 건도 보내지 않았다. `realpage` 밖의 시나리오는 모의 사이트(:8792)에서 Google 주소를 막고 돌렸고, `realpage`는 실제 `index.html`을 열어 Google로 가는 요청을 CDP `Fetch`에서 모두 모의 응답으로 채웠다(멈춘 요청 수 = Google 요청 수). 결과 17개 시나리오 203/203.
+
+| 시나리오 | 결과 | 확인한 것 |
+|---|---|---|
+| pages | 36/36 | 0·3·5·6·23·120건: 1페이지 건수, 번호 줄 표시 여부, 번호 창, 이전 비활성, 다음 비활성(1페이지뿐일 때), 요청 `50/0`(120건은 `50/0, 50/50, 50/100`). 23건에서 번호 줄 `gb-in 0.25s`, 번호·nav·화살표 이름. 120건: 가장 큰 번호를 눌러 1→24 순회, 페이지마다 5건과 번호 창이 맞음, 이전으로 23·22·21 창, 넘기는 동안 요청 0, 마지막 페이지에서 다음·현재 번호를 눌러도 그대로. 넘김: 아래에서 누르면 제목이 72px에 맞춰짐, 5건 모두 페이드, 포커스 제목, 알림 "5페이지 중 2페이지". 제목이 안전선 아래면 스크롤 0. 다음 버튼 Enter·Space. 1페이지 이전 비활성. 3페이지에서 새 글 → 1페이지 맨 앞, 새 글만 `.is-new`, 스크롤 0, 포커스 남기기 버튼 |
+| pagedelete | 9/9 | 11건 3페이지의 유일한 글 삭제: 페이드 중 포커스 제목 → 2페이지(06~10), 번호 1~2, 다음 비활성, 포커스 제목, 알림 "2페이지 중 2페이지", 토스트. 6건 2페이지 삭제 → 1페이지, 번호 줄 숨김. 1페이지 가운데 삭제 → 01,03,04,05,06, 실행 중 `gb-in`은 당겨 온 06뿐, 포커스 03, 알림 없음. 2페이지 `not_found` → 당겨 채움, 토스트, 포커스 다음. 삭제 요청 중 다음 페이지로 넘김 → 응답 뒤 토스트, 2페이지 07~11, 1페이지 02~06 |
+| pagefetch | 6/6 | 120건에서 cursor 50 요청 실패 → `gb-list-failed` + 다시 불러오기, 목록 0, 번호 줄 숨김, 요청 `50/0, 50/50`에서 멈춤. 다시 불러오기 → `50/0, 50/50, 50/100`, 1페이지, 포커스 제목. 60건에서 두 요청 사이에 새 글 → 둘째 응답 첫 글이 Guest 50(겹침), 12페이지를 모두 넘겨 60건 서로 다름·Guest 50 한 번·마지막 56~60 |
+| pagewidths (360, 390, 430) | 12/12 | 화살표 24x24 + 터치 영역 `::before` -10px(44x44), 글 아래 8, 항목 아래 선 위 16, 가운데. 두 자리 번호 창(9~13 등)이 컬럼 안(좌우 24 이상), 가로 스크롤 없음, 겹침 없음, 이전·다음 44x44, 번호 40x44 이상 |
+| fold | 28/28 | 1줄·정확히 3줄·430에서 3줄인 글: 화살표·흐림·pointer 없음, 눌러도 그대로. 4줄 글: 71.4px, 화살표, `aria-expanded=false`, `aria-controls`, 이름, `::after` 그라디언트, `height`·화살표·흐림 모두 0.35s ease-standard. 글 클릭 → 중간 높이 표본 → `auto`, `aria-expanded=true`, 접기 이름, 흐림 0, 화살표 180°, 스크립트가 포커스를 옮기지 않음. 다시 클릭 → 3줄. 화살표 클릭 열기·닫기, Enter 열기·Space 닫기(포커스 화살표 유지), 항목 안 탭 순서 화살표 → 삭제. 글자 드래그 선택은 펼치지 않음, 더블클릭의 둘째 클릭은 되돌리지 않음. 전환 중 반대로 누르면 튀지 않음. 항목 위 끝이 화면 위일 때 접으면 즉시 72에 맞추고 접는 동안 그대로, 안전선 아래면 스크롤 0. 430→360: 4줄이 된 글이 접힘, 펼친 상태로 430에 가면 3줄이라 접기 장치가 떨어지고 긴 글은 펼친 채, 다시 360에서 접힘. 글꼴: `fonts.ready`를 붙잡은 채 글자 폭을 넓히면 그대로, 풀면 접힘 |
+| 기존 시나리오 | 112/112 | lazy 12, realpage 8, form 27(XSS 성함이 화살표 이름에도 글자로 들어감을 더함), bots 3, delete 16, failures 11, timeout 4(재전송 `duplicate` 뒤 전체 재로드 포함), reduced 8(접기 즉시·흐림·화살표 0s, 페이지 넘김 즉시 + 포커스 제목을 더함), motion 5, nojs 2, widths 15(긴 글이 접힌 상태), focusloss 1 |
+
+회귀: qa7 회귀 드라이버(16장과 같은 묶음)를 `HEAD`와 작업 트리에 같은 시각에 돌려 비교했다. 이번에는 `HEAD`도 실제 웹 앱 URL을 담고 있어서, `git archive`로 푼 `HEAD`를 둘째 모의 서버(`--port 8796 --site-port 8798 --root …`)로 서빙해 endpoint를 모의 서버로 바꿨다(qa7은 Google을 막지 않는다). 러너 `scratchpad/gb-regress17/run.sh`, 비교 `compare.out`.
+
+| 항목 | 결과 |
+|---|---|
+| 같음 | firstscreen, nojs, ax, dday, lbkeys, account-reduced |
+| 차이가 난 곳(방명록 변경 때문) | widths(5개 폭)의 작은 터치 대상 목록에서 숨은 더보기(0x0)가 숨은 이전·번호·다음(0x0)으로 바뀜. 글 0건이라 번호 줄은 숨어 있고, 보일 때는 44x44·40x44다 |
+| 실행마다 다른 값 | 보케 구간별 개수·`perZoneMaxHeld`·`minExcludeGap`(무작위 배치, 15장), 실패 요청 id 숫자, 계좌 접기 페이드 표본의 1~2ms·0.001 차이, reducednotice의 외부 요청 순서(카카오맵 SDK와 모의 목록 요청 순서가 바뀜) |
+| 콘솔 | 새 오류 0건. `interact`의 `audio/missing.mp3` 404는 시나리오가 일부러 낸 것이고 HEAD에도 있다 |
+| 캐러셀 | 두 실행을 같은 시각에 돌리자 둘 다 600초 제한에 걸려 중간에 끊겼다(HEAD 21건, 작업 트리 28건까지 모두 통과). 작업 트리만 따로 제한 없이 다시 돌려 110/110 통과(16장 HEAD 110/110과 같은 수) |
+
+### 모의 서버·시험 스크립트 변경 (scratchpad, 저장소에 넣지 않음)
+
+- `server.mjs`: `failCursor` 옵션(실행 중 `POST /__mock/config {failCursor: 50}`). 그 커서의 목록 요청만 `{ok:false, error:'server'}`로 답한다. 연결을 끊는 방식은 Chrome이 재사용 연결에서 끊긴 GET을 조용히 한 번 다시 보내서(같은 커서가 두 번 기록됨) 쓰지 않았다.
+- `gb-test.mjs`: `more` 시나리오를 `pages`, `pagedelete`, `pagefetch`, `pagewidths`, `fold`로 바꿨다. `lazy`는 `limit=50`, `form`·`reduced`에 위 검사를 더했다. 16장 판은 `gb-test.v16.mjs`로 남겼다.
+- `scratchpad/qa8/ui.mjs`의 `more` 시나리오는 고치지 않았다(QA가 다시 짠다).
+
+### 알아 둘 점
+
+- 첫 표시까지 걸리는 시간은 글 수에 비례한다. 요청은 50건마다 하나씩 차례로 나가고, 모두 받은 뒤에야 1페이지가 보인다. 실제 웹 앱의 요청당 시간은 재지 않았다(실제 URL에 요청하지 않는 조건).
+- 목록을 받는 중에 새 글을 쓰면, 받기를 마친 목록이 그 글을 덮어 잠시 빠질 수 있다(16장과 같은 한계). 섹션 한 화면 앞에서 미리 받으므로 실제로는 생기기 어렵다.
+- 더블클릭으로 단어를 고르면 첫 클릭에 글이 한 번 펼쳐진다. 명세대로 `event.detail > 1`만 무시한 결과다. 첫 클릭까지 막으려면 더블클릭 간격만큼 펼침을 늦춰야 한다.
+- 목록 제목은 reveal 그룹 안에 있다. 하객이 제목을 지나치지 않고 페이지 번호 줄로 바로 왔다면(예: 주소 해시) 넘김 뒤 제목이 reveal 전 상태(투명, 12px 아래)일 수 있다. 시험 화면 캡처에서만 보였고 보통 스크롤에서는 생기지 않는다. (9차 QA: 캡처가 reveal 페이드 800ms가 끝나기 전에 찍힌 것이다. 제목 색은 내내 text이고 결함이 아니다.)
+
+### 스크린샷 (scratchpad, 저장소에 넣지 않음)
+
+`scratchpad/gb-mock/shots/`
+
+- `pager-{360,390,430}.png`: 120건 + 긴 글, 두 자리 번호 창
+- `p17-smoke.png`: 390, 1페이지(접힌 긴 글 + 번호 줄)
 - 원자료 `results-*.json`

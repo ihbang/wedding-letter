@@ -21,7 +21,7 @@ performance_budget:              # (2026-10-12 보케 B안) 보케 항목 전면
   infinite_loops: ["bokeh (구간별, 조건부)", "string-lights 전구 호흡 (calendar 화면 안일 때만)", "BGM glow 링 (재생 중일 때만)", "hero 스크롤 큐 (첫 스크롤 전까지만)"]
   concurrent_loops_max: 3
   animated_props: ["transform", "opacity", "stroke-dashoffset (장식 SVG 단발 1회)", "canvas drawImage"]
-  forbidden_props: ["width", "height", "top", "left", "margin", "padding", "filter", "box-shadow", "backdrop-filter", "background-position"]
+  forbidden_props: ["width", "height", "top", "left", "margin", "padding", "filter", "box-shadow", "backdrop-filter", "background-position"]   # 예외: 방명록 긴 글 접기의 height 하나(4-8-1, 2026-10-14 사용자 결정)
   fps_target: 60
   reduced_motion_strategy: "static-only"   # 루프·트랜지션 전부 정지 또는 즉시. 손가락으로 직접 조작하는 드래그·핀치만 유지
 concept_alignment:
@@ -40,6 +40,8 @@ concept_alignment:
 > **2026-10-12 변경 (보케 B안)**: 보케를 "작은 전구 불빛"(B안)으로 바꿨다(사용자 결정, `00_user-input.md` "보케를 작은 전구 불빛으로"). share/closing 분리(c6d4bdd)에 따라 보케 구간은 hero, calendar, closing이다. 글자 대비는 불투명도 상한 대신 글자 영역 회피(`data-bokeh-exclude="text"`)로 지킨다. 바뀐 곳은 frontmatter, 0, 1(전면 교체), 2-1, 2-6, 2-7, 2-8(신설), 3-1, 5, 7, 8, 10, 11이고 각 위치에 "(2026-10-12 보케 B안)"을 붙였다. 이 결정은 컨셉 시트 motion_direction의 보케 상한보다 우선한다.
 >
 > **2026-10-13 변경 (방명록 목록)**: 방명록에 공개 글 목록, 더보기, 본인 삭제가 생겼다(`_workspace/08_guestbook-list-design.md` 6장). 바뀐 곳은 2-6, 4-8-1(신설), 7이고 각 위치에 "(2026-10-13 방명록 목록)"을 붙였다.
+>
+> **2026-10-14 변경 (방명록 페이지 번호)**: 방명록 목록을 "말씀 더 보기"에서 한 페이지 5개 + 페이지 번호 방식으로 바꾸고, 3줄 넘는 글을 흐림 + 작은 화살표로 접어 글을 누르면 펼치게 했다(사용자 결정, `00_user-input.md` "방명록 목록을 페이지 번호 방식으로"). 긴 글 접기의 `height` 전환은 사용자가 원해 허용한 유일한 높이 애니메이션이다. 바뀐 곳은 frontmatter `forbidden_props` 주석과 4-8-1이고 바뀐 줄에 "(2026-10-14)"를 붙였다.
 
 ## 0. 모션 무드 결정
 
@@ -1450,25 +1452,42 @@ QA 확인값:
 | 결과 | 폼 아래 상태 문구 `role="status"`, `opacity 0→1` 200ms. 성공 시 입력값 초기화, 실패·접수 주소 미설정 시 입력값 유지 |
 | reduced-motion | 상태 문구 즉시 표시 |
 
-#### 4-8-1. 방명록 목록 (Should) (2026-10-13 방명록 목록)
+#### 4-8-1. 방명록 목록 (Should) (2026-10-13 방명록 목록, 2026-10-14 페이지 번호 방식)
 
-설계 `08_guestbook-list-design.md` 6장의 목록, 더보기, 본인 삭제에 붙는 모션이다. 기준은 6-3: 나타날 때는 `opacity`만 바꾸고, 높이·위치 애니메이션은 쓰지 않는다. 새 토큰은 없다.
+설계 `08_guestbook-list-design.md` 6장의 목록·본인 삭제와 `00_user-input.md` "방명록 목록을 페이지 번호 방식으로"(한 페이지 5개, 페이지 번호 줄, 3줄 접기)에 붙는 모션이다. 기준은 설계 6-3: 나타날 때는 `opacity`만 바꾸고, 높이·위치 애니메이션은 쓰지 않는다(예외: 아래 "긴 글 접기"의 `height`, 2026-10-14 사용자 결정). 스크롤은 모두 즉시이고 부드러운 스크롤은 쓰지 않는다(5장 "쓰지 않는 것"). 새 토큰은 없다.
+
+**안전선 (2026-10-14)**: 목록 제목과 항목에 `scroll-margin-top: calc(max(16px, env(safe-area-inset-top)) + 56px)`(보통 72px). 고정 머리글은 없고, 위에 고정된 것은 BGM 버튼(위 끝 `max(16px, safe-area)`, 높이 40)뿐이라 그 아래로 16px 띄운 선이다. 아래 표의 "안전선에 맞춘다"는 DOM을 바꾼 **뒤에** 요소의 `getBoundingClientRect().top`을 재서 이 값보다 작을 때만 `el.scrollIntoView({ block: 'start' })`(기본 동작이라 즉시)를 부르는 것이다. 안전선 아래에 보이면 스크롤하지 않는다. 바꾼 뒤에 재야 Chrome scroll anchoring이 먼저 위치를 옮겨도 결과가 같다. 글 접기만 접기를 시작할 때 잰다(높이가 350ms 동안 줄어들고, 항목 위 끝은 자기 높이와 상관없다).
 
 | 상황 | 모션 | reduced-motion |
 |---|---|---|
-| 첫 페이지 20건 도착 | 20건을 한 번에 넣고 묶음 전체를 `opacity 0→1` 250ms(`--dur-modal`, `--ease-out`)로 보인다. **순차 등장 없음**: 120ms 간격이면 마지막 항목이 2.3초 뒤에 뜨고 2-0의 "stagger 최대 2"를 넘는다. 첫 페이지는 보통 화면 한 개 앞에서 미리 받으므로 순차 등장을 넣어도 대부분 화면 밖에서 끝난다 | 즉시 표시 |
-| 새 글 전송 성공 | 응답 `entry`를 목록 맨 위에 넣고 그 항목만 같은 250ms 페이드. 기존 항목은 다시 그리지 않는다. 목록으로 스크롤하지 않고 포커스도 옮기지 않는다(알림은 4-8 상태 문구). 배경 강조·깜빡임 없음 | 즉시 표시 |
-| 더보기 | 요청 중에는 버튼을 `disabled`로 두고 라벨을 불러오는 중 문구로 즉시 바꾼다. 도착한 항목을 끝에 붙이고 새로 붙은 묶음만 250ms 페이드(순차 등장 없음). 포커스는 새로 붙은 첫 항목(`tabindex="-1"`)으로 옮기고 기본 스크롤만 쓴다(부드러운 스크롤 없음). 마지막 페이지면 버튼을 즉시 `hidden` | 즉시 표시 |
+| 목록 도착 (2026-10-14) | 전체를 다 받은 뒤 1페이지 5건을 한 번에 넣고, 목록과 페이지 번호 줄(2페이지 이상일 때만 보임)을 함께 `opacity 0→1` 250ms(`--dur-modal`, `--ease-out`). **순차 등장 없음**: 5건이면 2-0의 stagger 상한(`--i` 2)을 넘고, 페이지를 넘길 때마다 반복되어 읽기를 늦춘다. 스크롤·포커스 이동 없음 | 즉시 표시 |
+| 페이지 넘김: 번호, 이전·다음 (2026-10-14) | 기존 항목을 즉시 빼고 새 페이지 `li` 5개를 모두 `.is-new`로 넣어 함께 250ms 페이드. 퇴장 페이드·순차 등장·가로 슬라이드 없음. 새 페이지 항목은 모두 접힌 상태이고, 열려 있던 삭제 펼침은 버린다. 그다음 **목록 제목을 안전선에 맞춘다**(아래쪽 번호를 누른 사람이 새 페이지 첫 글부터 읽게). 포커스는 목록 제목(`tabindex="-1"`)으로 `focus({ preventScroll: true })`: 스크롤 위치와 포커스 위치가 같아지고, 스크린 리더는 새 목록 맨 앞부터 읽는다. 몇 페이지인지는 지금 `.gb-more-status` 자리의 `role="status"` 문구로 알린다(문구는 copy-writer). 현재 번호 표시와 번호 창(최대 5개) 이동은 즉시 바뀐다(움직이는 밑줄·슬라이드 없음). 이전·다음 비활성은 R6대로 `opacity 0.3` 정지 + `aria-disabled`, 누름 scale 없음(캐러셀 버튼과 같음) | 페이드 즉시. 스크롤·포커스는 같음 |
+| 페이지마다 다른 높이 (2026-10-14) | 페이지 번호 줄이 페이지마다 다른 높이에 오는 것은 그대로 둔다. 가장 긴 페이지에 맞춘 `min-height`는 마지막 페이지(1~4건)에 빈 띠를 남기고, 글을 펼치면 어차피 맞지 않는다. 넘긴 뒤에는 제목부터 다시 읽으므로 버튼을 같은 화면 위치에 붙잡아 둘 이유가 약하다 | 해당 없음 |
+| 글 펼치기 (2026-10-14) | 접힌 글(아래 "긴 글 접기")의 글 블록이나 화살표 버튼을 누르면 `height`를 3줄 높이에서 `scrollHeight`px로 350ms(`--dur-snap`, `--ease-standard`). 같은 시간·이징으로 흐림 `opacity 1→0`, 화살표 `rotate(0→180deg)`(위를 가리켜 다시 누르면 접힌다는 표시). 끝나면 `height: auto`. 스크롤 없음. 포커스는 옮기지 않는다(버튼으로 열었으면 버튼에 그대로) | 즉시 펼침. 흐림·화살표는 상태만 바뀜 |
+| 글 접기 (2026-10-14) | 펼친 글 블록이나 화살표를 다시 누르면, 시작하는 순간 항목 위 끝을 재서 **안전선 위에 있으면 먼저 즉시 안전선에 맞춘다**. 긴 글을 끝까지 읽고 아래쪽에서 누르면 항목 위 끝이 이미 화면 위에 있어, 그대로 접으면 항목이 통째로 화면 위로 사라지기 때문이다. 그다음 `height` 지금 px → 3줄, 흐림 `0→1`, 화살표 `180→0deg`를 같은 350ms로. 항목 위 끝은 자기 높이와 상관없어 접는 동안 움직이지 않는다. 안전선 아래에 보이면 스크롤 없음. 포커스 이동 없음(안전선에 맞춘 뒤에도 화살표는 화면 안에 있다) | 즉시 접힘. 안전선 스크롤은 같음 |
+| 새 글 전송 성공 | 기존 규칙에 맞춘다: 받아 둔 목록 맨 앞에 넣고 1페이지로 다시 그리되 새 글 항목만 250ms 페이드(나머지 4건은 즉시). 스크롤·포커스 이동 없음(알림은 4-8 상태 문구). 배경 강조·깜빡임 없음 | 즉시 표시 |
 | 삭제 펼침 열기 | 펼침 영역(비밀번호 칸, 확인·취소)의 `hidden`을 풀어 바로 자리를 차지하게 하고 내용만 `opacity 0→1` 250ms(`--dur-modal`, `--ease-out`). 4-4 계좌 접기와 같은 방식이다. 포커스는 비밀번호 칸, "삭제" 버튼은 `aria-expanded="true"`. 다른 항목의 펼침이 열려 있으면 그쪽은 즉시 닫는다(한 번에 하나) | 즉시 표시 |
 | 삭제 펼침 닫기(취소) | 즉시 `hidden`. 페이드 아웃하면 빈 띠가 남았다가 한 번에 줄어들어 오히려 튄다. 포커스는 그 항목의 "삭제" 버튼으로 | 같음 |
 | 삭제 요청 중·실패 | 요청 중에는 확인·취소 버튼 `disabled`, 스피너 없음. 실패 문구는 입력칸 아래에 `opacity 0→1` 200ms(`--dur-fast`, `--ease-out`, 4-8 결과 문구와 같음). 흔들기(shake) 없음 | 즉시 표시 |
-| 삭제 성공 | 항목에 `inert`를 붙이고 `opacity 1→0` 200ms(`--dur-fast`, `--ease-in`, 토스트 퇴장과 같음), `token('--dur-fast')`ms 뒤 `li`를 제거한다. 아래 항목은 애니메이션 없이 한 번에 올라온다. 포커스는 다음 항목, 없으면 목록 제목(`tabindex="-1"`) | 0ms이므로 바로 제거 |
+| 삭제 성공 | 항목에 `inert`를 붙이고 `opacity 1→0` 200ms(`--dur-fast`, `--ease-in`, 토스트 퇴장과 같음), `token('--dur-fast')`ms 뒤 `li`를 제거한다. 아래 항목은 애니메이션 없이 한 번에 올라온다. (2026-10-14) 같은 페이지를 다시 채우며, 다음 페이지에서 당겨 온 항목만 250ms 페이드(`.is-new`), 스크롤 없음. 포커스는 다음 항목, 없으면 목록 제목(`tabindex="-1"`). 그 페이지가 비면 이전 페이지로 가며 "페이지 넘김" 행(페이드·안전선·포커스)을 그대로 따른다 | 0ms이므로 바로 제거·표시 |
 | 목록 상태 문구(불러오는 중, 글 없음, 오류 + 다시 시도) | 나타날 때 `opacity 0→1` 200ms(`--dur-fast`, `--ease-out`), 사라질 때 즉시. **스피너·스켈레톤 없음**: 불러오는 중은 문구만 보인다(4-8 "보내는 중", 4-3 BGM 로딩과 같은 원칙). 그래서 이 절에는 무한 루프가 없다 | 즉시 표시 |
 
-- **reveal과의 관계**: guestbook reveal 그룹은 ① 머리 ② 폼 + 공개 안내 ③ 목록 머리(제목 h3 + 상태 문구)다(2-6). `ul`과 더보기 버튼은 reveal 대상이 아니고 항목에도 `.reveal`을 붙이지 않는다. reveal IO는 초기화 때 있던 그룹만 관찰하고, 그룹 높이가 화면 높이의 6배(관찰 띠 0.9 ÷ 0.15)를 넘으면 `threshold: 0.15`에 닿지 못하기 때문이다. 글 20건이면 375 x 548에서 항목당 평균 165px만 넘어도 이 한계를 넘는다. 항목은 위 표의 페이드로만 나타난다. JS가 꺼지면 목록 자체를 숨기므로(설계 6-1) `html.js` 게이트는 따로 두지 않는다.
-- reduced-motion: 6장 reduce 블록이 `--dur-modal`·`--dur-fast`를 이미 0ms로 바꾸므로 추가 규칙이 없다. 런타임 전환도 토큰을 따라간다.
-- 포커스 이동은 접근성 요구사항이라 모션 우선순위(Should)와 상관없이 구현한다. 더보기와 삭제 성공은 설계 6-2에 있고, 펼침 열기·닫기는 이 절에서 더했다.
-- 버튼 누름(삭제, 확인, 취소, 더보기, 다시 시도)은 5장 공통 규칙을 따른다. 바뀌는 속성은 opacity뿐이고 무한 루프가 늘지 않는다(8장 표 그대로). 방명록은 보케 구간이 아니다.
+**긴 글 접기 (2026-10-14, 사용자 결정)**: 펼치기·접기 글자 버튼 대신 셋째 줄 흐림과 작은 아래 화살표로 글이 더 있다는 것을 알리고, 글을 누르면 펼친다. **이 항목에 한해 `height` 애니메이션을 허용한다**(사용자 결정. frontmatter `forbidden_props`와 이 절 머리의 "높이 애니메이션 없음"에 대한 유일한 예외).
+
+| 항목 | 값 |
+|---|---|
+| 대상과 측정 | `p.scrollHeight > 3줄 높이 + 1`인 글만 `.is-foldable`. 3줄 이하 글에는 흐림·화살표·버튼·글 클릭이 모두 없다(버튼 `hidden`). 페이지를 그릴 때, `document.fonts.ready` 뒤 한 번, `.gb-list` **너비**가 바뀔 때(ResizeObserver. 펼치는 동안 높이 변화로 매 프레임 불리므로 너비만 비교) 다시 잰다. 다시 잴 때 펼친 글은 펼친 채 두고, 3줄 이하가 되면 접기 장치를 뗀다 |
+| 접힌 높이 | `height: calc(3em * 1.7)`(14px / 1.7 세 줄 = 71.4px) + `overflow: hidden`. `-webkit-line-clamp`는 쓰지 않는다: 높이 전환이 되지 않고, 말줄임표가 흐림과 겹친다 |
+| 흐림 | 말씀 `p`의 `::after`: 아래 끝 한 줄 높이(`1.7em`)에 `linear-gradient(transparent, var(--color-bg))`. 셋째 줄이 바탕으로 사라진다. 방명록 바탕이 background라(R1) 색이 맞는다. `filter: blur`·`backdrop-filter`는 쓰지 않는다(5장 금지, 번진 글자는 지난 보케처럼 화면 결함으로 읽힌다) |
+| 화살표 버튼 | `<button type="button" class="gb-fold" aria-expanded="false" aria-controls="{말씀 p id}">`, 접근성 이름은 카피 키 `gb-expand-aria` / 펼친 뒤 `gb-collapse-aria`, 보이는 글자 없음. 인라인 SVG 16px(`viewBox="0 0 16 16"`, path `M3 6l5 5 5-5`), stroke accent 1.4px, round cap(BGM 아이콘과 같은 선). 글 아래 가운데. 버튼 상자 24x24에 `margin: 4px auto -4px`(화살표가 글 아래 8px, 항목 아래 선 위 16px), `::before { inset: -10px }`로 터치 영역 44x44(BGM 버튼과 같은 방식). accent는 bg 위 5.45:1(R9, 비텍스트 3:1 충족). 누름은 5장 공통 |
+| 글 블록 클릭 | 말씀 `p`의 click이 같은 토글을 부른다. 포인터 사용자용 보조 경로이고, 탭 순서에는 화살표 버튼 하나뿐이다. 블록 안에 선택된 글자가 있거나(`!getSelection().isCollapsed`) `event.detail > 1`(더블클릭 단어 선택)이면 무시한다: 글자를 고르려는 드래그는 펼침으로 처리하지 않는다. `cursor: pointer`, `-webkit-tap-highlight-color: transparent`, 글 블록 누름 효과 없음(펼쳐지는 것이 피드백) |
+| 높이 전환 구현 | 측정한 px로 `height` 전환을 권한다. 펼침: 인라인 `height`를 `scrollHeight`px로. 접힘: 지금 높이 px를 인라인으로 넣고 `offsetHeight`로 reflow한 뒤 인라인을 지워 3줄 높이로. 끝 처리(펼침 뒤 `height: auto`)는 `transitionend` 대신 `token('--dur-snap') + 50`ms 타이머로 한다(0ms 전환에는 이벤트가 오지 않는다). 전환 중에 다시 누르면 지금 높이에서 반대로 간다. `grid-template-rows: 0fr→1fr`는 0에서 시작하는 접기용이라 3줄에서 시작하는 이 경우에 맞지 않고, `interpolate-size`는 Safari가 지원하지 않는다. 매 프레임 레이아웃이 생기지만 한 번에 한 항목이고 아래쪽은 목록 4건 이하, 페이지 번호 줄, 짧은 섹션 2개뿐이다. `will-change` 없음 |
+| reduced-motion | `--dur-snap` 0ms(6장 reduce 블록)라 높이·흐림·화살표가 즉시 바뀐다. 추가 규칙 없음 |
+
+- **reveal과의 관계**: guestbook reveal 그룹은 ① 머리 ② 폼 + 공개 안내 ③ 목록 머리(제목 h3 + 상태 문구)다(2-6). `ul`과 페이지 번호 줄은 reveal 대상이 아니고 항목에도 `.reveal`을 붙이지 않는다(2026-10-14). reveal IO는 초기화 때 있던 그룹만 관찰하는데 목록은 나중에 채워지고 페이지마다 다시 그려지기 때문이다. 항목은 위 표의 페이드로만 나타난다. JS가 꺼지면 목록 자체를 숨기므로(설계 6-1) `html.js` 게이트는 따로 두지 않는다.
+- reduced-motion: 6장 reduce 블록이 `--dur-modal`·`--dur-fast`·`--dur-snap`을 이미 0ms로 바꾸므로 추가 규칙이 없다. 스크롤은 원래 즉시라 두 모드가 같다(2026-10-14). 런타임 전환도 토큰을 따라간다.
+- 포커스 이동과 안전선 스크롤은 접근성 요구사항이라 모션 우선순위(Should)와 상관없이 구현한다. 삭제 성공은 설계 6-2에 있고, 펼침 열기·닫기, 페이지 넘김, 글 접기는 이 절에서 정했다(2026-10-14).
+- 버튼 누름(삭제, 확인, 취소, 페이지 번호, 이전·다음, 접기 화살표, 다시 시도)은 5장 공통 규칙을 따른다(2026-10-14). 바뀌는 속성은 opacity, 화살표 transform, 긴 글 접기의 height뿐이고 무한 루프가 늘지 않는다(8장 표 그대로). 방명록은 보케 구간이 아니다.
 
 ```css
 /* Guestbook list (motion spec 4-8-1). Class names are examples. */
@@ -1476,6 +1495,32 @@ QA 확인값:
 .gb-item.is-new, .gb-del:not([hidden]) { animation: gb-in var(--dur-modal) var(--ease-out); }
 .gb-list-state:not([hidden]), .gb-del__error:not(:empty) { animation: gb-in var(--dur-fast) var(--ease-out); }
 .gb-item.is-leaving { opacity: 0; transition: opacity var(--dur-fast) var(--ease-in); }
+
+/* 2026-10-14 pagination and long-message fold */
+.gb-pager:not([hidden]) { animation: gb-in var(--dur-modal) var(--ease-out); }
+.gb-list-title, .gb-item { scroll-margin-top: calc(max(16px, env(safe-area-inset-top)) + 56px); } /* below the fixed BGM toggle */
+.gb-item__message.is-foldable {
+  position: relative;
+  height: calc(3em * 1.7);            /* 3 lines at 14px / 1.7; script sets px while moving, auto when open */
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: height var(--dur-snap) var(--ease-standard);
+}
+.gb-item__message.is-foldable::after { /* third line fades into the page background */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.7em;
+  background: linear-gradient(transparent, var(--color-bg));
+  pointer-events: none;
+  transition: opacity var(--dur-snap) var(--ease-standard);
+}
+.gb-item__message.is-open::after { opacity: 0; }
+.gb-fold {
+  position: relative; display: block; width: 24px; height: 24px; margin: 4px auto -4px;
+  padding: 4px; border: 0; background: none; color: var(--color-accent);
+}
+.gb-fold::before { content: ""; position: absolute; inset: -10px; } /* 44 x 44 hit area */
+.gb-fold svg { display: block; width: 16px; height: 16px; transition: transform var(--dur-snap) var(--ease-standard); }
+.gb-fold[aria-expanded="true"] svg { transform: rotate(180deg); }
 ```
 
 ### 4-9. hero 스크롤 큐 (Should)

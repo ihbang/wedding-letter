@@ -1234,3 +1234,178 @@ R8 단계 밖 값(섹션 안 margin·padding·gap 전체를 뽑아 단계 값과
 | 알림 메일 도착 | 이 환경에서 확인할 수 없음. 사용자 확인 필요 |
 
 시트에는 `deleted` 상태의 시험 행 1개가 남는다.
+
+## 9차 QA (방명록 페이지 번호·긴 글 접기) — 2026-10-14
+
+8차 뒤 바뀐 것은 방명록 목록을 보여 주는 방식 하나다. "말씀 더 보기"를 없애고 한 페이지 5개 + 페이지 번호 줄로 바꿨고, 3줄이 넘는 글은 아래쪽 흐림 + 작은 화살표로 접는다(작업 트리, 미커밋). 웹 앱(`apps-script/guestbook.gs`)은 바뀌지 않았다. 기준 문서는 `00_user-input.md` 마지막 절과 덧붙인 줄, 카피 시트 `### guestbook_pager`·`### guestbook_expand`, 모션 명세 4-8-1(2026-10-14), frontend 요약 `05` 17장, 감사 문서 R1~R9다. 긴 글 접기의 `height` 전환은 명세 frontmatter `forbidden_props` 주석과 4-8-1 머리에 적힌 사용자 결정 예외라 금지 위반으로 보지 않았고, 다른 곳에 높이 애니메이션이 없는지만 확인했다.
+
+### 요약
+
+- 전체 결과: **PASS** (FAIL 0)
+- 9차 판정 53항목: PASS 51 / FAIL 0 / WARNING 2 (새 W16·W17, 둘 다 문서)
+- **검증 중 찾은 결함 1건은 직접 고쳤다.** 페이지를 넘기지 않고 목록을 다시 그릴 때(새 글, 삭제, 다시 불러오기, 넘긴 사이 도착한 삭제 응답) 숨은 상태 문구 `.gb-page-status`에 지난 "5페이지 중 3페이지"가 그대로 남았다. 새 글을 남겨 1페이지로 돌아온 뒤 화면 낭독기 가상 커서로 번호 줄 아래를 지나면 "3페이지"라고 읽는다. 고친 뒤 재시험 PASS(아래 "9차 직접 수정")
+- **frontend 스크린샷 `pager-390.png`의 흐린 목록 제목은 캡처 시점 문제다.** 목록 머리(제목이 든 reveal 그룹)의 800ms 페이드가 끝나기 전에 찍혔다. 같은 순서로 재현하면 마지막 넘김 직후 머리 opacity 0.40 → 110ms 0.63 → 310ms 0.90 → 600ms 1.00이고, 제목 색은 내내 text `rgb(59, 45, 42)`다. 제목을 지나 내려온 보통 경로에서는 넘기기 전·후 모두 opacity 1, 색도 같다. 페이지 넘김은 제목 색·불투명도를 바꾸지 않는다
+- 경계면: 카피 시트 ↔ `index.html` 45/45 글자 단위 일치, 지운 키(`gb-more`·`gb-expand`·`gb-collapse`) 잔존 0. 페이지 넘김 알림은 화면 낭독기에 한 번만 간다(모든 live region 기록)
+- 기존 WARNING: W7 그대로(위치 `script.js:841`, `GAL.WHEEL_LOCK` `:24`)
+- 실제 웹 앱 URL(`script.google.com/macros/s/AKfycbxbY…/exec`)로 나간 요청은 0건이다. 실제 `index.html`을 연 시험에서는 Google 요청을 CDP `Fetch`에서 멈춰 Chrome 안에서 모의 응답으로 채웠고(멈춘 요청 1건 = Google 요청 1건), 나머지는 모두 모의 사이트에서 Google 주소를 막고 돌렸다
+- 검증 방법
+  - 정적: `qa9/copy_check.py`(카피 시트 `## guestbook` ↔ `ui-text`·마크업 글자 단위, 지운 키 잔존, 키 사용), grep(`innerHTML`류, 레이아웃 속성 transition·keyframes, `style.height` 쓰기, 코드 파일 한글, `http://`), `node --check`, 모션 명세 4-8-1 ↔ CSS·JS 대조
+  - 브라우저: `qa9/ui.mjs` 12개 시나리오 184항목(headless Chrome CDP, DPR 2, 터치 에뮬레이션). frontend `gb-test.mjs`를 믿지 않고 따로 짰다. 탭은 `Input.dispatchTouchEvent`, 키보드는 `Input.dispatchKeyEvent`, 글자 선택은 마우스 드래그로 보냈다. 알림은 페이지의 모든 `role=status`·`aria-live` 요소에 MutationObserver를 붙여 기록했고, 접근성 이름은 `Accessibility.getPartialAXTree`로 읽었다. 높이 전환은 페이지 안에서 매 프레임 쟀다
+  - 회귀: 8차 방명록 UI(`qa8/ui.mjs` 사본 `qa9/ui8.mjs`), 7·8차 전체 드라이버(`qa9/r7/`, 둘째 모의 사이트 `:8798`, 글 0건)를 8차 결과 `qa8/r7out/`과 비교, 수정 뒤 frontend `gb-test.mjs all`
+  - 끝난 뒤 모의 서버(8790·8791·8792, 8796·8797·8798), 정적 서버(8793), QA용 Chrome을 모두 종료했다. 스크립트·출력·스크린샷은 scratchpad `qa9/`에만 있다
+
+### 9-1. 카피·정보 정합성
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 1 | 카피 시트 ↔ `index.html` | 45/45 글자 단위 일치. 새 키 7개: 마크업 `gb-pager-aria`(방명록 페이지), `gb-page-prev`(이전 페이지), `gb-page-next`(다음 페이지), 템플릿 `gb-page-number-aria`({n}페이지), `gb-page-status`({total}페이지 중 {n}페이지), `gb-expand-aria`·`gb-collapse-aria`({name}님의 글 펼치기/접기) | PASS |
+| 2 | 지운 키 잔존 | `gb-more`·`gb-expand`·`gb-collapse`가 세 파일에 0건. `.gb-more`·`.gb-more-status`·`loadMore`·`setNextCursor`도 0건 | PASS |
+| 3 | 키 사용 | 템플릿 방명록 키를 `script.js`가 모두 쓰고, 카피 시트에 없는 템플릿 키 0, 페이지에 없는 카피 키 0 | PASS |
+| 4 | 접근성 이름(실측) | nav `navigation` "방명록 페이지", 이전 "이전 페이지", 번호 "{n}페이지"(현재 번호는 `aria-current="page"`, 이름에 "현재" 없음), `.gb-page-status` `status`, 화살표 `button` "Long님의 글 펼치기", 펼친 뒤 "…접기" | PASS |
+
+### 9-2. 페이지 번호
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 5 | 페이지 수·1페이지 | 0·1·5·6·23·50·51·120건: 1페이지 건수와 순서, 번호 줄은 6건 이상에서만 보임, 0건은 빈 목록 문구 | PASS |
+| 6 | 번호 창 | 모든 페이지에서 `clamp(p−2, 1, total−4)`부터 최대 5개. 120건 다음 버튼 1→24, 이전 24→1 전부 일치. 가장 큰 번호 누르기 `5:3-7 → 7:5-9 → … → 23:20-24 → 24:20-24` | PASS |
+| 7 | 경계 | 1페이지 이전·마지막 다음 `aria-disabled="true"` + opacity 0.3, 클릭·Enter 모두 그대로, 포커스 그 버튼 유지. 현재 번호를 눌러도 그대로 | PASS |
+| 8 | 요청 | 0~50건 `50/0` 1회, 51건 `50/0, 50/50`, 120건 `50/0, 50/50, 50/100`. 넘기는 동안 0회 | PASS |
+| 9 | 받는 중간 실패 | `failCursor 50`: 목록 0, `gb-list-failed` + 다시 불러오기, 번호 줄 숨김, 요청 `50/0, 50/50`에서 멈춤. 다시 불러오기 → 3회, 1페이지, 번호 1–5 | PASS |
+| 10 | 넘긴 뒤 스크롤(안전선) | 1페이지에 접힌 긴 글 5건을 두고 번호 줄을 화면 아래 끝에 둔 채 "3" 탭 → 제목 top이 −39(390)·−242(360)에서 72로. `scroll-margin-top` 72px. 제목이 안전선 아래(120)면 스크롤 0 | PASS |
+| 11 | 넘긴 뒤 포커스 | 탭·Enter·Space 모두 목록 제목. 비활성 다음에 Enter → 포커스 그대로 | PASS |
+| 12 | 알림 한 번 | "3" 탭 → `["5페이지 중 3페이지"]` 1건, Enter·Space 각 1건, 연달아 두 번 넘김 → 마지막 페이지 1건. 다른 live region은 0건 | PASS |
+| 13 | 넘기지 않은 렌더 뒤 상태 문구 | 수정 전: 3페이지에서 새 글 → 1페이지인데 `.gb-page-status` "5페이지 중 3페이지". 수정 후: 새 글, 삭제, 넘긴 사이 도착한 삭제 응답 뒤 빈 문자열, 넘김 알림은 그대로 1건 | PASS (직접 수정 후) |
+| 14 | 넘긴 뒤 제목 모양 | 요약의 재현 표본. 넘김 전후 color `rgb(59, 45, 42)`, opacity 1(보통 경로) | PASS |
+| 15 | 페이드 | 목록 도착: 번호 줄과 1페이지 5건이 함께 `gb-in 0.25s`. 넘김: 새 5건 모두 `.is-new` `gb-in 0.25s`. 번호 창·현재 표시는 즉시 | PASS |
+
+### 9-3. 긴 글 접기
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 16 | 3줄 이하 | 1줄·정확히 3줄 글: `.is-foldable` 없음, 화살표 `display: none`이고 접근성 트리 밖, `cursor: auto`, `::after` `content: none`, 눌러도 높이 그대로 | PASS |
+| 17 | 접힌 모양 | 4줄·긴 글 71.4px(14px × 1.7 × 3), `::after` 23.8px `linear-gradient(rgba(0, 0, 0, 0), rgb(251, 246, 241))`, height·흐림·화살표 모두 `0.35s cubic-bezier(0.4, 0, 0.2, 1)`, `aria-controls` = 말씀 `p` id | PASS |
+| 18 | 펼치기·접기 | 글 탭 → 150ms에 중간 높이 → `height: auto`(= scrollHeight), `aria-expanded="true"`, 이름 "…접기", 흐림 0, 화살표 `matrix(-1, 0, 0, -1, 0, 0)`(180°). 다시 탭 → 71.4. 화살표 탭 열기·닫기. 화살표에 Enter 열기·Space 닫기, 포커스 화살표 유지. Tab: 화살표 → 같은 글의 삭제. 알림 0건 | PASS |
+| 19 | 탭 뒤 포커스 | 스크립트는 포커스를 옮기지 않는다. 브라우저 기본으로 `tabindex="-1"`인 `li`가 포커스를 받지만 `:focus-visible`이 아니라 링이 없다(8차와 같은 동작) | PASS |
+| 20 | 글자 선택 | 마우스로 끌어 고르면 펼치지 않는다. 더블클릭은 첫 클릭에 펼치고 둘째(`detail` 2)는 무시한다(명세대로, `05` 17장 "알아 둘 점") | PASS |
+| 21 | 전환 중 반대로 | 열기 → 120ms에 접기 → 240ms에 열기: 매 프레임 높이 변화 최대 3px(튐 없음), 끝 `auto` 95.2px | PASS |
+| 22 | 접을 때 스크롤 보정 | 항목 위 끝 −150에서 접기 → 72.2로 맞춘 뒤 접는 동안 72.2 그대로, 71.4로 끝. 위 끝이 200이면 스크롤 0 | PASS |
+| 23 | 폭 변경 재측정 | 85자 글: 430에서 3줄(장치 없음) → 360에서 4줄(접힘 71.4) → 430에서 장치를 뗌. 360에서 펼친 그 글은 430에서 장치가 떨어져 평문, 펼친 긴 글은 430 → 360에서 펼친 채 `auto` | PASS |
+| 24 | 글꼴 로딩 재측정 | `document.fonts.ready`를 붙잡은 채 자간을 넓혀 4줄이 되어도 그대로, 풀면 접힘 71.4 | PASS |
+| 25 | R1 흐림 색 | 말씀 뒤 첫 불투명 바탕은 `main` `#FBF6F1`, 흐림 끝 색과 같다. 항목·섹션 면은 투명 | PASS |
+| 26 | R9 대비 | 화살표 accent 5.45:1(비텍스트 3:1 충족), 번호 muted 5.17, 현재 번호 text 12.26, 이전·다음 윤곽선 accent 5.45. 비활성 0.3은 비활성 컨트롤 예외 | PASS |
+| 27 | 화살표 기하·포커스 링 | 상자 24x24, SVG 16x16(상자 안 4,4), 글 아래 8, 항목 선 위 16, 가운데. 터치 영역 −10px(44x44)이 항목 아래 선 2px 위에서 끝난다. 키보드 포커스 링 2px accent(화살표·이전·다음은 원) | PASS |
+
+### 9-4. 새 글·삭제·다시 불러오기
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 28 | 새 글 | 3페이지에서 남기기 → 1페이지, 새 글 맨 앞 + 01~04, 애니메이션은 새 글만, 스크롤 0, 포커스 남기기 버튼, 알림은 폼 상태 1건, 추가 목록 요청 0 | PASS |
+| 29 | 같은 페이지 다시 채움 | 1페이지 Guest 02 삭제 → 01, 03, 04, 05, 06. 애니메이션은 당겨 온 06만, 포커스 Guest 03, 번호 1–2, 페이지 알림 없음, 토스트 1건 | PASS |
+| 30 | 비는 마지막 페이지 | 11건 3페이지의 유일한 글 삭제 → 페이드 동안 포커스 제목 → 2페이지(06~10), 번호 1–2, 다음 비활성, 포커스 제목, 제목은 안전선 아래. 알림 "글을 삭제했습니다."와 "2페이지 중 2페이지" 각 1건. 6건 2페이지 삭제 → 1페이지, 번호 줄 숨김 | PASS |
+| 31 | `not_found` | 2페이지 Guest 08을 시트에서 숨긴 뒤 삭제 → 빼고 07, 09, 10, "이미 삭제된 글입니다." 1건 | PASS |
+| 32 | 넘긴 사이 도착한 삭제 응답 | 삭제 응답을 1.5초 늦춤. (a) 1페이지 Guest 02 삭제 중 2페이지로 → 응답 뒤 2페이지가 07~11로 다시 채워짐, 토스트 1건, 포커스 제목, 1페이지로 가면 01, 03, 04, 05, 06. (b) 같은 조건에서 3페이지(Guest 11 하나)로 → 응답 뒤 2페이지로 줄어 07~11, 번호 1–2, 포커스 제목 | PASS |
+| 33 | 마지막 1건 삭제 | 빈 목록 문구, 번호 줄 숨김, 포커스 제목 | PASS |
+| 34 | `duplicate` | 같은 성함·말씀 재전송 → "같은 말씀을 이미 남기셨습니다." + 전체 재로드 1회(`50/0`), 1페이지, 그 글 맨 앞, 번호 1–5 | PASS |
+
+### 9-5. 모션 명세 구현도·reduced-motion·JS 꺼짐·폭
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 35 | 높이 애니메이션 예외 범위 | `style.css`의 레이아웃 속성 transition은 `:971` `.gb-item__message.is-foldable`의 `height` 하나. keyframes는 opacity·stroke-dashoffset뿐. `script.js`의 `style.height` 쓰기는 접기(`:1667-1691`)와 기존 lightbox 크기 지정(전환 없음)뿐 | PASS |
+| 36 | 4-8-1 ↔ 구현 | 아래 매핑 표 14행 모두 일치. 새 토큰 없음 | PASS |
+| 37 | reduced-motion | 넘김: 항목 `0s`·opacity 1, 제목 72, 포커스 제목. 접기: 높이·흐림·화살표 한 프레임 안에 바뀜(`0s`). 번호 줄 페이드 `0s` | PASS |
+| 38 | 무한 루프 | 새 CSS에 `infinite` 0, 8장 표 그대로 | PASS |
+| 39 | JS 꺼짐 | 폼·목록·번호 줄 렌더 안 됨, noscript 문구 보임, 웹 앱 요청 0 | PASS |
+| 40 | 360/375/390/430 | 122건(25페이지)의 11·25페이지(두 자리 번호 창): `scrollWidth = innerWidth`, 번호 줄이 목록 컬럼 안(360: 버튼 합 304 / 컬럼 312), 겹침·잘림 0, 이전·다음 44x44, 번호 40x44, 40자 성함·긴 글도 컬럼 안 | PASS |
+
+| 명세 4-8-1 | 명세값 | 구현 | 결과 |
+|---|---|---|---|
+| 목록 도착 | 1페이지 5건 + 번호 줄 함께 opacity 250ms(`--dur-modal`, `--ease-out`), 순차 없음 | `.gb-item.is-new`, `.gb-pager:not([hidden])` `gb-in`(`style.css:1076-1079`), 실측 5건 동시 | PASS |
+| 페이지 넘김 | 새 5건 `.is-new` 250ms, 퇴장 페이드·슬라이드 없음, 제목을 안전선에, 제목 `focus({ preventScroll: true })`, `role=status` 문구 | `renderPage`·`turnPage`(`script.js:1726-1761`) | PASS |
+| 번호 창·현재 표시 | 즉시 | 번호 버튼을 다시 만듦. transition은 hover 밑줄뿐 | PASS |
+| 이전·다음 비활성 | opacity 0.3 + `aria-disabled`, 누름 scale 없음 | `style.css:1043-1044` | PASS |
+| 페이지마다 다른 높이 | `min-height` 없음 | 없음 | PASS |
+| 글 펼치기 | 3줄 → scrollHeight px 350ms(`--dur-snap`, `--ease-standard`), 흐림 1→0, 화살표 0→180°, 끝 `auto`(`token('--dur-snap') + 50`ms 타이머), 포커스 그대로 | `toggleFold`(`script.js:1674-1692`), `style.css:965-1007` | PASS |
+| 글 접기 | 시작 때 위 끝이 안전선 위면 먼저 맞춤, 지금 px → reflow → 3줄 | 같음 | PASS |
+| 측정 | `scrollHeight > 3줄 + 1`, 그릴 때·`fonts.ready`·너비 ResizeObserver, 펼친 글 유지, 3줄 이하면 장치 뗌 | `measureFold`(`:1656-1669`), RO(`:2003-2010`) | PASS |
+| 글 블록 클릭 | 선택 중·`detail > 1` 무시, `cursor: pointer`, tap highlight 없음, 탭 순서에는 화살표만 | `:1982`, CSS | PASS |
+| 화살표 | 24x24, `margin: 4px auto -4px`, `::before inset -10px`, SVG 16 `M3 6l5 5 5-5` stroke 1.4 round, accent | 같음 + `border-radius: 50%`(포커스 링 모양). SVG `display: block`은 전역 `svg` 규칙(`style.css:108`) | PASS |
+| 안전선 | `scroll-margin-top: calc(max(16px, env(safe-area-inset-top)) + 56px)` | `style.css:1086-1087`, 실측 72px | PASS |
+| 삭제 성공 | 같은 페이지 채움(당겨 온 것만 페이드), 비면 이전 페이지로 넘김 | `removeItem`(`:1916`) | PASS |
+| 새 글 | 1페이지, 새 글만 페이드, 스크롤·포커스 없음 | `renderPage(1, entry.id)` | PASS |
+| reduced | 6장 reduce 블록의 0ms 토큰을 따름 | `--dur-snap`·`--dur-modal`·`--dur-fast` 0ms(`style.css:79`), 실측 `0s` | PASS |
+
+### 9-6. 보안·배포
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 41 | XSS | 성함 `<img src=x onerror=__x=1>{n}{name}`, 말씀 `<script>…</script><b>bold</b>`: 목록 안 img·script·b 0, 실행 0, 글자 그대로. 화살표·삭제 이름에 성함이 글자로 들어가고 `{n}{name}`은 확장되지 않음(`fillVars` 한 번 치환). `script.js` `innerHTML`류 0건 | PASS |
+| 42 | 실제 `index.html` | 실제 endpoint `…/exec?action=list&limit=50&cursor=0` 1건만 CDP `Fetch`에서 멈춰 모의 응답, 네트워크로 나간 Google 요청 0. 5건 + 번호 1–2, 2페이지로 넘겨도 요청 0 | PASS |
+| 43 | 정적 | `node --check` 통과, 코드 파일 한글 0, `http://` 리소스 0, 모든 시나리오 콘솔 오류 0 | PASS |
+
+### 9-7. frontend가 정한 5가지 (경계면)
+
+| # | 결정 | 확인 | 결과 |
+|---|------|------|------|
+| 44 | 번호 모양 | 갤러리 카운터 `.g-counter`(T12)와 같은 Cormorant Garamond 400 16, `lining-nums tabular-nums`, muted. 현재 번호는 text + accent 밑줄이라 색만으로 구분하지 않는다. 감사 문서에 등록되지 않은 점은 W16 | PASS |
+| 45 | 번호 버튼 40x44 | 360 컬럼 312px에 44 + 8 + 5 × 40 + 8 + 44 = 304. R6 "높이 44 이상", WCAG 2.5.8(24px) 충족 | PASS |
+| 46 | 넘긴 사이 도착한 삭제 응답 | 32번 결과. 무시하면 지운 글이 그 페이지로 돌아갔을 때 다시 보이므로 맞는 처리다. 페이지가 줄어 3 → 2로 바뀔 때 알림이 없는 점은 참고에 적었다 | PASS |
+| 47 | 그릴 때마다 `fonts.ready` 뒤 재측정 | 24번 결과. 한 번에 5건이라 비용이 작다 | PASS |
+| 48 | 페이지 알림 요소 분리 | 30번 결과(두 알림이 각 1건, 서로 지우지 않음). 지난 문구가 남던 점은 13번에서 고쳤다 | PASS |
+
+### 9-8. 문서
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 49 | 감사 문서에 새 조작 요소 | 번호 줄(`.gb-pager__page`, `.gb-pager__nav`)과 접기 화살표(`.gb-fold`)가 R4·R6에 없다 | WARNING (W16) |
+| 50 | frontend 요약 17장 | 두 곳이 지금 상태와 다르다(아래 W17) | WARNING (W17) |
+
+### 9-9. 회귀
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 51 | 8차 방명록 UI | `qa9/ui8.mjs`(8차 `ui.mjs` 사본: `limit=50`, 더보기 부분 제거, XSS 검사에서 페이지 자체의 화살표 SVG 제외) lazy 15, reallazy 5, kbd 26, errors 19, xss 4, motion 14, nojs 9, widths 24 = 116/116 | PASS |
+| 52 | 7·8차 전체 드라이버 | 8차 `r7out/`과 비교. firstscreen·nojs·ax·dday·lbkeys·account-reduced 같음, carousel 110/110 같은 검사 이름. 차이는 모두 설명된다: D-day 82 → 81(날짜가 하루 지남), 작은 터치 대상 목록의 숨은 `gb-more`(0x0) → 숨은 이전·번호·다음(0x0), 보케 구간별 개수(무작위 배치), lightbox Tab 순환 순번(8차 `r7lb` 1·3회차와 같은 값, 알려진 흔들림), account 페이드 표본 1ms·0.001, 외부 요청 순서(카카오맵 SDK ↔ 모의 목록). 새 콘솔 오류 0 | PASS |
+| 53 | frontend `gb-test.mjs all` | 직접 수정 뒤 17개 시나리오 203/203 | PASS |
+
+### 9차 직접 수정
+
+`script.js` `renderPage`(`:1726-1731`)와 `turnPage`(`:1756-1761`). 상태 문구를 비우고 예약된 알림을 취소하는 두 줄을 `turnPage`에서 `renderPage` 앞쪽으로 옮겼다. 넘김은 그다음에 새 문구를 예약하므로 알림은 그대로 1건이고, 넘김이 아닌 렌더(새 글, 삭제, 다시 불러오기, 넘긴 사이 도착한 삭제 응답)는 지난 "n페이지 중 m페이지"를 지운다. 재시험: `qa9/ui.mjs all` 184/184, `gb-mock/gb-test.mjs all` 203/203
+
+```js
+    function renderPage(n, fade = true) {
+      page = clamp(n, 1, pageCount());
+      // Only a turn says which page this is; any other render (new entry, delete, reload) must not leave
+      // an old "page n of m" in the hidden status line.
+      clearTimeout(pageStatusTimer);
+      pageStatus.textContent = '';
+```
+
+### 9차에서 나온 이슈와 수정 제안
+
+- [ ] **W16 (문서, concept-director) 감사 문서에 번호 줄과 접기 화살표가 없다** → `07_concept-director_design-audit.md` R4 T12 행(`:221`) 선택자에 `.gb-pager__page`(현재 번호 text + accent 1px 밑줄)를 더하고, R6 원형 아이콘 버튼 줄(`:244`)에 "방명록 이전/다음 `.gb-pager__nav`"와 "번호 버튼 40x44(360 컬럼에 맞추려고 폭만 40)"를, 계좌 접기 줄(`:245`) 옆에 "방명록 접기 화살표 `.gb-fold`: 윤곽선 없는 accent 화살표, 터치 영역 44x44"를 적는다. 구현은 이미 기존 규칙과 맞으므로 코드 변경은 없다
+- [ ] **W17 (문서, frontend) `05` 17장 두 곳이 지금 상태와 다르다** → ① `05_frontend-developer_summary.md:773` "페이지 넘김 알림" 행은 카피 시트와 모션 명세가 어긋나 "맞춰야 한다"고 적었지만, 카피 시트 `### guestbook_pager`는 이미 "제목 포커스 + 상태 메시지 둘 다"로 고쳐져 있다. "카피 시트(2026-10-14)와 일치"로 바꾼다. ② `:816` "넘김 뒤 제목이 reveal 전 상태일 수 있다"는 9차 재현 결과 캡처 때 reveal 800ms 페이드가 진행 중이었던 것이다. "캡처가 목록 머리 reveal 페이드(800ms) 중에 찍힘. 넘김은 제목 모양을 바꾸지 않음(9차 QA)"으로 바꾼다. 9차 직접 수정(상태 문구 비움)도 한 줄 더한다
+
+### 참고 (판정 대상 아님)
+
+- 넘긴 사이 도착한 삭제 응답으로 마지막 페이지가 사라지면(32번 b) 페이지가 3 → 2로 조용히 바뀐다. 포커스는 제목에 있고 토스트가 삭제를 알리지만 "2페이지 중 2페이지"는 알리지 않는다. 드문 경로라 그대로 두어도 된다. 알리려면 `confirmDelete`의 `!item.isConnected` 분기에서 `renderPage(page)` 전후로 페이지가 바뀌었는지 비교해 바뀌었으면 `turnPage`를 부른다
+- 더블클릭으로 단어를 고르면 첫 클릭에 글이 한 번 펼쳐진다(명세 4-8-1대로 `detail > 1`만 무시한 결과, `05` 17장에 적힘)
+- 글을 탭하면 브라우저 기본 동작으로 그 글의 `li`(`tabindex="-1"`)가 포커스를 받는다. 포커스 링은 보이지 않고 스크립트가 옮긴 것이 아니다. 8차부터 같은 동작이다
+- 스크린샷은 `captureBeyondViewport`로 찍어 고정된 BGM 버튼이 목록 가운데에 겹쳐 보인다. 실제 화면에서는 오른쪽 위에 고정된다
+
+### 대표 스크린샷·원자료 (scratchpad, 저장소에 넣지 않음)
+
+`/private/tmp/claude-501/-Users-inhyeok-Workspace-wedding-letter/cc1402ba-2bf0-4475-9039-e013d45393f0/scratchpad/qa9/` 아래.
+
+| 대상 | 파일 |
+|---|---|
+| 번호 줄 (360, 390, 18페이지 창 16–20) | `shots/pager-360.png`, `shots/pager-390.png` |
+| 제목 흐림 재현 (넘김 직후 300ms, 1500ms) | `shots/titlefade-300ms.png`, `shots/titlefade-1500ms.png` |
+| 보통 경로로 넘긴 뒤 | `shots/pager-reader-390.png` |
+| 원자료 | `copy_check.out`(45), `ui-all.out`·`results-*.json`(184), `ui8.out`·`results-xss.json`(116, XSS 선택자를 고친 재실행은 뒤 파일), `fe-gbtest-all.out`(203), `cmp-qa8.out`(회귀 비교), `r7out/`(회귀 실행) |
+
+### 9차 후속 처리 (2026-10-14, 오케스트레이터)
+
+- **W16 해소:** 감사 문서 R4에 T17(페이지 번호)을, R6에 방명록 페이지 번호 줄과 긴 글 접기 화살표 항목을 더했다.
+- **W17 해소:** `05` 17장의 페이지 넘김 알림 행과 목록 제목 reveal 줄에 현재 상태를 덧붙였다.

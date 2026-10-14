@@ -25,8 +25,12 @@
   // Venue map (spec 4-7). Level 4 is about 2 m per CSS px, so a 340 x 255 map spans about 680 x 510 m:
   // the streets around the venue and Munjeong station (3 minutes on foot). SDK fetch starts one screen ahead.
   const MAP = Object.freeze({ LEVEL: 4, NEAR_MARGIN: '100% 0px', TIMEOUT: 10000 });
-  // Guestbook (design 08 section 6). The first page is fetched one screen ahead, like the map.
-  const GB = Object.freeze({ PAGE: 20, TIMEOUT: 15000, NEAR_MARGIN: '100% 0px', PASSWORD_MIN: 4 });
+  // Guestbook (design 08 section 6, spec 4-8-1). The whole list is fetched one screen ahead, like the map,
+  // FETCH entries per request (the web app's maximum), and shown PAGE entries at a time.
+  const GB = Object.freeze({
+    PAGE: 5, FETCH: 50, PAGE_LINKS: 5, FOLD_LINES: 3,
+    TIMEOUT: 15000, NEAR_MARGIN: '100% 0px', PASSWORD_MIN: 4,
+  });
 
   const root = document.documentElement;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -1550,21 +1554,25 @@
     const stateText = state.querySelector('.gb-list-state__text');
     const retry = state.querySelector('.gb-list-retry');
     const list = board.querySelector('.gb-list');
-    const more = board.querySelector('.gb-more');
-    const moreStatus = board.querySelector('.gb-more-status');
-    const moreLabel = more.textContent;
+    const pager = board.querySelector('.gb-pager');
+    const pages = pager.querySelector('.gb-pager__pages');
+    const prev = pager.querySelector('.gb-pager__prev');
+    const next = pager.querySelector('.gb-pager__next');
+    const pageStatus = board.querySelector('.gb-page-status');
+    const foldTemplate = board.querySelector('.gb-fold-template').content.firstElementChild;
     const CREATE_ERRORS = { rate_limited: 'gb-error-rate-limited', duplicate: 'gb-error-duplicate', closed: 'gb-error-closed' };
     const DELETE_ERRORS = { wrong_password: 'gb-error-wrong-password', too_many_attempts: 'gb-error-too-many-attempts' };
 
-    const shown = new Set();   // ids in the list; "more" pages drop ids already here
-    // Offset of the next page, kept in step with our own writes: the server's cursor is a position
-    // in the newest-first list, so a new entry pushes everything down one and a deletion pulls it up one.
-    let nextCursor = null;
-    let listSeq = 0;           // bumped by every first-page load; replies to older loads are dropped
+    let entries = [];          // the whole fetched list, newest first; pages are slices of it
+    let page = 1;
+    let listSeq = 0;           // bumped by every full load; replies to older loads are dropped
     let stateKey = '';
     let openDelete = null;     // { item, toggle, panel }: at most one panel is open
     let panelCount = 0;
+    let itemCount = 0;
+    let pageStatusTimer = 0;
     let formShownAt = 0;       // elapsed (bot check) counts from the form's first appearance on screen
+    const foldTimers = new WeakMap();
 
     const request = (payload) => guestbookRequest(endpoint, payload).catch(() => null);
     const el = (tag, className, content) => {
@@ -1594,11 +1602,6 @@
       state.hidden = false;
     }
 
-    function setNextCursor(value) {
-      nextCursor = Number.isInteger(value) && value > 0 ? value : null;
-      more.hidden = nextCursor === null;
-    }
-
     // "2026. 12. 1." in KST on screen; the gb-date-sr sentence for screen readers (they read the dots).
     function dateFor(iso) {
       const t = Date.parse(iso);
@@ -1613,74 +1616,182 @@
       return time;
     }
 
-    // Reading order: name, date, message, then the delete button (placed top right by CSS).
+    // Entries without an id cannot be deleted or told apart, so they are not shown.
+    const entryFrom = (e) => (e && typeof e.id === 'string' && e.id
+      ? { id: e.id, name: String(e.name ?? ''), message: String(e.message ?? ''), createdAt: String(e.createdAt ?? '') }
+      : null);
+
+    // Reading order: name, date, message, fold arrow, then the delete button (placed top right by CSS).
     function itemFor(entry) {
-      const item = el('li', 'gb-item is-new');
+      const item = el('li', 'gb-item');
       item.tabIndex = -1;
       item.dataset.id = entry.id;
       const head = el('div', 'gb-item__head');
       head.append(el('p', 'gb-item__name', entry.name));
       const date = dateFor(entry.createdAt);
       if (date) head.append(date);
+      const message = el('p', 'gb-item__message', entry.message);
+      message.id = `gb-message-${++itemCount}`;
+      const fold = foldTemplate.cloneNode(true);
+      fold.setAttribute('aria-controls', message.id);
+      fold.setAttribute('aria-label', text('gb-expand-aria', { name: entry.name }));
       const toggle = el('button', 'gb-item__delete', text('gb-delete'));
       toggle.type = 'button';
       toggle.setAttribute('aria-label', text('gb-delete-aria', { name: entry.name }));
       toggle.setAttribute('aria-expanded', 'false');
-      item.append(head, el('p', 'gb-item__message', entry.message), toggle);
+      item.append(head, message, fold, toggle);
       return item;
     }
 
-    // Builds item elements for entries not shown yet; the caller inserts them.
-    function newItems(entries) {
-      const items = [];
-      entries.forEach((e) => {
-        if (!e || typeof e.id !== 'string' || !e.id || shown.has(e.id)) return;
-        shown.add(e.id);
-        items.push(itemFor({ id: e.id, name: String(e.name ?? ''), message: String(e.message ?? ''), createdAt: String(e.createdAt ?? '') }));
+    /* Long message fold (spec 4-8-1): only text longer than GB.FOLD_LINES lines folds */
+
+    function labelFold(item, open) {
+      const fold = item.querySelector('.gb-fold');
+      fold.setAttribute('aria-expanded', String(open));
+      fold.setAttribute('aria-label', text(open ? 'gb-collapse-aria' : 'gb-expand-aria', { name: item.querySelector('.gb-item__name').textContent }));
+    }
+
+    // Re-measured on every render, after fonts load and when the list width changes.
+    // An open message stays open; one that now fits loses the fold.
+    function measureFold(item) {
+      const message = item.querySelector('.gb-item__message');
+      const fold = item.querySelector('.gb-fold');
+      const limit = parseFloat(getComputedStyle(message).lineHeight) * GB.FOLD_LINES;
+      const foldable = message.scrollHeight > limit + 1;
+      if (foldable === !fold.hidden) return;
+      fold.hidden = !foldable;
+      message.classList.toggle('is-foldable', foldable);
+      if (foldable) return;
+      clearTimeout(foldTimers.get(message));
+      message.classList.remove('is-open');
+      message.style.height = '';
+      labelFold(item, false);
+    }
+    const measureFolds = () => list.querySelectorAll('.gb-item').forEach(measureFold);
+
+    // Height moves between the CSS 3-line clamp and the measured text height (the one height animation,
+    // user decision). A press during the move turns it around from the current height.
+    function toggleFold(item) {
+      const message = item.querySelector('.gb-item__message');
+      const open = !message.classList.contains('is-open');
+      clearTimeout(foldTimers.get(message));
+      if (open) {
+        message.classList.add('is-open');
+        message.style.height = `${message.scrollHeight}px`;
+        // A timer, not transitionend: a 0ms transition (reduced motion) fires no event.
+        foldTimers.set(message, setTimeout(() => { message.style.height = 'auto'; }, token('--dur-snap') + 50));
+      } else {
+        // Read before folding: after a long read the item top is above the screen and would vanish with it.
+        alignToSafeLine(item);
+        message.style.height = `${message.getBoundingClientRect().height}px`;
+        void message.offsetHeight;
+        message.classList.remove('is-open');
+        message.style.height = '';
+      }
+      labelFold(item, open);
+    }
+
+    /* Pages */
+
+    const pageCount = () => Math.max(1, Math.ceil(entries.length / GB.PAGE));
+
+    // Spec 4-8-1 safe line: the element's scroll-margin-top, just below the fixed BGM toggle.
+    // Measured after the DOM change; scrolls (instantly) only when the top is above the line.
+    function alignToSafeLine(target) {
+      const line = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+      if (target.getBoundingClientRect().top < line) target.scrollIntoView({ block: 'start' });
+    }
+
+    // Up to GB.PAGE_LINKS numbers, centred on the current page where the ends allow.
+    function renderPager() {
+      const total = pageCount();
+      pager.hidden = total < 2;
+      const first = clamp(page - Math.floor(GB.PAGE_LINKS / 2), 1, Math.max(1, total - GB.PAGE_LINKS + 1));
+      const numbers = [];
+      for (let n = first; n <= Math.min(total, first + GB.PAGE_LINKS - 1); n++) {
+        const button = el('button', 'gb-pager__page', String(n));
+        button.type = 'button';
+        button.dataset.page = n;
+        button.setAttribute('aria-label', text('gb-page-number-aria', { n }));
+        if (n === page) button.setAttribute('aria-current', 'page');
+        numbers.push(button);
+      }
+      pages.replaceChildren(...numbers);
+      prev.setAttribute('aria-disabled', String(page === 1));
+      next.setAttribute('aria-disabled', String(page === total));
+    }
+
+    // Shows page n. Items already on screen stay in place with their fold, panel and focus; items being
+    // deleted stay until their fade ends. fade: true fades every item added here, an entry id only that one.
+    function renderPage(n, fade = true) {
+      page = clamp(n, 1, pageCount());
+      // Only a turn says which page this is; any other render (new entry, delete, reload) must not leave
+      // an old "page n of m" in the hidden status line.
+      clearTimeout(pageStatusTimer);
+      pageStatus.textContent = '';
+      const slice = entries.slice((page - 1) * GB.PAGE, page * GB.PAGE);
+      const ids = new Set(slice.map((e) => e.id));
+      if (openDelete && !ids.has(openDelete.item.dataset.id)) closeDelete(false);
+      [...list.children].forEach((li) => {
+        if (!ids.has(li.dataset.id) && !li.classList.contains('is-leaving')) li.remove();
       });
-      return items;
+      let at = list.firstElementChild;
+      slice.forEach((entry) => {
+        while (at?.classList.contains('is-leaving')) at = at.nextElementSibling;
+        if (at?.dataset.id === entry.id) {
+          at = at.nextElementSibling;
+          return;
+        }
+        const item = itemFor(entry);
+        item.classList.toggle('is-new', fade === true || fade === entry.id);
+        list.insertBefore(item, at);
+        measureFold(item);
+      });
+      renderPager();
+      document.fonts?.ready.then(measureFolds);
+    }
+
+    // Page turn (spec 4-8-1): the new page fades in, then the list title is aligned and focused so the
+    // next read starts at the first entry; the status line says which page this is.
+    function turnPage(n) {
+      renderPage(n);
+      alignToSafeLine(title);
+      title.focus({ preventScroll: true });
+      pageStatusTimer = setTimeout(() => { pageStatus.textContent = text('gb-page-status', { n: page, total: pageCount() }); }, 50);
     }
 
     const validPage = (reply) => reply && reply.ok === true && Array.isArray(reply.entries);
 
-    // First page (also the retry and the reload after "duplicate"): replaces the whole list.
-    async function loadFirst() {
+    // The whole list in GB.FETCH-sized requests, then page 1 (also the retry and the reload after
+    // "duplicate"). Any failed request fails the load. The web app gives no total, so this runs until
+    // nextCursor is null; a cursor that does not move forward also ends it.
+    async function loadAll() {
       const seq = ++listSeq;
       setState('gb-list-loading');
-      const reply = await request({ action: 'list', limit: GB.PAGE, cursor: 0 });
-      if (seq !== listSeq) return false;
-      if (!validPage(reply)) {
-        setState('gb-list-failed', true);
-        return false;
+      const fetched = [];
+      const ids = new Set();     // a write between two requests shifts the list and repeats an entry
+      let cursor = 0;
+      while (cursor !== null) {
+        const reply = await request({ action: 'list', limit: GB.FETCH, cursor });
+        if (seq !== listSeq) return false;
+        if (!validPage(reply)) {
+          setState('gb-list-failed', true);
+          return false;
+        }
+        reply.entries.forEach((e) => {
+          const entry = entryFrom(e);
+          if (!entry || ids.has(entry.id)) return;
+          ids.add(entry.id);
+          fetched.push(entry);
+        });
+        cursor = Number.isInteger(reply.nextCursor) && reply.nextCursor > cursor ? reply.nextCursor : null;
       }
       closeDelete(false);
-      shown.clear();
-      moreStatus.textContent = '';
-      list.replaceChildren(...newItems(reply.entries));
-      setNextCursor(reply.nextCursor);
-      setState(list.children.length ? '' : 'gb-list-empty');
+      entries = fetched;
+      list.replaceChildren();
+      renderPage(1);
+      setState(entries.length ? '' : 'gb-list-empty');
       return true;
-    }
-
-    async function loadMore() {
-      const seq = listSeq;
-      more.disabled = true;
-      more.textContent = text('gb-list-loading');
-      moreStatus.textContent = '';
-      const reply = await request({ action: 'list', limit: GB.PAGE, cursor: nextCursor });
-      more.disabled = false;
-      more.textContent = moreLabel;
-      if (seq !== listSeq) return;
-      if (!validPage(reply)) {
-        moreStatus.textContent = text('gb-list-failed');
-        keepFocus(more);
-        return;
-      }
-      const items = newItems(reply.entries);
-      list.append(...items);
-      setNextCursor(reply.nextCursor);
-      const target = items[0] || (more.hidden ? list.lastElementChild || title : more);
-      target.focus();
     }
 
     /* New entry */
@@ -1719,16 +1830,16 @@
       if (!reply || reply.ok !== true) {
         say(CREATE_ERRORS[reply?.error] || 'gb-failed');
         // The first send may have been saved with its reply lost; the list shows whether it was.
-        if (reply?.error === 'duplicate') loadFirst();
+        if (reply?.error === 'duplicate') loadAll();
         return;
       }
       form.reset();
       say('gb-success');
       // entry is null when the web app quietly dropped the post as a bot (trap field or under 3 s).
-      const [item] = reply.entry ? newItems([reply.entry]) : [];
-      if (!item) return;
-      list.prepend(item);
-      if (nextCursor !== null) nextCursor += 1;
+      const entry = entryFrom(reply.entry);
+      if (!entry || entries.some((e) => e.id === entry.id)) return;
+      entries.unshift(entry);
+      renderPage(1, entry.id); // only the new entry fades; no scroll, focus stays on the button
       if (stateKey === 'gb-list-empty') setState('');
     });
 
@@ -1799,19 +1910,27 @@
       panel.elements.password.focus();
     }
 
-    // Fades the entry out, then drops it; focus moves to the next entry, or the list title after the last.
+    // Fades the entry out, then drops it. The page refills from the next one at once (only the pulled-in
+    // entry fades) and focus moves to the next entry, or the list title after the last. A page left empty
+    // turns back to the previous one once the fade ends.
     function removeItem(item, key, done) {
       if (openDelete?.item === item) openDelete = null;
-      let next = item.nextElementSibling;
-      while (next && next.classList.contains('is-leaving')) next = next.nextElementSibling;
-      shown.delete(item.dataset.id);
-      if (nextCursor !== null) nextCursor = Math.max(nextCursor - 1, 0);
+      entries = entries.filter((e) => e.id !== item.dataset.id);
       item.inert = true;
       item.classList.add('is-leaving');
-      (next || title).focus();
+      const emptied = page > pageCount();
+      if (emptied) {
+        title.focus({ preventScroll: true });
+      } else {
+        renderPage(page);
+        let after = item.nextElementSibling;
+        while (after && after.classList.contains('is-leaving')) after = after.nextElementSibling;
+        (after || title).focus();
+      }
       setTimeout(() => {
         item.remove();
-        if (!list.children.length && nextCursor === null) setState('gb-list-empty');
+        if (emptied && page > pageCount()) turnPage(page - 1);
+        else if (!entries.length) setState('gb-list-empty');
       }, token('--dur-fast'));
       notify(text(key), done);
     }
@@ -1831,7 +1950,16 @@
       const reply = await request({ action: 'delete', id: item.dataset.id, password });
       buttons.forEach((b) => { b.disabled = false; });
       confirm.textContent = confirmLabel;
-      if (!item.isConnected) return; // the list was reloaded meanwhile
+      if (!item.isConnected) {
+        // The page turned or the list reloaded meanwhile: still forget an entry that is gone.
+        if (reply?.ok === true || reply?.error === 'not_found') {
+          entries = entries.filter((e) => e.id !== item.dataset.id);
+          renderPage(page);
+          if (!entries.length) setState('gb-list-empty');
+          notify(text(reply.ok ? 'gb-delete-success' : 'gb-error-not-found'), reply.ok === true);
+        }
+        return;
+      }
 
       if (reply?.ok === true) {
         removeItem(item, 'gb-delete-success', true);
@@ -1849,6 +1977,11 @@
       const toggle = e.target.closest('.gb-item__delete');
       if (toggle) toggleDelete(toggle.closest('.gb-item'));
       else if (e.target.closest('.gb-del__cancel')) closeDelete(true);
+      else if (e.target.closest('.gb-fold')) toggleFold(e.target.closest('.gb-item'));
+      // The text block is a pointer shortcut for the arrow; selecting text (drag, double click) is not a press.
+      else if (e.target.closest('.gb-item__message.is-foldable') && e.detail < 2 && window.getSelection()?.isCollapsed !== false) {
+        toggleFold(e.target.closest('.gb-item'));
+      }
     });
     list.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -1857,18 +1990,31 @@
     list.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && openDelete?.panel.contains(e.target)) closeDelete(true);
     });
-    more.addEventListener('click', loadMore);
+    pager.addEventListener('click', (e) => {
+      const button = e.target.closest('button');
+      if (!button || button.getAttribute('aria-disabled') === 'true' || button.hasAttribute('aria-current')) return;
+      turnPage(button === prev ? page - 1 : button === next ? page + 1 : Number(button.dataset.page));
+    });
     retry.addEventListener('click', async () => {
       title.focus(); // the retry button hides while loading
-      if (!(await loadFirst())) retry.focus();
+      if (!(await loadAll())) retry.focus();
     });
+    // Only a width change can change how many lines a message takes; a fold moving changes the height.
+    if ('ResizeObserver' in window) {
+      let listWidth = 0;
+      new ResizeObserver(([entry]) => {
+        if (entry.contentRect.width === listWidth) return;
+        listWidth = entry.contentRect.width;
+        measureFolds();
+      }).observe(list);
+    }
 
     // No request to the web app until the section is about one screen away (spec: lazy, like the venue map).
     if ('IntersectionObserver' in window) {
       const near = new IntersectionObserver((entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         near.disconnect();
-        loadFirst();
+        loadAll();
       }, { rootMargin: GB.NEAR_MARGIN });
       near.observe(section);
       const seen = new IntersectionObserver((entries) => {
@@ -1879,7 +2025,7 @@
       seen.observe(form);
     } else {
       formShownAt = performance.now();
-      loadFirst();
+      loadAll();
     }
 
     form.hidden = false;
