@@ -15,6 +15,8 @@
 > 7차 QA(인사말·섹션 분리·보케 B안, 2026-10-13) 결과는 문서 맨 끝 "7차 QA" 절에 있다: PASS 52 / FAIL 0 / WARNING 3(새로 생긴 W11·W12·W13, 모두 문서). W6·W8·W9·W10은 해소됐고 W7은 그대로다.
 >
 > 8차 QA(방명록 공개 목록, 2026-10-13) 결과는 문서 맨 끝 "8차 QA" 절에 있다: PASS 50 / FAIL 0 / WARNING 2(새로 생긴 W14·W15, 모두 문서). 검증 중 찾은 화면 낭독기 알림 결함 1건은 `script.js`에서 직접 고쳤다. W11·W12·W13은 해소됐고 W7은 그대로다.
+>
+> 10차 QA(사진 보호: 저장 메뉴 차단 + 모든 확대 차단, 2026-10-17) 결과는 문서 맨 끝 "10차 QA" 절에 있다: PASS 58 / FAIL 0 / WARNING 7(문서 W18·W19, 실기기 확인 RD1~RD5). WCAG 1.4.4 위반은 사용자 수용 예외(E1)이고, QA 스킬 6.4의 핀치 줌 항목은 폐기됐다. W7은 그대로다.
 
 ## 요약
 
@@ -1409,3 +1411,189 @@ R8 단계 밖 값(섹션 안 margin·padding·gap 전체를 뽑아 단계 값과
 
 - **W16 해소:** 감사 문서 R4에 T17(페이지 번호)을, R6에 방명록 페이지 번호 줄과 긴 글 접기 화살표 항목을 더했다.
 - **W17 해소:** `05` 17장의 페이지 넘김 알림 행과 목록 제목 reveal 줄에 현재 상태를 덧붙였다.
+
+---
+
+## 10차 QA (사진 보호: 저장 메뉴 차단 + 모든 확대 차단) — 2026-10-17
+
+9차 뒤 바뀐 것은 사진 보호 하나다(worktree `feat+photo-protection`, 미커밋). 코드 변경은 `index.html` viewport meta 1줄, `style.css` 18줄, `script.js` 209줄(대부분 lightbox 확대 코드 삭제), `README.md` 1줄이다. 기준 문서는 모션 명세 12장(12-1 작업 목록, 12-2 검증 기준, 12-3 실기기 위험)과 4-1-4·4-1-8·4-2·4-10, frontend 요약 `05` 18장이다. 사용자가 "모든 확대 차단"을 직접 골랐으므로 페이지 확대 차단에 따른 WCAG 1.4.4 위반과 Lighthouse·axe `meta-viewport` 실패는 FAIL이 아니라 수용 예외로 기록했다. 브라우저 강제 확대 설정, `Ctrl`/`Cmd` + `+`·`-`·`0`, 브라우저 메뉴 확대는 막지 않는 것이 명세이므로 막히지 않았는지를 확인했다.
+
+### 요약
+
+- 전체 결과: **PASS** (FAIL 0)
+- 10차 판정 65항목: PASS 58 / FAIL 0 / WARNING 7 (문서 2건 W18·W19, 실기기 확인 5건 RD1~RD5)
+- 수용 예외 1건(E1 WCAG 1.4.4), 폐기 1건(QA 스킬 6.4 "핀치 줌 → max scale 3, 더블탭 토글"). 판정 수에 넣지 않았다
+- **확대 차단은 이 환경에서 측정할 수 있는 입력 모두에서 동작한다.** 본문 5곳·캐러셀·lightbox에서 두 손가락 터치 핀치, `synthesizePinchGesture`(`touch`·`default`·`mouse`), 더블탭, `ctrl + wheel` 21종 뒤 `visualViewport.scale`이 모두 1이다. 같은 검사를 HEAD 사본에 돌리면 터치 핀치 6곳에서 scale 5, 합성 핀치(`default`·`mouse`)에서 2.0, lightbox 사진 `scale(3)`(핀치)·`scale(1.5)`(`+` 키)가 나와 검사가 확대를 실제로 잡는다
+- **사진 보호는 실제 입력으로도 동작하고 글자는 그대로 선택된다.** 마우스 우클릭은 hero 사진·런타임 `.lb-img`에서 취소, 이름·계좌번호·방명록 입력칸에서 기본 메뉴. 계좌번호는 마우스로 끌어 선택되고, 복사 실패 경로(`copy-failed`)에서 토스트 문구와 계좌번호 `Selection`이 그대로다
+- **회귀 없음.** 캐러셀·lightbox(두 손가락 경로 포함)·빠른 연타·BGM·보케 정지/재개 검사 18개가 작업 트리와 HEAD에서 같은 결과이고, reduced-motion·폭·JS 꺼짐도 PASS다
+- 직접 수정: **없음.** 코드에서 고칠 결함이 나오지 않았다
+- 기존 WARNING: W7 그대로(위치 `script.js:852-863`, `GAL.WHEEL_LOCK` `:23`)
+- 검증 방법
+  - 정적: 명세 12-2 A1~A11 grep을 그대로 실행, `git diff`(HEAD ↔ 작업 트리) 전체 검토, `node --check`, 새 코드 줄의 한글, `touch*` 리스너, `http://` 리소스
+  - 브라우저: Playwright 1.63 headless shell(Chromium 1243), 390 x 664, `isMobile`, `hasTouch`, DPR 3. full Chromium 채널은 이 sandbox에서 시작되지 않아 쓰지 않았다. 외부 요청은 막았고 방명록 목록은 Playwright route로 모의 응답(23건)을 채웠다. 실제 웹 앱 요청 0건
+  - frontend 시험 `photo-guard-check.js`를 내용을 읽은 뒤 그대로 돌렸다: 작업 트리 28/29(실패 1은 외부 요청 차단으로 생긴 `Failed to load resource` 3건), HEAD 사본 B8a·B8b 실패(scale 5 / 2.0). HEAD 사본(`scratchpad/base/`)이 `git show HEAD:`와 바이트 단위로 같은지 먼저 확인했다
+  - 독립 시험 `qa10/qa.js` 7개 묶음(real 13, zoom 4, lb2 12, rapid 8, reduce 4, widths 2, nojs 3, 각 묶음의 콘솔 검사 포함) + `nomodal.js` 1. zoom·lb2·rapid는 HEAD 사본(:8762)에도 돌려 비교했다
+  - 끝난 뒤 정적 서버(8743·8744·8761·8762)와 headless 브라우저가 남지 않았음을 확인했다. 스크립트와 출력은 scratchpad `qa10/`에만 있다
+
+### 10-1. 정적 확인 (명세 12-2 A, worktree 루트)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 1 | A1 viewport meta | `1`. `name="viewport"` 태그도 1개 | PASS |
+| 2 | A2 `pinch-zoom` | 출력 없음 | PASS |
+| 3 | A3 확대 식별자 13종 | 출력 없음 | PASS |
+| 4 | A4 `gesturestart`·`gesturechange` | `script.js:120-121`, 둘 다 `initZoomGuard` 안, `{ passive: false }` | PASS |
+| 5 | A5 `ctrlKey` | `script.js:123` 1줄(`initZoomGuard`) | PASS |
+| 6 | A6 `e.key === '[-+=0]'` | 출력 없음 | PASS |
+| 7 | A7 `touch-callout` | `style.css:112` 1줄, 새 `img` 규칙 안 | PASS |
+| 8 | A8 `user-select: none` | `:114-115` `img`, `:628-629` `.js .g-viewport`, `:702-703` `.venue__map`, `:1285-1286` `.lb-stage`. `html`·`body`·`*`·섹션·카드 0 | PASS |
+| 9 | A9 `touch-action` | `:92` `html` `manipulation`, `:627` `.js .g-viewport` `pan-y`, `:1284` `.lb-stage` `none`, `:697` 지도 주석 | PASS |
+| 10 | A10 `zoom-in`·`zoom-out` | `:611` `.g-open`의 `zoom-in`뿐. `.lb-` 규칙의 커서는 `.lb-btn` `pointer`, `.lb-btn:disabled` `default`뿐 | PASS |
+| 11 | A11 `window.open(btn.dataset.full` | 출력 없음 | PASS |
+| 12 | 12-1 작업 목록 | 아래 표 11/11 반영 | PASS |
+| 13 | 정적 위생 | `node --check` 통과, 새 코드 줄 한글 0, `script.js`에 `touch*` 리스너 0개(모바일 스크롤 경로에 non-passive 리스너가 늘지 않음), `http://` 리소스 0 | PASS |
+
+| 12-1 # | 명세 | 구현 | 결과 |
+|---|---|---|---|
+| 1 | viewport meta | `index.html:6` 명세 문자열 그대로 | PASS |
+| 2 | `html { touch-action: manipulation }` | `style.css:92` | PASS |
+| 3 | 사진 보호 `img` 규칙(`img, svg, canvas` 바로 아래) | `style.css:110-116`, 명세 4-10-2 참고 CSS와 글자 단위로 같음 | PASS |
+| 4 | `.js .g-viewport` `pan-y` | `style.css:627`. 명세 4-1-11 참고 CSS의 줄 끝 주석은 옮기지 않았다(동작 무관) | PASS |
+| 5 | `.lb-img` `transform-origin` 삭제, `.lb-img.is-zooming` 삭제 | 남은 `.lb-img`(`:1306-1311`)가 명세 4-2 참고 CSS와 같음 | PASS |
+| 6 | `--ease-standard` 주석 | `style.css:41` "press, slide snap (carousel + lightbox), label swap", 명세 6장과 같음 | PASS |
+| 7 | `LB` 상수 5개 삭제 | `script.js:17-21`, 남은 10개 키·값이 명세 4-2 표와 같음 | PASS |
+| 8 | 캐러셀 두 번째 손가락 주석 | `script.js:797` 명세 4-1-12 문구 그대로, 코드 그대로 | PASS |
+| 9 | `initLightbox` 삭제 목록 + keydown·제스처 블록 교체 | `script.js:1040-1150`이 명세 4-2 참고 코드와 같음. `resetZoom` 호출 4곳 모두 삭제, ResizeObserver는 `measure(); setTrack(0, false);` | PASS |
+| 10 | `initZoomGuard`·`initPhotoGuard` + Boot 맨 앞 | `script.js:115-135`, Boot `:1938-1939`가 `initBokeh`(`:1940`)보다 먼저 | PASS |
+| 11 | (Should) `showModal` 미지원 폴백 제거 | `script.js:897-898` `return`만 남음 | PASS |
+
+### 10-2. 브라우저 자동 확인 (명세 12-2 B)
+
+frontend 시험을 그대로 돌린 결과와 독립 시험 결과를 함께 적었다. frontend 시험은 의미 있는 검사다. 다만 B4~B6은 `dispatchEvent`로 만든 이벤트라 리스너 판정만 확인하므로 실제 입력은 10-4에서 따로 확인했고, SEL(계좌번호 `Range` 선택)은 Chromium에서 `user-select: none`이면 빈 문자열을 돌려주는 것을 따로 확인해(`selprobe.out`) 판별력이 있다고 보았다.
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 14 | B1 | `manipulation` / `pan-y` / `none` | PASS |
+| 15 | B2 | `gesturestart`·`gesturechange`·`ctrl + wheel` `defaultPrevented` true | PASS |
+| 16 | B3 | `ctrlKey` 없는 wheel false. 캐러셀 위 세로 wheel도 false(M11) | PASS |
+| 17 | B4 | `.hero__photo`, 현재 캐러셀 img, 그 `.g-open`, 런타임 `.lb-img` 모두 true | PASS |
+| 18 | B5 | `.hero__names`, `#groom-account`, `#gb-message` 모두 false | PASS |
+| 19 | B6 | hero img `dragstart` true | PASS |
+| 20 | B7 | img `none`, body·계좌번호 `auto` | PASS |
+| 21 | B8 | hero·캐러셀·lightbox에서 두 손가락 터치·합성 핀치 뒤 scale 1, `.lb-img`·슬라이드 transform `''`, "4 / 15", 열린 채. HEAD는 scale 5 / 2.0으로 실패. 명세의 `gestureSourceType: 'touch'`는 HEAD에서도 1이라 쓰지 않았다(W19) | PASS |
+| 22 | B9 | 본문 글자 더블탭(합성·터치 두 방식) scale 1. **판별력 없음:** Chromium은 `width=device-width` 페이지에서 원래 더블탭 확대를 하지 않아 HEAD도 1이다. 실제 확인은 RD1 | PASS |
+| 23 | B10 | `+`, `=`, `-`, `0`, `Shift+=` 뒤 `.lb-img` transform `''`, "4 / 15". HEAD는 `scale(1.5)` | PASS |
+| 24 | B11 | 02(가로)로 열어 사진 가운데 더블탭: 확대 없음·열린 채 / 사진 위 빈 무대 한 번 탭: 닫힘 | PASS |
+| 25 | B12 | 프레임 342 x 513, 다음 14번 "15 / 15"·`aria-disabled="true"`·포커스 다음 버튼, 세로 쓸기로 페이지 스크롤(2574 → 2808)·번호 그대로, 4번에서 열어 스와이프 3번 "7 / 15" → 닫으면 캐러셀 7·포커스 7번째 슬라이드 버튼, Esc 닫기, 끌어 닫기 | PASS |
+
+B13(WebKit `webkitTouchCallout`)은 이 기기에 Playwright WebKit이 없어 돌리지 못했다. RD2로 넘겼다.
+
+### 10-3. 확대 차단 (독립 시험 `zoom`·`nojs`, 작업 트리 ↔ HEAD)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 26 | 확대 입력 21종 | hero(두 손가락 터치 핀치, 합성 핀치 `touch`·`default`·`mouse`, 더블탭 2방식, `Ctrl` + 마우스 휠), greeting·account·guestbook 입력칸·venue(터치 핀치·더블탭), 캐러셀(터치 핀치·사진 더블탭), lightbox(터치 핀치·합성 핀치·사진 더블탭·`Ctrl` + 휠) 모두 scale 1. HEAD: 터치 핀치 6곳(hero, 섹션 4곳, 캐러셀) 5, hero 합성 `default`·`mouse` 2.0. 더블탭·`Ctrl` + 휠·합성 `touch`는 HEAD도 1이라 이 환경에서는 판별력이 없다(차단 여부는 B2의 `defaultPrevented`로만 확인) | PASS |
+| 27 | lightbox 사진 | 터치 핀치·더블탭·`+ = - 0 Shift+=` 뒤 `.lb-img`·슬라이드 transform `''`, 트랙 `translate3d(calc(-300% + 0px), 0px, 0px)`, "4 / 15", 열린 채. HEAD: 핀치 `translate(-362.44px, -544px) scale(3)`, 키 `scale(1.5)` | PASS |
+| 28 | 막지 않는 키 확대 | lightbox에서 `Ctrl` + `=`·`-`·`0`, `Meta` + `=` keydown 4건 모두 `defaultPrevented` false, 사진 transform `''`. 페이지가 브라우저 키보드 확대를 가로채지 않는다(명세 4-10-3 "막지 않는 것") | PASS |
+| 29 | JS 꺼짐 | `html` `manipulation`, img `user-select: none`·`-webkit-user-drag: none`, body `auto`, 캐러셀 scroll-snap 폴백(`overflow-x: auto`), 터치 핀치 scale 1(viewport meta). 우클릭 메뉴는 막히지 않는다(명세 4-10-2가 받아들인 범위) | PASS |
+
+### 10-4. 사진 보호 (독립 시험 `real`, `nomodal.js`)
+
+`window`에 bubble 단계 리스너를 걸어 `document` 위임 리스너가 지난 뒤의 `defaultPrevented`를 기록했다. 우클릭은 `page.mouse.click({ button: 'right' })`(CDP `Input.dispatchMouseEvent`), 즉 브라우저가 만든 실제 `contextmenu`다. 터치 길게 누르기(`synthesizeTapGesture` `duration: 1200`)는 headless shell에서 `contextmenu`를 만들지 않아 판정에 쓰지 않았다(RD2·RD3).
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 30 | 길게 누르는 대상 | `elementFromPoint`(사진 가운데): hero·현재 캐러셀 슬라이드·lightbox 모두 그 `<img>` 자체. 보케 캔버스 등 덮개 없음 | PASS |
+| 31 | 사진 우클릭 | hero `img.hero__photo` `prevented: true`, lightbox `img.lb-img` `prevented: true`(lightbox 열린 채) | PASS |
+| 32 | 글자 우클릭 | `.hero__names` 안 `span.hero__amp`, `span#groom-account`, `textarea#gb-message` 모두 `prevented: false` | PASS |
+| 33 | 사진 마우스 끌기 | hero 사진을 눌러 60px 끌기: `dragstart` 0건(`-webkit-user-drag: none`으로 끌기가 시작되지 않음), 선택 0 | PASS |
+| 34 | 글자 선택 | 계좌 카드를 탭으로 펼친 뒤 마우스로 끌어 "110-335-546640" 선택, 더블클릭으로 단어 선택, 방명록 입력칸에서 입력 후 `Ctrl+A` 선택 "hello world" | PASS |
+| 35 | 계좌 복사(성공) | 복사 버튼 탭 → 클립보드 `110-335-546640`, 토스트 "계좌번호가 복사되었습니다." | PASS |
+| 36 | 계좌 복사(실패) | `clipboard.writeText` 거부 + `execCommand` false로 만든 뒤 탭 → 토스트 = 카피 `copy-failed` "복사하지 못했습니다. 길게 눌러 직접 복사해 주세요.", `Selection` "110-335-546640", 버튼 `.is-failed`, 계좌번호의 모든 조상에 `user-select: none` 없음 | PASS |
+| 37 | `showModal` 미지원 | `showModal`을 지운 채 로드 → 슬라이드 탭: lightbox 슬라이드 0개, `window.open` 0회, 새 창 0개 / 다음 버튼 탭: 캐러셀 2번, 오류 0 | PASS |
+
+### 10-5. 회귀 (독립 시험 `lb2`·`rapid`·`reduce`·`widths`. `lb2`·`rapid`는 HEAD에서도 같은 결과)
+
+두 손가락은 CDP `Input.dispatchTouchEvent`로 보냈고, 매번 `pointerdown` 2건(primary 1, secondary 1)이 실제로 났는지 기록으로 확인했다.
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 38 | lightbox 스와이프 중 두 번째 손가락 | 72px 끌린 상태(`-300% - 72px`)에서 둘째 손가락 → 두 손가락으로 끌고 놓음: "4 / 15", 트랙 `-300% + 0px`, 열린 채. 이어서 한 손가락 스와이프 → "5 / 15"(상태가 `idle`에 갇히지 않음) | PASS |
+| 39 | 끌어 닫기 중 두 번째 손가락 | `translateY(72px)`·scrim 0.7872에서 둘째 손가락 → 놓은 뒤 슬라이드 transform `''`, scrim `''`, 열린 채 | PASS |
+| 40 | 바깥 탭 닫기 | 02 사진 위 빈 무대: 두 손가락 탭 → 열린 채 / 한 손가락 탭 → 닫힘, 캐러셀 2, 포커스 2번째 슬라이드 버튼 | PASS |
+| 41 | 사진 위 한 번 탭 | 03 사진 가운데 탭 → 열린 채 | PASS |
+| 42 | ←/→·Esc | → 뒤 Esc: 닫힘, 캐러셀 4, 포커스 4번째 슬라이드 버튼, `html.lb-open` 제거 | PASS |
+| 43 | 뒤로 가기 | `history.back` → 닫힘, 페이지 그대로 | PASS |
+| 44 | 캐러셀 끌기 중 두 번째 손가락 | `--g-dx` −72px에서 둘째 손가락 → 1번, `--g-dx` 0px, `.is-dragging` 없음, lightbox 안 열림, scale 1. 이어서 한 손가락 스와이프 → 2번 | PASS |
+| 45 | 캐러셀 가로 휠(Nice 4-1-5) | 가로 wheel(`deltaX` 60) → 한 장, `defaultPrevented` true / 세로 wheel → 그대로, false. 실제 `mouse.wheel(60, 0)`은 DPR 3에서 `deltaX` 20으로 와 `WHEEL_STEP` 40에 못 미쳐 합성 이벤트로 쟀다(HEAD도 같음) | PASS |
+| 46 | 캐러셀 빠른 연타 | 다음 70ms 간격 4번 → 5, 이전 3번 → 2 | PASS |
+| 47 | lightbox 빠른 연타 | 2에서 다음 3번 → "5 / 15", 이전 2번 → "3 / 15" | PASS |
+| 48 | 복사 버튼 빠른 두 번 탭 | 90ms 간격 두 번 탭 → click 2회 | PASS |
+| 49 | 방명록 페이지 번호 빠른 연타 | 모의 23건(5페이지): 다음 3번(80ms 간격, 넘김마다 제목 정렬로 버튼이 움직여 위치를 다시 잼) → 4페이지, click 3회. 번호 "5" → "4" 연달아 → 4페이지 | PASS |
+| 50 | BGM | 탭 → `aria-pressed="true"`·재생 중, 다시 탭 → `"false"`·정지 | PASS |
+| 51 | 보케 정지·재개(명세 10장 자동 확인 3) | hero `["hero"]` → lightbox 열림 `[]`(`html.lb-open`) → Esc 뒤 `["hero"]` | PASS |
+| 52 | reduced-motion | 보케 `still` 7·`running` `[]`, lightbox 트랙·dialog `0s`, 스와이프 즉시 "5 / 15", 끌어 닫기 중 둘째 손가락 → 슬라이드 transition `0s`로 즉시 원위치, 전구·스크롤 큐 `animation: none`, reveal `0s`. `style.css` reduce 블록(`:77`, `:1391`)은 diff에 없다 | PASS |
+| 53 | 폭 | 360·375·390·430에서 `scrollWidth = innerWidth` | PASS |
+| 54 | 콘솔 | 모든 묶음에서 page error 0, `[invitation] … failed` 0, 외부 요청 차단 말고는 `console.error` 0 | PASS |
+
+### 10-6. 죽은 코드·변경 범위·문서
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 55 | 죽은 코드·주석 | 확대 식별자 0(A3). 남은 `clamp`·`W`·`H`·`toStage`·`rect`·`endGesture`·`LB.TAP_SLOP`·`LB.VELOCITY_WINDOW`는 모두 쓰인다. `pointers`는 `Set`으로 바뀌어 `clear`·`add`·`delete`·`has`·`size`만 쓴다. `scale`·`pan`·`double`·`pinch`가 든 주석은 지금 동작(`:92` 더블탭 차단, `:119` WebKit 핀치, `:797` 두 번째 손가락, `:856` 브라우저 뒤로 가기 제스처, 지도·버튼 누름 `scale(0.97)`)을 설명하는 것뿐이다 | PASS |
+| 56 | 변경 범위 | `git diff` 코드 hunk 전부가 12-1 작업 목록과 README 1줄이다. 무관한 코드 변경 0 | PASS |
+| 57 | `05` 18장 | 바꾼 범위·건드리지 않은 것·확인 결과가 diff·시험 결과와 같다. 줄 번호(`script.js:17-21`, `:115-135`, `:719`, `:893-1151`, `:897-898`, `:1938-1939`, `style.css:110-116`, `:627`)가 지금 파일과 같다. `style.css:89-93`은 `html` 규칙 선언부(규칙 시작은 88행) | PASS |
+| 58 | README | 14행 "전체 화면 lightbox(확대 없음) · 사진 저장 메뉴 차단". 그 밖에 핀치·줌 언급 없음 | PASS |
+| 59 | 컨셉 시트 | `01_concept-director_concept-sheet.md:117` lightbox "좌우 스와이프, 핀치 줌", `:357` "라이트박스가 열린다(원본 비율, 핀치 줌)" | WARNING (W18) |
+| 60 | 명세 12-2 B8·B9 방법 | B8의 `gestureSourceType: 'touch'`, B9의 합성 더블탭은 headless Chromium에서 HEAD도 scale 1이라 확대 회귀를 잡지 못한다 | WARNING (W19) |
+
+### 10-7. 실기기에서만 확인할 수 있는 것 (명세 12-2 C, 12-3)
+
+| # | 항목 | 이 환경에서 확인한 것 | 결과 |
+|---|------|------|------|
+| 61 | RD1 iOS Safari·WKWebView 핀치와 더블탭(C1, C2, C8) | `gesturestart`·`gesturechange` 취소(B2), `html` `manipulation`(B1). iOS는 `user-scalable=no`를 무시하므로 실제 차단 여부는 iPhone에서만 드러난다. 핀치가 남으면 명세 12-3의 `touchmove`(`passive: false`) 대안 | WARNING |
+| 62 | RD2 iOS 길게 누르기 메뉴·끌기·사진 선택(C3, C4, B13) | CSS 규칙(A7)만. Chromium은 `-webkit-touch-callout`을 지원하지 않고 Playwright WebKit이 없어 B13을 못 돌렸다. iOS 16 이상의 피사체 들어올리기·라이브 텍스트가 남는지도 함께 본다 | WARNING |
+| 63 | RD3 카카오톡 인앱 브라우저 자체 저장 메뉴(iOS·Android, C3) | 확인 불가. 페이지의 `contextmenu`·`-webkit-touch-callout`은 앱 메뉴를 막지 못한다. 메뉴가 뜨면 명세 12-3의 투명 덮개 대안을 다시 정해야 한다 | WARNING |
+| 64 | RD4 Android 카카오톡 WebView가 viewport meta를 따르는지(C1) | Chromium은 meta를 따라 scale 1(B8, J2). WebView 설정에 따라 무시될 수 있다. 핀치가 되면 `html`을 `touch-action: pan-x pan-y`로 바꾸는 대안이 있고, 강제 확대 설정까지 막히므로 바꾸기 전에 사용자 확인이 필요하다 | WARNING |
+| 65 | RD5 iOS 글자 길게 눌러 선택·복사(C5)와 빠른 연타(C6) | Chromium에서는 글자 선택(34)·`copy-failed` `Selection`(36)·빠른 연타(46~49)가 PASS. iOS에서 계좌번호를 길게 누르면 선택 핸들과 "복사"가 뜨는지, `manipulation` 아래에서 빠른 두 번째 탭이 click이 되는지는 iPhone에서 본다 | WARNING |
+
+PC(C7: 트랙패드 핀치, `Ctrl`/`Cmd` + `+`·`-`·`0`, 사진·글자 우클릭, 사진 끌기)는 명세상 "가능하면"이다. 이 환경에서는 `ctrl + wheel` 취소(B2), 키 확대 미차단(28), 우클릭(31·32), 끌기(33)까지 확인했다.
+
+### 수용 예외와 폐기 (판정 수에 넣지 않음)
+
+- **E1 사용자 수용 예외(WCAG 1.4.4):** viewport meta `maximum-scale=1, user-scalable=no`로 페이지 글자 확대가 막힌다. Lighthouse 접근성 `meta-viewport` 감사와 axe `meta-viewport` 규칙은 이 값을 실패로 정의하므로 실패로 나온다(이번에 도구는 돌리지 않았다). 사용자가 2026-10-17 위반을 알고 "모든 확대 차단"을 골랐다(명세 4-10-3). 저시력 하객에게 남는 수단은 브라우저·OS 강제 확대 설정과 PC 키보드 확대이며, 페이지가 막지 않는다(28)
+- **QA 스킬 2.2 viewport 메타 기준 문자열**(`width=device-width, initial-scale=1, viewport-fit=cover`)은 이 프로젝트에서 E1로 대체된다. meta가 있고 `width=device-width`·`initial-scale=1`·`viewport-fit=cover`를 모두 담고 있어 "누락이면 FAIL" 조건에는 해당하지 않는다
+- **폐기(2026-10-17 사용자 결정):** QA 스킬 6.4(186행) "갤러리 lightbox 핀치 줌 → max scale 3, 더블탭 토글". 대신 확대가 일어나지 않는지를 검증했다(21~24, 26, 27)
+
+### 10차 직접 수정
+
+없음.
+
+### 기존 WARNING 현황
+
+- W7: 그대로. 위치만 `script.js:852-863`(가로 휠 450ms 잠금), `GAL.WHEEL_LOCK` `:23`으로 바뀌었다(`LB`가 한 줄 줄어 상수 줄이 하나씩 올라감)
+
+### 10차에서 나온 이슈와 수정 제안
+
+- [ ] **W18 (문서, concept-director) 컨셉 시트에 "핀치 줌"이 남아 있다** → `01_concept-director_concept-sheet.md:117` lightbox 줄의 "핀치 줌,"을 지우거나 "(2026-10-17 사진 보호: 확대 없음, 모션 명세 4-2·4-10이 우선)"을 덧붙이고, `:357`의 "(원본 비율, 핀치 줌)"을 "(원본 비율, 확대 없음)"으로 바꾼다. 명세 12-2가 "이 결정 이전 기록"이라고 적어 두었지만, 부분 재실행 때 frontend가 컨셉 시트를 다시 읽으면 확대가 되살아날 수 있다. 코드 변경은 없다
+- [ ] **W19 (문서, motion-designer) 명세 12-2 B8·B9가 회귀를 잡지 못하는 방법을 적고 있다** → `04_motion-designer_motion-spec.md` 12-2 B8의 방법을 "CDP `Input.dispatchTouchEvent` 두 손가락 핀치와 `Input.synthesizePinchGesture`(`gestureSourceType: 'default'`), HEAD 사본에서 scale이 1보다 커지는지 함께 확인"으로 바꾸고, B9에 "headless Chromium은 HEAD도 1이라 판별력이 없다. 실제 확인은 C2"를 덧붙인다. `05` 18장이 이미 같은 이유로 방법을 바꿔 시험했고 이번 QA도 그 방법을 썼다
+
+### 참고 (판정 대상 아님)
+
+- `.lb-slide`의 `overflow: hidden`(`style.css:1303`)은 확대가 있던 첫 lightbox(커밋 `3cf9be8`)부터 있던 선언이다. 지금은 사진이 항상 슬라이드 안에 맞춰져 잘라 낼 것이 없다. 명세 12-1·4-2 삭제 목록에 없고 동작 차이가 없어 그대로 두었다
+- `.lb-img`의 `-webkit-user-drag: none`(`:1310`)과 JS의 `img.draggable = false`는 새 전역 `img` 규칙과 겹친다. 명세 4-2·12-1이 남기라고 한 것이다
+- 하네스 기본값이 아직 핀치 줌 lightbox를 권한다: QA 스킬 `SKILL.md:75`(viewport 문자열)·`:186`, `wedding-motion-design/SKILL.md:94`, `wedding-mobile-frontend/SKILL.md:573-606`, `agents/motion-designer.md:79`, `agents/invitation-qa.md:28`. 이 프로젝트는 명세 4-2·4-10이 우선하므로 판정에는 영향이 없다. `.claude/skills`는 QA가 쓸 수 없는 경로라 고치지 않았다. 하네스를 고칠지는 오케스트레이터가 정한다
+- README 13행 "Canvas 꽃잎 파티클 · 그라디언트 메시 배경"은 보케 B안(2026-10-12) 이전 설명이다. 이번 변경과 무관해 그대로 두었다
+- worktree 루트에 이번 변경과 무관한 추적되지 않은 파일(`.bashrc`, `.gitconfig`, `.mcp.json`, `.claude/settings.json` 등)이 있다. 커밋할 때 넣지 않도록 주의한다. 내용은 열어 보지 않았다
+
+### 원자료 (scratchpad, 저장소에 넣지 않음)
+
+`/data/inhyeok/tmp/claude-1725399451/-home-inhyeok-bang-a2sys-ai-Workspace-private-wedding-letter/a7d91fc2-72e4-4b46-90ca-ac6ef3f0bcbd/scratchpad/qa10/` 아래.
+
+| 대상 | 파일 |
+|---|---|
+| frontend 시험 재실행(작업 트리 + HEAD) | `fe-check.out` |
+| 독립 시험 스크립트·실행기 | `qa.js`, `run.sh`(작업 트리 :8761, HEAD :8762), `nomodal.js`, `run-nm.sh`, `selprobe.js` |
+| 작업 트리 결과 | `new-real.out`, `new-zoom.out`, `new-lb2.out`, `new-rapid.out`, `new-misc.out`(reduce·widths·nojs), `new-nomodal.out` |
+| HEAD 비교 | `head-zoom.out`(확대 잡힘), `head-lb2.out`, `head-lb2-rapid.out`(회귀 묶음 같은 결과), `head/`(`git show HEAD:` 사본) |
+| 선택 판별력 확인 | `selprobe.out` |

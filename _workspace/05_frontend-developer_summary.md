@@ -8,6 +8,7 @@
 - 갱신: 2026-10-12, 마지막 share 섹션을 공유하기(`#share`)와 맺음(`#closing`)으로 나누고 보케 구간을 맺음으로 옮겼다(14장). 2장 표의 10·11행을 고쳤다.
 - 갱신: 2026-10-13, 보케를 B안 "작은 전구 불빛"으로 바꿨다(15장). 3장 표의 보케 행, 4장의 보케 행, 7장의 보케·reduced-motion 행을 고쳤다.
 - 갱신: 2026-10-13, 방명록을 Formspree 전송 폼에서 Apps Script 웹 앱에 저장하고 페이지에 공개 목록을 보여 주는 방명록으로 바꿨다(16장). 1장 외부 리소스, 2장 guestbook 행, 3장 4-8 행, 6장 방명록 행, 8장 배포 가이드 1·5번을 고쳤다.
+- 갱신: 2026-10-17, 사진 보호(사진 저장 메뉴 차단 + 페이지·lightbox의 모든 확대 제거)를 반영했다(18장). 2장 lightbox 행, 3장 4-1·4-2 행과 4-10 행(신설), Nice-to-have의 키·휠 줌 행, 4장의 줌 관련 행과 `showModal` 폴백 행, 7장 라이트박스 행 주석, 8장 배포 가이드 5번을 고쳤다.
 - 입력: `00_user-input.md`, `01_concept-director_concept-sheet.md`, `02_copy-writer_copy.md`, `03_image-artist_manifest.md`, `04_motion-designer_motion-spec.md`
 - 산출물: `index.html`(454줄), `style.css`(1,099줄), `script.js`(1,442줄). 줄 수와 3장의 `파일:줄`은 캐러셀 반영 후 기준이다. 어제의 "Warm Paper & Ink" 파일을 전부 새로 썼다.
 - 이전 컨셉 자산(`jo--*`, `op1789048062-*`, `divider-hairline.svg`, `og-thumbnail.jpg`, `monogram-iy.svg`, `floral-*`, `gallery-placeholder-*`, `hero-illustration.png`)은 세 파일 어디에서도 참조하지 않는다(grep 0건). 파일 자체는 지우지 않았다.
@@ -39,7 +40,7 @@
 | 9 | guestbook (`#guestbook`) | background (2026-10-12까지 surface 밴드) | (2026-10-13 공개 목록) ① 헤더 + 안내 ② 폼(성함·말씀·비밀번호 필드 `#FFFDFB` 면 + field_border 테두리, 모서리 16, 숨은 함정 칸, 남기기 바로 위 공개 안내) ③ 목록 머리(h3 "남겨 주신 말씀" + 상태 문구). 목록 항목과 더보기 버튼은 reveal 밖(17장: 더보기 대신 페이지 번호 줄, 역시 reveal 밖) | 목록 항목·삭제 펼침 opacity 250ms, 상태·오류 문구 200ms, 삭제한 항목 200ms 페이드 아웃(모션 명세 4-8-1) |
 | 10 | share 공유하기 (`#share`, 2026-10-12 분리) | background | ① 헤더(SHARE / 공유하기) + 문구 2행 ② 카카오톡 공유(primary)·링크 복사(secondary) 전체 폭 세로 쌓기, 사이 8 | 없음 (보케 구간 아님) |
 | 11 | closing 맺음 (`#closing[data-bokeh=closing]`, 마지막 섹션) | background | ① 장식 + wreath 모노그램(sprig는 `.reveal` 밖에서 stroke-draw, 모노그램만 `.reveal`) ② Allura Thank you(h2) + 2027.01.03 + Inhyeok & Yumin(이탤릭) | 상단 sprig-divider ③, 보케 |
-| - | lightbox (`dialog#lightbox`) | scrim #1C1514 / 0.96 | - | 스와이프·핀치·더블탭·끌어 닫기. 캐러셀 현재 장과 같은 번호로 열리고, 닫으면 캐러셀이 마지막으로 본 번호로 맞춰진다 |
+| - | lightbox (`dialog#lightbox`) | scrim #1C1514 / 0.96 | - | 스와이프·끌어 닫기·사진 밖 탭 닫기. 사진은 화면에 맞춘 크기로만 보이고 확대되지 않는다(2026-10-17, 18장). 캐러셀 현재 장과 같은 번호로 열리고, 닫으면 캐러셀이 마지막으로 본 번호로 맞춰진다 |
 | - | BGM 토글 (`.bgm-toggle`, fixed) | 반투명 면 | hero 시퀀스 t=0 | glow 링 |
 
 RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(2026-10-12)으로 파일 번호 순서 01~15다(그 전에는 01 02 08 / 03 09 12 / 07 13 05 / 11 06 14 / 10 04 15). 카피 시트 `gallery_alt` 표도 같은 순서이고, 컨셉 시트 `photos.gallery.order`보다 이 순서가 우선한다(`00_user-input.md`). alt는 파일별 문장 그대로이고 버튼 이름의 번호("사진 n / 15 크게 보기")가 곧 파일 번호다. hero.jpg는 갤러리에 없다. 프레임은 모두 2:3이다. 세로 13장은 `object-fit: cover`, 가로 2장(2번 02, 15번 15)은 `contain`이며 surface 매트 위에 올라간다. 그리드에서 쓰던 02·15의 `object-position`은 지웠다.
@@ -66,8 +67,9 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 2-5 gallery reveal 2그룹(헤더 / 캐러셀 전체), 슬라이드 개별 등장 없음 | 구현. reveal은 `.g-carousel`, 슬라이드 이동은 안쪽 `.g-track`이라 서로 덮어쓰지 않는다 | index.html:203, 208 |
 | 3-1 sprig-divider stroke-draw 3곳(인라인 SVG, `sp-*` 클래스, IO threshold 0.5) | 구현 | index.html 각 `svg.sprig`, style.css:1027-1038, script.js:547 |
 | 3-2 전구 호흡(주기 표 그대로) + 화면 밖·라이트박스 일시정지 | 구현 | style.css:493-499, 1040-1048, script.js:565 |
-| 4-1 갤러리 캐러셀: 2:3 프레임(세로 cover, 가로 02·15 contain + surface 매트), peek 16px, transform 트랙(`--g-i`·`--g-dx`), 스와이프(8px 축 판정, 50px 또는 0.3px/ms, 양 끝 정지·저항 0.3, 350ms), `touch-action: pan-y pinch-zoom`, 가로로 판정된 뒤에만 포인터 캡처, 이전/다음 버튼 `aria-disabled` + "n / 15" 카운터, ←/→(포커스가 캐러셀 안일 때만), click 억제, `role="group"`·`aria-roledescription`·비현재 14장 `inert`+`aria-hidden`·`.g-status` 낭독·←/→ 시 포커스 이동, lightbox 같은 번호로 열기·닫으면 동기화·포커스 복귀, `srcset`/`sizes` + 로딩 창(index −1 ~ +2를 `eager`로, IO `rootMargin: 100% 0px`), JS 꺼짐 scroll-snap 폴백, `inert` 미지원 브라우저는 `tabindex="-1"` | 구현. 명세 4-1-11 CSS·4-1-12 JS를 옮겼고 차이는 4장 | index.html:208-238, style.css:559-669, script.js:22-23, 607-769 |
-| 4-2 lightbox: `showModal` 포커스 트랩, 스와이프(판정은 캐러셀과 같은 `swipeTarget`), 핀치 1~3, 더블탭 2배, 팬 clamp, ←/→/Esc, 스크롤 잠금, 슬라이드 목록을 캐러셀 `.g-open`의 `data-full`·`data-w`·`data-h`·img alt로 생성, 현재 장은 캐러셀 img `currentSrc`로 시작해 원본으로 교체(절대 URL 비교, 캐러셀이 아직 못 받았으면 처음부터 원본), ±1 원본, 닫기 시작과 `close` 두 곳에서 캐러셀을 lightbox 번호로 맞춤(애니메이션·낭독 없음), 그 뒤 캐러셀 현재 슬라이드 버튼으로 포커스, 보케 정지 | 구현 | script.js:610-617(`swipeTarget`), 784-1162 |
+| 4-1 갤러리 캐러셀: 2:3 프레임(세로 cover, 가로 02·15 contain + surface 매트), peek 16px, transform 트랙(`--g-i`·`--g-dx`), 스와이프(8px 축 판정, 50px 또는 0.3px/ms, 양 끝 정지·저항 0.3, 350ms), `touch-action: pan-y`(2026-10-17 `pinch-zoom` 제거, 18장), 가로로 판정된 뒤에만 포인터 캡처, 이전/다음 버튼 `aria-disabled` + "n / 15" 카운터, ←/→(포커스가 캐러셀 안일 때만), click 억제, `role="group"`·`aria-roledescription`·비현재 14장 `inert`+`aria-hidden`·`.g-status` 낭독·←/→ 시 포커스 이동, lightbox 같은 번호로 열기·닫으면 동기화·포커스 복귀, `srcset`/`sizes` + 로딩 창(index −1 ~ +2를 `eager`로, IO `rootMargin: 100% 0px`), JS 꺼짐 scroll-snap 폴백, `inert` 미지원 브라우저는 `tabindex="-1"` | 구현. 명세 4-1-11 CSS·4-1-12 JS를 옮겼고 차이는 4장 | index.html:208-238, style.css:559-669, script.js:22-23, 607-769 |
+| 4-2 lightbox: `showModal` 포커스 트랩, 스와이프(판정은 캐러셀과 같은 `swipeTarget`), 확대 없음(2026-10-17, 18장: 핀치·더블탭·`ctrl + wheel`·`+`/`=`/`-`/`0` 키 확대와 팬 삭제, 두 번째 손가락이 닿으면 진행 중인 스와이프·끌어 닫기를 되돌리고 손을 다 뗄 때까지 입력 무시, 사진 밖 탭은 바로 닫기·사진 위 탭은 동작 없음), ←/→/Esc, 스크롤 잠금, 슬라이드 목록을 캐러셀 `.g-open`의 `data-full`·`data-w`·`data-h`·img alt로 생성, 현재 장은 캐러셀 img `currentSrc`로 시작해 원본으로 교체(절대 URL 비교, 캐러셀이 아직 못 받았으면 처음부터 원본), ±1 원본, 닫기 시작과 `close` 두 곳에서 캐러셀을 lightbox 번호로 맞춤(애니메이션·낭독 없음), 그 뒤 캐러셀 현재 슬라이드 버튼으로 포커스, 보케 정지 | 구현 | script.js:17-21(`LB`), 719-726(`swipeTarget`), 893-1151 (2026-10-17 기준) |
+| 4-10 사진 보호 (2026-10-17, 18장): 모든 img의 저장 메뉴·끌기·선택 차단(CSS `img` 규칙 + `document` 위임 `contextmenu`·`dragstart`, 판정 `closest('img, .g-open')`), 글자 선택 유지, viewport meta `maximum-scale=1, user-scalable=no`, `html { touch-action: manipulation }`, WebKit `gesturestart`·`gesturechange` 차단, `window`의 `ctrl + wheel` 차단, 캐러셀 `touch-action: pan-y` | 구현. 4-10-2·4-10-3 참고 코드를 그대로 옮겼다 | index.html:6; style.css:89-93, 110-116, 627; script.js:115-135(`initZoomGuard`, `initPhotoGuard`), 1938-1939 |
 | 4-3 BGM: 자동재생 없음, `preload="none"`, 꺼짐(사선 음표)/켜짐 아이콘, `aria-pressed`, `aria-busy`, 탭 숨김 일시정지·복귀, 재생 실패 복구 | 구현 | index.html:39-60, script.js:1166 |
 | 4-4 복사(계좌·주소·링크): 라벨 전환 1600ms, 토스트 1800ms, `role="status"` 낭독(50ms 비웠다 다시), clipboard → execCommand → Selection 폴백, 진동 12ms | 구현 | script.js:82-104, 1248-1308 |
 | 4-5 D-day 한국 시간 계산, D-N / D-DAY / 숨김 분기, visibilitychange 갱신, 카운트업 없음 | 구현 | script.js:585 |
@@ -88,13 +90,13 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 4-8 방명록 상태 문구(200ms 페이드), 제출 중 비활성 | 구현 | script.js:1516-1884 `guestbookRequest`·`initGuestbook` (2026-10-13 다시 씀) |
 | 4-8-1 방명록 목록: 첫 페이지·새 글·더보기 묶음 250ms 페이드(순차 등장 없음. 더보기는 17장에서 페이지 넘김·긴 글 접기로 바뀜), 삭제 펼침 250ms·닫기 즉시, 오류 문구 200ms, 삭제 성공 `inert` + 200ms 페이드 아웃 뒤 제거, 상태 문구 200ms(스피너·스켈레톤 없음), 포커스 이동 | 구현(2026-10-13, 16장) | style.css:966-976, script.js:1516-1884 |
 | 4-9 스크롤 큐(1700ms 등장, 2400ms 루프, 첫 스크롤 후 제거, 압축 화면 숨김) | 구현 | style.css:406-437, 1055-1059; script.js:534-543 |
+| 4-10-2 `showModal` 미지원 폴백(원본을 새 탭으로 열기) 제거 (2026-10-17, 18장) | 구현. `showModal`이 없으면 lightbox를 만들지 않고 돌아간다. 사진 버튼을 눌러도 아무 일이 없고 캐러셀 넘기기만 된다 | script.js:897-898 |
 
 ### Nice-to-have
 
 | 명세 | 구현 | 위치 |
 |---|---|---|
-| 4-2 `+` / `-` / `0` 키 줌 | 구현(1.5배 단위) | script.js:975 |
-| 4-2 `ctrl + wheel` 줌 | 구현 | script.js:983 |
+| 4-2 `+` / `-` / `0` 키 줌, `ctrl + wheel` 줌 | **삭제**(2026-10-17, 18장). 명세 7장에서 이 줄이 빠졌고 4-2 "확대 없음"이 대신한다 | - |
 | 4-1 트랙패드 가로 휠 | 구현. 가로 성분이 클 때만 `preventDefault`, deltaX 누적 ±40에서 한 장, 이후 450ms 입력 무시(`GAL.WHEEL_STEP`·`WHEEL_LOCK`) | script.js:742-755 |
 | 4-1 전환 중 잡기 | **미구현.** 전환 중에 손가락을 대면 목표 위치로 짧게 점프한 뒤 끌린다(명세가 적은 미구현 시 동작, lightbox와 같음) | - |
 
@@ -112,11 +114,9 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | BGM 재생 실패 | 오류 문구 없음 | 화면 토스트 없이 `role="status"` 낭독만("음악을 재생하지 못했습니다. 다시 한번 눌러 주세요.") | 카피 시트의 상태 메시지를 쓰되 시각 피드백은 명세대로 없음 |
 | 길찾기 | 카카오맵·네이버 지도·티맵 | 티맵 제외 | 티맵은 앱 키 없이 쓸 수 있는 웹 검색 URL이 없다. 앱 스킴(`tmap://`)은 데스크톱·미설치 기기에서 실패 |
 | 라이트박스 카운터 | "n / 15" + `aria-live` | 보이는 "n / 15"는 `aria-hidden`, 같은 `aria-live` 문단 안의 sr-only "15장 중 n번째 사진"이 낭독됨 | 카피 시트의 카운터 접근성 문구 |
-| 줌·원위치 250ms | 시간만 명시 | 토큰 `--dur-modal`(250ms) 재사용 | 250ms 전용 토큰이 없다. reduce에서 0ms로 따라감 |
+| 끌어 닫기 원위치 250ms | 시간만 명시 | 토큰 `--dur-modal`(250ms) 재사용. 2026-10-17 줌이 없어져 원위치만 남았다 | 250ms 전용 토큰이 없다. reduce에서 0ms로 따라감 |
 | 400/600ms 전환 | BGM 토글 등장 400ms, 스크롤 큐 등장 600ms·퇴장 400ms | `calc(var(--dur-fast) * 2)`, `calc(var(--dur-base) * 2)` | 토큰에 묶어 reduce에서 0ms가 되게 |
-| 핀치 1 미만 | "줄였다 놓으면 1로 복귀" | 제스처 중 최저 0.6까지 허용 후 250ms에 1로 복귀 | 하한이 명시되지 않음 |
 | 끌어 닫기 배경 | dialog 배경 opacity 변경 | scrim을 별도 요소(`.lb-scrim`)로 두고 그 opacity만 바꿈 | transform/opacity만 움직이는 규칙 유지 |
-| `showModal` 미지원 브라우저 | 언급 없음 | 캐러셀 슬라이드 버튼을 누르면 원본 사진을 새 탭으로 연다 | 구형 Safari(15.4 미만) 대비 |
 | greeting 그룹 ③ "혼주 표기" | greeting 안 | 혼주 표기는 couple-intro 섹션에 있음 | 컨셉 시트 `sections_order`가 두 섹션을 나눈다 |
 | UI 문구 위치 | - | 런타임 문구를 `index.html`의 `<template id="ui-text">`에 두고 JS가 읽음 | 저장소 규칙상 코드 파일에 한국어를 넣지 않는다. 모든 문구를 index.html에서 grep으로 확인할 수 있다 |
 | SVG 인라인 수정 | 9장 자산 협의 | sprig에 `sp-flower`/`sp-stem`/`sp-leaf--1~3`/`sp-dot--center`/`sp-dot--end` 클래스, string-lights 전구에 `data-i="0"~"6"`, 후광 `opacity="0.25"` → `fill-opacity="0.25"` | 원본 SVG 파일은 그대로 두고 인라인 사본에서 반영 |
@@ -178,7 +178,7 @@ placeholder(`[[TODO:...]]`)는 모두 채워졌고(2026-10-11), placeholder를 �
 | 보케 | (2026-10-13 B안 기준, 15장) 구간마다 그 구간 하나만 실행(hero → calendar → closing), gallery·venue·notice·account·guestbook에서 `running: []`. 구간별 최대 생존 8, `excludeHits` 0, `pairHits` 0, 제외 상자까지 최소 14.4px 이상. 사진·글자 줄·장식 위에는 나타나지 않음 |
 | 전구 | 점등 후 opacity 0.85–0.99 사이에서 호흡 |
 | 스크롤 완주 후 | 숨은 reveal 0개, 안 그려진 디바이더 0개, D-day "D-85 / 인혁과 유민의 결혼식까지 85일 남았습니다." |
-| 라이트박스 | 2번 셀 탭 → 2/15로 열림, 첫 포커스 닫기 버튼, `html.lb-open`, 원본 01.jpg 로드, → 키 3/15, 왼쪽 스와이프 4/15, 더블탭 2배 / 다시 더블탭 1배, 핀치 3배에서 clamp, Esc 닫기 후 2번 셀로 포커스 복귀·history 원복, 아래로 끌어 닫기 동작 |
+| 라이트박스 | 2번 셀 탭 → 2/15로 열림, 첫 포커스 닫기 버튼, `html.lb-open`, 원본 01.jpg 로드, → 키 3/15, 왼쪽 스와이프 4/15, 더블탭 2배 / 다시 더블탭 1배, 핀치 3배에서 clamp, Esc 닫기 후 2번 셀로 포커스 복귀·history 원복, 아래로 끌어 닫기 동작. (2026-10-17: 더블탭·핀치 확대는 삭제됐다. 지금 동작의 확인은 18장) |
 | reduced-motion | 모든 섹션 즉시 표시, hero 사진 opacity 1, 디바이더 완성, 전구 opacity 1·animation none, calendar·closing 캔버스 `display: none`, hero에 정지 불빛 7개(2026-10-13 B안, 새로고침해도 같은 픽셀). 런타임에 설정을 되돌리면 새로고침 없이 hero 보케 재개 |
 | 복사·폼·공유 | 주소 복사 라벨 "✓ 복사했습니다", 방명록 빈 값 검증(`aria-invalid`), 카카오 폴백 문구 |
 | BGM | 탭 전 `bgm.mp3` 요청 없음. 탭 후 재생, volume 0.60, 링 표시. 다시 탭하면 정지 |
@@ -192,7 +192,7 @@ placeholder(`[[TODO:...]]`)는 모두 채워졌고(2026-10-11), placeholder를 �
 2. GitHub Pages: 저장소 루트를 그대로 배포한다. `.nojekyll`이 있으므로 Jekyll 처리 없이 정적 파일로 나간다.
 3. 카카오 공유를 쓰면 카카오 디벨로퍼스 앱의 [플랫폼 > Web]에 배포 도메인을 등록한다. SDK 로드나 공유가 실패하면 버튼은 링크 복사로 동작한다. 오시는 길 지도는 같은 앱에서 카카오맵 사용 설정도 켜야 나온다. 둘 중 하나라도 빠지면 지도 상자만 숨겨진다(12장).
 4. 카카오톡 미리보기 캐시: 공유 미리보기가 예전 이미지로 보이면 카카오 공유 디버거에서 URL 캐시를 초기화한다(og 이미지는 새 파일명 `og-garden.jpg`를 쓴다).
-5. 배포 후 휴대폰에서 확인할 것: 첫 화면(날짜·사진·이름·장소), BGM 토글, 갤러리 캐러셀 스와이프(가로로 넘김, 세로로는 페이지 스크롤)와 이전/다음 버튼, 라이트박스 스와이프·핀치와 닫은 뒤 캐러셀 번호, 계좌 복사, 방명록 글 1건 남기기·목록 표시·삭제(2026-10-13부터 실제 시트에 쌓이고 알림 메일이 간다), 카카오 공유 미리보기.
+5. 배포 후 휴대폰에서 확인할 것: 첫 화면(날짜·사진·이름·장소), BGM 토글, 갤러리 캐러셀 스와이프(가로로 넘김, 세로로는 페이지 스크롤)와 이전/다음 버튼, 라이트박스 스와이프·끌어 닫기와 닫은 뒤 캐러셀 번호, 사진 보호(2026-10-17: 본문·캐러셀·lightbox에서 핀치·더블탭해도 확대되지 않음, 사진을 길게 눌러도 저장 메뉴가 뜨지 않음, 계좌번호 글자는 길게 눌러 선택·복사됨. 모션 명세 12-2 C 표), 계좌 복사, 방명록 글 1건 남기기·목록 표시·삭제(2026-10-13부터 실제 시트에 쌓이고 알림 메일이 간다), 카카오 공유 미리보기.
 6. 쓰지 않는 예전 자산(`images/divider-hairline.svg`, `images/monogram-iy.svg`, `images/og-thumbnail.*`, `images/floral-*.png`, `images/gallery-placeholder-*.png`, `images/hero-illustration.png`, `images/photos/thumb/hero.jpg`)은 페이지에서 참조하지 않는다. 지울지는 사용자가 정한다.
 
 ## 9. 사용자 카피 수정 반영 (2026-10-10)
@@ -822,3 +822,65 @@ wreath.svg 위쪽에 여백이 있어 sprig와 화환 잎 사이는 24보다 넓
 - `pager-{360,390,430}.png`: 120건 + 긴 글, 두 자리 번호 창
 - `p17-smoke.png`: 390, 1페이지(접힌 긴 글 + 번호 줄)
 - 원자료 `results-*.json`
+
+## 18. 사진 보호: 저장 메뉴 차단과 확대 제거 (2026-10-17)
+
+모션 명세 12-1 작업 목록 11개(Must 10 + Should 1)를 모두 반영했다. 세부는 명세 4-1-4, 4-1-11, 4-1-12, 4-2 "확대 없음"·참고 코드, 4-10-2, 4-10-3을 따랐다. 사용자 결정은 "캡처 방지"를 사진에만, "사진 확대 방지"를 "모든 확대 차단"으로 적용하는 것이다. 글자 선택은 막지 않는다(계좌 복사 실패 안내 `copy-failed`가 길게 눌러 복사하는 방법에 기대기 때문).
+
+### 바꾼 범위
+
+| 파일 | 바꾼 것 |
+|---|---|
+| index.html | 6행 viewport meta에 `maximum-scale=1, user-scalable=no` (12-1 #1) |
+| style.css | `html`에 `touch-action: manipulation`(#2). `img, svg, canvas` 바로 아래 사진 보호 `img` 규칙: `-webkit-touch-callout`·`-webkit-user-drag`·`-webkit-user-select`·`user-select` 모두 `none`(#3). `.js .g-viewport`의 `pan-y pinch-zoom` → `pan-y`(#4). `.lb-img`의 `transform-origin: 0 0`과 `.lb-img.is-zooming` 규칙 삭제(#5). `--ease-standard` 주석에서 "zoom, " 삭제(#6) |
+| script.js | `LB`에서 `ZOOM_MAX`, `DOUBLE_TAP_ZOOM`, `DOUBLE_TAP_MS`, `PINCH_MIN`, `KEY_ZOOM_STEP` 삭제(#7). `initCarousel` 두 번째 손가락 주석을 4-1-12 문구로(#8, 코드 그대로). `initLightbox`에서 `zoom`, `origin`, `clampZoom`, `applyZoom`, `resetZoom`, `zoomAt`, `startPinch`, `settlePinch`, `lastTap`, 무대 `wheel` 리스너, keydown의 `+`·`=`·`-`·`0` 분기, `resetZoom(false)` 호출 4곳을 지우고 제스처 블록을 4-2 참고 코드로 바꿨다(#9). `pointers`는 좌표가 필요 없어져 `Map` → `Set`. `initZoomGuard`·`initPhotoGuard`를 Live region 절 다음에 두고 Boot 맨 앞(`initBokeh`보다 먼저)에서 부른다(#10). `showModal`이 없으면 `window.open` 폴백 없이 돌아간다(#11, Should) |
+
+건드리지 않은 것(12-1 "건드리지 않는 것" 그대로): `.js .g-viewport`·`.lb-stage`·`.venue__map`의 `user-select: none`, `.lb-stage { touch-action: none }`, 갤러리·lightbox img의 `draggable="false"`, `.g-viewport`의 `dragstart` 리스너, 캐러셀 트랙패드 가로 휠, `.g-open { cursor: zoom-in }`, 복사 실패 `Selection` 폴백. 전역 `user-select: none`과 글자 요소의 `-webkit-touch-callout: none`은 넣지 않았다.
+
+### 동작
+
+- **사진 저장 경로:** iOS 길게 누르기 메뉴는 CSS `-webkit-touch-callout: none`, Android·PC 메뉴는 `document`의 `contextmenu` 위임, 끌어 저장은 `-webkit-user-drag: none` + `dragstart` 위임이 막는다. 판정은 `e.target.closest('img, .g-open')`이라 lightbox가 나중에 만드는 `.lb-img`, hero wreath, 카카오 지도 타일 img도 함께 막힌다(명세 4-10-2가 받아들인 범위). 글자·버튼·빈 곳의 우클릭과 길게 누르기는 브라우저 기본 동작 그대로다.
+- **페이지 확대:** Android·WebView는 viewport meta, iOS·macOS Safari 핀치는 `gesturestart`·`gesturechange` 차단(`passive: false`), iOS 더블탭은 `touch-action: manipulation`, PC 트랙패드 핀치와 `Ctrl` + 마우스 휠은 `window`의 `ctrl + wheel` 차단이 막는다. `Ctrl`/`Cmd` + `+`·`-`·`0` 키 확대와 브라우저·OS 강제 확대 설정은 막지 않는다(4-10-3 "막지 않는 것"). 터치 스크롤 경로에 non-passive touch 리스너는 하나도 늘지 않았다.
+- **lightbox:** 사진은 화면에 맞춘 크기가 최대다. 손가락이 둘 이상 닿으면 진행 중인 스와이프는 350ms에 제자리, 끌어 닫기는 250ms에 원위치로 돌리고 마지막 손가락이 떨어질 때까지 입력을 무시한다(`g.type = 'idle'`). 한 번 탭은 사진 밖이면 바로 닫고 사진 위면 아무 일도 없다. 탭 반응 지연은 예전과 같이 0이다. 남은 조작(열기, 스와이프, 이전/다음, ←/→, Esc, 끌어 닫기, Android 뒤로가기)은 바뀌지 않았다.
+- **`showModal` 미지원(Safari·iOS 15.3 이하):** 사진 버튼을 눌러도 아무 일이 없다. 캐러셀 넘기기는 된다.
+
+### 확인 (Playwright 1.63 headless Chromium 1243, 390 x 664, `isMobile`, `hasTouch`, DPR 3)
+
+정적 확인(명세 12-2 A1~A11)은 모두 기대 결과와 같다. A1 `1`, A2·A3·A6·A11 출력 없음, A4 `initZoomGuard` 안 2줄(둘 다 `passive: false`), A5 `initZoomGuard` 1줄, A7 `img` 규칙 1줄, A8 `img`·`.js .g-viewport`·`.venue__map`·`.lb-stage`만, A9 `html` `manipulation`·`.js .g-viewport` `pan-y`·`.lb-stage` `none` + 지도 주석 1줄, A10 `.g-open`의 `zoom-in` 1줄.
+
+브라우저 확인 29개 중 28개 통과. 남은 1개는 콘솔 오류 검사이고, 시험이 외부 요청을 일부러 막아서 생긴 `Failed to load resource` 3건(Google Fonts, Pretendard jsDelivr, 카카오맵 SDK)뿐이다. 페이지 오류와 `[invitation] … failed` 로그는 0건이다.
+
+| 명세 | 결과 |
+|---|---|
+| B1 | `manipulation`, `pan-y`, `none` |
+| B2 / B3 | `gesturestart`·`gesturechange`·`ctrl + wheel` 취소됨 / 일반 `wheel` 취소 안 됨 |
+| B4 | `contextmenu` 취소: `.hero__photo`, 현재 캐러셀 img, 그 `.g-open`, lightbox를 연 뒤 런타임 `.lb-img`(`dragstart`도 취소) |
+| B5 | `contextmenu` 취소 안 됨: `.hero__names`, `#groom-account`, `#gb-message` |
+| B6 / B7 | hero img `dragstart` 취소 / `userSelect` img `none`, body·계좌번호 `auto` |
+| B8 | hero·캐러셀·lightbox 무대에서 두 손가락 touch(CDP `Input.dispatchTouchEvent`)와 `synthesizePinchGesture`(`gestureSourceType: 'default'`) 모두 `visualViewport.scale` 1. lightbox는 `.lb-img`·슬라이드 transform `''`, "4 / 15" 그대로, 열린 채 |
+| B9 | 본문 글자 더블탭 scale 1 |
+| B10 | lightbox `+`, `=`, `-`, `0` 뒤 transform `''`, "4 / 15" 그대로 |
+| 휠 | lightbox 무대의 `ctrl + wheel` 취소됨, 실제 `Ctrl` + 마우스 휠과 일반 휠 뒤 transform `''`, scale 1, 번호 그대로 |
+| B11 | 02(가로)로 열어 사진 가운데 더블탭: 확대 없음, 열린 채 / 사진 위 빈 무대 한 번 탭: 닫힘 |
+| B12 | 캐러셀 가로 스와이프 1→2→1, 세로로 쓸면 페이지 스크롤(scrollY 2574 → 2807)·번호 그대로, 프레임 342 x 513, 다음 14번 → "15 / 15"·`aria-disabled="true"`·포커스 다음 버튼, 4번에서 lightbox 열기 → 스와이프 3번 "7 / 15" → ←/→, 이전/다음 버튼 → 닫기 후 캐러셀 7번·포커스 7번째 슬라이드 버튼, Esc 닫기, 아래로 끌어 닫기 |
+| 글자 선택 | 계좌 카드를 펼친 뒤 `Selection`으로 계좌번호 선택 → "110-335-546640" |
+
+**시험이 확대를 실제로 잡는지:** 같은 시험을 `HEAD`(이번 변경 전) 사본에 돌리면 두 손가락 touch에서 scale 5, `synthesizePinchGesture`(`default`)에서 scale 2.0이 나와 B8a·B8b가 실패한다. 이번 변경 뒤에는 둘 다 1이다. `gestureSourceType: 'touch'`인 `synthesizePinchGesture`는 headless shell에서 `HEAD`도 확대하지 않아 쓰지 않았다.
+
+### 확인하지 못한 것
+
+- **B13(WebKit `-webkit-touch-callout`):** Playwright WebKit이 이 기기에 설치돼 있지 않다. CSS 규칙은 A7로만 확인했다.
+- **더블탭 확대(B9·B11):** Chromium은 `width=device-width` 페이지에서 원래 더블탭 확대를 하지 않아 `HEAD`에서도 scale 1이다. 이 항목이 실제로 막히는지는 iOS Safari에서만 드러난다(명세 12-2 C2).
+- **실기기(명세 12-2 C1~C8, 12-3):** 하지 않았다. 특히 카카오톡 인앱 브라우저가 앱 자체의 길게 누르기 메뉴를 띄우는지, Android 카카오톡 WebView가 viewport meta를 따르는지는 실기기에서만 알 수 있다. 결과가 나쁘면 명세 12-3의 대안(투명 덮개, `touch-action: pan-x pan-y`, `touchmove` 차단)을 다시 정해야 한다.
+
+### 알아 둘 점
+
+- Lighthouse 접근성 `meta-viewport`와 axe `meta-viewport` 규칙이 실패로 나온다. 사용자가 WCAG 1.4.4 위반을 알고 고른 범위이므로 QA는 "사용자 수용 예외(WCAG 1.4.4)"로 기록한다(명세 4-10-3).
+- `Ctrl` + 마우스 휠 확대도 트랙패드 핀치와 같은 신호라 함께 막힌다. PC에서 글자를 키우려면 `Ctrl`/`Cmd` + `+` 키나 브라우저 메뉴를 써야 한다.
+- 컨셉 시트의 lightbox 줄("좌우 스와이프, 핀치 줌")은 이 결정 이전 기록이고 고치지 않았다(명세 12-2가 우선).
+
+### 시험 스크립트 (scratchpad, 저장소에 넣지 않음)
+
+- `photo-guard-check.js`: 위 표의 29개 검사. `--baseline`이면 B8a·B9·B8b만 돈다
+- `pinch-probe.js`: 입력 방식별로 `HEAD`와 작업 트리의 확대 여부를 비교
+- `run-check.sh`, `run-probe.sh`: 작업 트리(:8743)와 `HEAD` 사본(:8744)을 서빙하고 끝나면 서버를 내린다

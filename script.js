@@ -17,8 +17,7 @@
   const LB = Object.freeze({      // spec 4-2
     AXIS_LOCK: 8, SWIPE_DIST: 50, SWIPE_VELOCITY: 0.3, EDGE_RESIST: 0.3,
     CLOSE_DIST: 80, CLOSE_FADE_RANGE: 400, SCRIM_ALPHA: 0.96, SCRIM_MIN: 0.4,
-    ZOOM_MAX: 3, DOUBLE_TAP_ZOOM: 2, DOUBLE_TAP_MS: 300, TAP_SLOP: 10,
-    PINCH_MIN: 0.6, KEY_ZOOM_STEP: 1.5, VELOCITY_WINDOW: 100,
+    TAP_SLOP: 10, VELOCITY_WINDOW: 100,
   });
   // Gallery carousel (spec 4-1). Swipe thresholds are shared with the lightbox via LB.
   const GAL = Object.freeze({ BEHIND: 1, AHEAD: 2, NEAR_MARGIN: '100% 0px', WHEEL_STEP: 40, WHEEL_LOCK: 450 });
@@ -111,6 +110,28 @@
       toastTimer = setTimeout(() => toastEl.classList.remove('is-shown'), token('--dur-fast') + TOAST_HOLD_MS);
     }
     announce(message);
+  }
+
+  /* ---------- Page zoom block (spec 4-10-3) ---------- */
+
+  function initZoomGuard() {
+    const block = (e) => e.preventDefault();
+    // WebKit only: iOS Safari ignores user-scalable=no; also macOS Safari trackpad pinch.
+    document.addEventListener('gesturestart', block, { passive: false });
+    document.addEventListener('gesturechange', block, { passive: false });
+    // Chrome, Edge and Firefox send a trackpad pinch as ctrl + wheel; Ctrl + mouse wheel is the same event.
+    window.addEventListener('wheel', (e) => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+  }
+
+  /* ---------- Photo protection (spec 4-10-2) ---------- */
+
+  // Delegated on document, so the lightbox images created later are covered too.
+  function initPhotoGuard() {
+    const block = (e) => {
+      if (e.target instanceof Element && e.target.closest('img, .g-open')) e.preventDefault();
+    };
+    document.addEventListener('contextmenu', block);   // Android long-press menu, desktop right-click
+    document.addEventListener('dragstart', block);     // Firefox ignores -webkit-user-drag
   }
 
   /* ---------- Bokeh background (spec 1) ---------- */
@@ -773,7 +794,7 @@
     let g = null;
     let suppressClick = false;
     viewport.addEventListener('pointerdown', (e) => {
-      if (!e.isPrimary) {                              // second finger: page pinch-zoom takes over
+      if (!e.isPrimary) {                              // second finger: two-finger gestures do nothing here (4-10-3)
         if (g?.axis === 'x') { track.classList.remove('is-dragging'); goTo(index); }
         g = null;
         return;
@@ -873,10 +894,8 @@
     const dialog = document.getElementById('lightbox');
     const buttons = [...document.querySelectorAll('.g-open')];
     if (!dialog || !buttons.length) return;
-    if (typeof dialog.showModal !== 'function') {
-      buttons.forEach((btn) => btn.addEventListener('click', () => window.open(btn.dataset.full, '_blank', 'noopener')));
-      return;
-    }
+    // No new-tab fallback: a bare image tab is outside the photo protection (spec 4-10-2).
+    if (typeof dialog.showModal !== 'function') return;
 
     const stage = dialog.querySelector('.lb-stage');
     const track = dialog.querySelector('.lb-track');
@@ -914,7 +933,6 @@
     let ignorePop = false;
     let W = 0;
     let H = 0;
-    const zoom = { s: 1, tx: 0, ty: 0 };
     const cur = () => slides[index];
 
     function measure() {
@@ -927,43 +945,6 @@
         sl.img.style.width = `${sl.fw}px`;
         sl.img.style.height = `${sl.fh}px`;
       });
-    }
-
-    /* Zoom: transform-origin 0 0, translate(tx, ty) scale(s) on the fitted image. */
-    const origin = () => ({ ox: (W - cur().fw) / 2, oy: (H - cur().fh) / 2 });
-
-    function clampZoom(s, tx, ty) {
-      const { ox, oy } = origin();
-      const sw = cur().fw * s;
-      const sh = cur().fh * s;
-      return {
-        s,
-        tx: sw > W ? clamp(tx, W - ox - sw, -ox) : W / 2 - ox - sw / 2,
-        ty: sh > H ? clamp(ty, H - oy - sh, -oy) : H / 2 - oy - sh / 2,
-      };
-    }
-
-    function applyZoom(animate) {
-      const { img } = cur();
-      img.classList.toggle('is-zooming', Boolean(animate));
-      const identity = zoom.s === 1 && zoom.tx === 0 && zoom.ty === 0;
-      img.style.transform = identity ? '' : `translate(${zoom.tx}px, ${zoom.ty}px) scale(${zoom.s})`;
-    }
-
-    function resetZoom(animate) {
-      Object.assign(zoom, { s: 1, tx: 0, ty: 0 });
-      applyZoom(animate);
-    }
-
-    // Zoom to `next` while keeping stage point (px, py) fixed.
-    function zoomAt(next, px, py, animate) {
-      if (next <= 1) { resetZoom(animate); return; }
-      const { ox, oy } = origin();
-      const k = next / zoom.s;
-      const tx = px - ox - (px - ox - zoom.tx) * k;
-      const ty = py - oy - (py - oy - zoom.ty) * k;
-      Object.assign(zoom, clampZoom(next, tx, ty));
-      applyZoom(animate);
     }
 
     function setTrack(dx, animate) {
@@ -988,9 +969,7 @@
     }
 
     function show(i, animate = true) {
-      const next = clamp(i, 0, total - 1);
-      if (next !== index) resetZoom(false);
-      index = next;
+      index = clamp(i, 0, total - 1);
       setTrack(0, animate);
       slides.forEach((sl, k) => sl.li.setAttribute('aria-hidden', String(k !== index)));
       load(index, true);
@@ -1015,7 +994,6 @@
       bokeh?.pause('lightbox');
       measure();
       index = i;
-      resetZoom(false);
       show(i, false);
       history.pushState({ lb: 1 }, '');
       requestAnimationFrame(() => dialog.classList.add('is-open'));
@@ -1037,7 +1015,6 @@
       dialog.classList.remove('is-open');
       root.classList.remove('lb-open');
       bokeh?.resume('lightbox');
-      resetZoom(false);
       cur().li.style.transform = '';
       scrim.style.opacity = '';
       if (!closedByPop && history.state && history.state.lb) {
@@ -1063,32 +1040,20 @@
     dialog.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') { e.preventDefault(); show(index - 1); }
       else if (e.key === 'ArrowRight') { e.preventDefault(); show(index + 1); }
-      else if (e.key === '+' || e.key === '=') zoomAt(Math.min(LB.ZOOM_MAX, zoom.s * LB.KEY_ZOOM_STEP), W / 2, H / 2, true);
-      else if (e.key === '-') zoomAt(zoom.s / LB.KEY_ZOOM_STEP, W / 2, H / 2, true);
-      else if (e.key === '0') resetZoom(true);
     });
-
-    stage.addEventListener('wheel', (e) => {
-      if (!e.ctrlKey) return;
-      e.preventDefault();
-      const r = stage.getBoundingClientRect();
-      zoomAt(clamp(zoom.s * Math.exp(-e.deltaY * 0.01), 1, LB.ZOOM_MAX), e.clientX - r.left, e.clientY - r.top, false);
-    }, { passive: false });
 
     if ('ResizeObserver' in window) {
       new ResizeObserver(() => {
         if (!dialog.open) return;
         measure();
-        resetZoom(false);
         setTrack(0, false);
       }).observe(stage);
     }
 
-    /* Gestures: one Pointer Events path for touch, mouse and pen. */
-    const pointers = new Map();
-    let g = null;          // active gesture
-    let rect = null;       // stage rect cached per gesture
-    let lastTap = null;
+    /* Gestures: one Pointer Events path for touch, mouse and pen. The photo is never zoomed (spec 4-2). */
+    const pointers = new Set();   // ids of the pointers down on the stage
+    let g = null;                 // active gesture
+    let rect = null;              // stage rect cached per gesture
 
     const toStage = (e) => ({ x: e.clientX - rect.left, y: e.clientY - rect.top });
 
@@ -1096,25 +1061,6 @@
       pointers.clear();
       g = null;
       track.classList.remove('is-dragging');
-    }
-
-    function startPinch() {
-      const [a, b] = [...pointers.values()];
-      g = {
-        type: 'pinch',
-        d0: Math.hypot(b.x - a.x, b.y - a.y) || 1,
-        s0: zoom.s, tx0: zoom.tx, ty0: zoom.ty,
-        m0: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
-      };
-      lastTap = null;
-    }
-
-    function settlePinch() {
-      if (zoom.s < 1) resetZoom(true);
-      else {
-        Object.assign(zoom, clampZoom(zoom.s, zoom.tx, zoom.ty));
-        applyZoom(true);
-      }
     }
 
     function returnFromDrag() {
@@ -1134,39 +1080,21 @@
       e.preventDefault();
       if (stage.setPointerCapture) stage.setPointerCapture(e.pointerId);
       if (!pointers.size) rect = stage.getBoundingClientRect();
-      pointers.set(e.pointerId, toStage(e));
-
+      pointers.add(e.pointerId);
       if (pointers.size === 1) {
         const p = toStage(e);
-        g = { type: 'pending', x0: p.x, y0: p.y, dx: 0, dy: 0, tx0: zoom.tx, ty0: zoom.ty, moved: false,
-              samples: [{ t: e.timeStamp, x: p.x }] };
-      } else if (pointers.size === 2) {
-        if (g && g.type === 'swipe') { track.classList.remove('is-dragging'); setTrack(0, true); }
-        if (g && g.type === 'dragclose') returnFromDrag();
-        startPinch();
+        g = { type: 'pending', x0: p.x, y0: p.y, dx: 0, dy: 0, moved: false, samples: [{ t: e.timeStamp, x: p.x }] };
+        return;
       }
+      // Two or more fingers: settle what the first finger started, then ignore input until all are up.
+      if (g?.type === 'swipe') { track.classList.remove('is-dragging'); setTrack(0, true); }
+      else if (g?.type === 'dragclose') returnFromDrag();
+      g = { type: 'idle' };
     });
 
     stage.addEventListener('pointermove', (e) => {
-      if (!g || !pointers.has(e.pointerId)) return;
+      if (!g || g.type === 'idle' || !pointers.has(e.pointerId)) return;
       const p = toStage(e);
-      pointers.set(e.pointerId, p);
-
-      if (g.type === 'pinch') {
-        if (pointers.size < 2) return;
-        const [a, b] = [...pointers.values()];
-        const s = clamp(g.s0 * (Math.hypot(b.x - a.x, b.y - a.y) / g.d0), LB.PINCH_MIN, LB.ZOOM_MAX);
-        const m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-        const { ox, oy } = origin();
-        // Keep the image point that started under the fingers' midpoint under the current midpoint.
-        const ux = (g.m0.x - ox - g.tx0) / g.s0;
-        const uy = (g.m0.y - oy - g.ty0) / g.s0;
-        const next = { s, tx: m.x - ox - ux * s, ty: m.y - oy - uy * s };
-        Object.assign(zoom, s >= 1 ? clampZoom(s, next.tx, next.ty) : next);
-        applyZoom(false);
-        return;
-      }
-
       const dx = p.x - g.x0;
       const dy = p.y - g.y0;
       g.dx = dx;
@@ -1174,11 +1102,9 @@
       if (Math.hypot(dx, dy) > LB.TAP_SLOP) g.moved = true;
 
       if (g.type === 'pending') {
-        if (zoom.s > 1) g.type = 'pan';
-        else if (Math.max(Math.abs(dx), Math.abs(dy)) >= LB.AXIS_LOCK) {
-          g.type = Math.abs(dx) > Math.abs(dy) ? 'swipe' : 'dragclose';
-          if (g.type === 'swipe') track.classList.add('is-dragging');
-        } else return;
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < LB.AXIS_LOCK) return;
+        g.type = Math.abs(dx) > Math.abs(dy) ? 'swipe' : 'dragclose';
+        if (g.type === 'swipe') track.classList.add('is-dragging');
       }
 
       if (g.type === 'swipe') {
@@ -1186,13 +1112,10 @@
         setTrack(atEdge ? dx * LB.EDGE_RESIST : dx, false);
         g.samples.push({ t: e.timeStamp, x: p.x });
         while (g.samples.length > 2 && e.timeStamp - g.samples[0].t > LB.VELOCITY_WINDOW) g.samples.shift();
-      } else if (g.type === 'dragclose') {
+      } else {
         const down = Math.max(0, dy);
         cur().li.style.transform = down ? `translateY(${down}px)` : '';
         scrim.style.opacity = String(Math.max(LB.SCRIM_MIN, LB.SCRIM_ALPHA * (1 - down / LB.CLOSE_FADE_RANGE)));
-      } else if (g.type === 'pan') {
-        Object.assign(zoom, clampZoom(zoom.s, g.tx0 + dx, g.ty0 + dy));
-        applyZoom(false);
       }
     });
 
@@ -1201,47 +1124,25 @@
       show(swipeTarget(index, total, g.dx, g.samples), true);
     }
 
-    function tap(p, t) {
-      const sl = cur();
-      const { ox, oy } = origin();
-      const left = ox + zoom.tx;
-      const topY = oy + zoom.ty;
-      const onImage = p.x >= left && p.x <= left + sl.fw * zoom.s && p.y >= topY && p.y <= topY + sl.fh * zoom.s;
-      if (!onImage && zoom.s === 1) { lastTap = null; requestClose(); return; }
-      if (lastTap && t - lastTap.t <= LB.DOUBLE_TAP_MS && Math.hypot(p.x - lastTap.x, p.y - lastTap.y) <= LB.TAP_SLOP) {
-        lastTap = null;
-        if (zoom.s > 1) resetZoom(true);
-        else zoomAt(LB.DOUBLE_TAP_ZOOM, p.x, p.y, true);
-      } else {
-        lastTap = { t, x: p.x, y: p.y };
-      }
+    // A tap outside the fitted photo closes; a tap on the photo does nothing.
+    function tap(p) {
+      const { fw, fh } = cur();
+      const left = (W - fw) / 2;
+      const top = (H - fh) / 2;
+      const onImage = p.x >= left && p.x <= left + fw && p.y >= top && p.y <= top + fh;
+      if (!onImage) requestClose();
     }
 
     function onPointerEnd(e) {
-      if (!pointers.has(e.pointerId)) return;
-      pointers.delete(e.pointerId);
-      if (!g) return;
+      if (!pointers.delete(e.pointerId)) return;
+      if (!g || pointers.size > 0) return;           // wait for the last finger
       const cancelled = e.type === 'pointercancel';
-
-      if (g.type === 'pinch') {
-        if (pointers.size === 1) {
-          settlePinch();
-          const [p] = [...pointers.values()];
-          g = { type: zoom.s > 1 ? 'pan' : 'idle', x0: p.x, y0: p.y, dx: 0, dy: 0, tx0: zoom.tx, ty0: zoom.ty, moved: true, samples: [] };
-        } else if (pointers.size === 0) {
-          settlePinch();
-          g = null;
-        }
-        return;
-      }
-      if (pointers.size > 0) return;
-
       if (g.type === 'swipe') finishSwipe();
       else if (g.type === 'dragclose') {
         if (!cancelled && g.dy >= LB.CLOSE_DIST) requestClose();
         else returnFromDrag();
-      } else if ((g.type === 'pending' || g.type === 'pan') && !cancelled && !g.moved) {
-        tap({ x: g.x0 + g.dx, y: g.y0 + g.dy }, e.timeStamp);
+      } else if (g.type === 'pending' && !cancelled && !g.moved) {
+        tap({ x: g.x0 + g.dx, y: g.y0 + g.dy });
       }
       g = null;
     }
@@ -2034,6 +1935,8 @@
 
   /* ---------- Boot ---------- */
 
+  safe('zoom-guard', initZoomGuard);
+  safe('photo-guard', initPhotoGuard);
   const bokeh = safe('bokeh', initBokeh);
   safe('dday', initDday);
   safe('lights', initLights);

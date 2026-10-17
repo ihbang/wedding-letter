@@ -23,7 +23,7 @@ performance_budget:              # (2026-10-12 보케 B안) 보케 항목 전면
   animated_props: ["transform", "opacity", "stroke-dashoffset (장식 SVG 단발 1회)", "canvas drawImage"]
   forbidden_props: ["width", "height", "top", "left", "margin", "padding", "filter", "box-shadow", "backdrop-filter", "background-position"]   # 예외: 방명록 긴 글 접기의 height 하나(4-8-1, 2026-10-14 사용자 결정)
   fps_target: 60
-  reduced_motion_strategy: "static-only"   # 루프·트랜지션 전부 정지 또는 즉시. 손가락으로 직접 조작하는 드래그·핀치만 유지
+  reduced_motion_strategy: "static-only"   # 루프·트랜지션 전부 정지 또는 즉시. 손가락으로 직접 조작하는 드래그만 유지 (2026-10-17 사진 보호: 핀치 확대 제거)
 concept_alignment:
   - "무드 '겨울 오후에 켜진 정원의 전구': 작은 전구 불빛이 거의 제자리에서 켜지고, 천천히 반짝이다가, 꺼진다. 이동보다 밝기 변화가 주된 움직임 (2026-10-12 보케 B안)"
   - "보케 수치는 00_user-input.md '보케를 작은 전구 불빛으로'(2026-10-12) 결정을 따른다. 이 결정은 컨셉 시트 motion_direction의 불투명도 상한·흰색 보케 금지·색 비율보다 우선한다. 개수(구간당 8, 합산 12/16)와 구간 수(3곳)는 컨셉 상한 안이다 (2026-10-12 보케 B안)"
@@ -42,6 +42,8 @@ concept_alignment:
 > **2026-10-13 변경 (방명록 목록)**: 방명록에 공개 글 목록, 더보기, 본인 삭제가 생겼다(`_workspace/08_guestbook-list-design.md` 6장). 바뀐 곳은 2-6, 4-8-1(신설), 7이고 각 위치에 "(2026-10-13 방명록 목록)"을 붙였다.
 >
 > **2026-10-14 변경 (방명록 페이지 번호)**: 방명록 목록을 "말씀 더 보기"에서 한 페이지 5개 + 페이지 번호 방식으로 바꾸고, 3줄 넘는 글을 흐림 + 작은 화살표로 접어 글을 누르면 펼치게 했다(사용자 결정, `00_user-input.md` "방명록 목록을 페이지 번호 방식으로"). 긴 글 접기의 `height` 전환은 사용자가 원해 허용한 유일한 높이 애니메이션이다. 바뀐 곳은 frontmatter `forbidden_props` 주석과 4-8-1이고 바뀐 줄에 "(2026-10-14)"를 붙였다.
+>
+> **2026-10-17 변경 (사진 보호)**: 사진의 저장 메뉴(길게 누르기·우클릭·끌기)를 막고, 페이지와 lightbox의 모든 확대를 없앴다(사용자 결정: "캡처 방지", "사진 확대 방지", 확대 범위 "모든 확대 차단"). 페이지 확대를 막으면 글자 확대도 막혀 WCAG 1.4.4(텍스트 크기 조정)에 어긋난다는 점을 사용자가 미리 듣고 고른 범위다. 바뀐 곳은 frontmatter `reduced_motion_strategy` 주석, 4-1-2, 4-1-3, 4-1-4, 4-1-8, 4-1-11, 4-1-12, 4-2, 4-10(신설), 5, 6, 7, 8, 10, 12(신설: frontend 작업 목록과 QA 기준)이고 각 위치에 "(2026-10-17 사진 보호: ...)"를 붙였다. 4-1-4의 "iOS 저장 메뉴는 막지 않는다"와 4-2·4-1-8의 "viewport meta로 확대를 제한하지 않는다" 결정은 이 결정으로 대체됐다.
 
 ## 0. 모션 무드 결정
 
@@ -883,7 +885,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 | 사진 위 버튼 금지 | 좌우 화살표를 사진 위에 얹지 않는다. 컨셉이 사진 위 글자·버튼·그라데이션을 금지한다 |
 | 끝에서 버튼 | 1번의 이전, 15번의 다음: `aria-disabled="true"`, opacity 0.3, `cursor: default`, 누름 scale 없음. `disabled` 속성은 쓰지 않는다(누르던 버튼이 비활성되며 포커스가 body로 빠지는 것을 막는다) |
 | 카운터 | "3 / 15". Cormorant Garamond 400 16px, letter-spacing 0.1em, line-height 1(lightbox 카운터와 같은 글꼴·크기). 현재 번호 text `#3B2D2A`(12.26), " / 15" muted `#75655E`(5.17). `font-variant-numeric: lining-nums tabular-nums`, `min-width: 4.5em`, 가운데 정렬(1자리↔2자리로 바뀌어도 버튼이 움직이지 않게). `lang="en"`, `aria-hidden="true"`(낭독은 `.g-status`가 맡는다) |
-| 커서 (마우스) | 뷰포트 `grab`, 현재 슬라이드 버튼 `zoom-in`, 드래그 중 `grabbing` |
+| 커서 (마우스) | 뷰포트 `grab`, 현재 슬라이드 버튼 `zoom-in`, 드래그 중 `grabbing`. (2026-10-17 사진 보호: `zoom-in` 유지. 누르면 사진이 lightbox에서 화면에 맞춘 크기로 열리는 "크게 보기"를 가리키며, lightbox 안의 확대 기능을 뜻하지 않는다) |
 
 화면별 계산값 (QA 확인용):
 
@@ -901,7 +903,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 |---|---|---|
 | 넘김 임계값·전환 시간 | 직접 정한다. lightbox와 같은 값(8px 축 판정, 50px 또는 0.3px/ms, 350ms) | 브라우저 몫. 천천히 끌면 폭의 절반(약 175px)을 넘어야 넘어간다. 버튼 이동(`scrollTo` smooth)의 시간·곡선은 브라우저마다 다르다 |
 | 양 끝 | 0.3배 저항 후 제자리(lightbox와 같음) | 브라우저 기본 오버스크롤 |
-| 세로 스크롤 공존 | `touch-action: pan-y pinch-zoom`. 세로 이동은 브라우저가 페이지를 스크롤하고 가로 이동만 JS에 온다 | 브라우저가 처리(장점) |
+| 세로 스크롤 공존 | `touch-action: pan-y` (2026-10-17 사진 보호: `pinch-zoom` 제거). 세로 이동은 브라우저가 페이지를 스크롤하고 가로 이동만 JS에 온다 | 브라우저가 처리(장점) |
 | 성능 | 메인 스레드에서 transform만 쓴다. 갤러리 구간은 보케가 꺼져 있고 전구는 멈춰 있어 메인 스레드가 비어 있다 | 합성 스레드 스크롤(장점) |
 | iOS Safari | Pointer Events와 `touch-action: pan-y`는 iOS 13부터 지원. 위치가 `--g-i`와 CSS `calc`로만 정해져서 회전·크기 변경에 재계산 코드가 없다 | smooth `scrollTo`는 iOS 15.4부터. 회전·폭 변경 뒤 스냅 위치가 어긋나는 경우를 따로 바로잡아야 하고, 현재 번호를 스크롤 위치에서 거꾸로 계산해야 한다 |
 | 현재 번호의 출처 | JS `index` 한 곳 | 스크롤 위치(카운터·lightbox 동기화가 어긋날 여지) |
@@ -914,14 +916,14 @@ html.lb-open .bulb { animation-play-state: paused; }
 
 **기존 lightbox 제스처 코드 재사용 판단**:
 - 재사용한다: `LB` 상수 중 `AXIS_LOCK 8`, `SWIPE_DIST 50`, `SWIPE_VELOCITY 0.3`, `EDGE_RESIST 0.3`, `VELOCITY_WINDOW 100`과 `finishSwipe`의 넘김 판정식. 판정식은 순수 함수 `swipeTarget(index, total, dx, samples)`로 빼서 lightbox와 캐러셀이 함께 쓴다. 값과 식을 복제하지 않으므로 QA는 한 곳만 대조하면 된다.
-- 재사용하지 않는다: lightbox `stage`의 pointer 핸들러 전체. ① `touch-action: none`, pointerdown `preventDefault`, 즉시 `setPointerCapture`는 페이지 세로 스크롤과 탭(click)을 막는다. ② 핀치·팬·끌어 닫기·더블탭 분기가 캐러셀에는 필요 없다. ③ `setTrack`의 `-100% * index`는 슬라이드 폭이 무대 폭과 같다는 전제라 peek가 있는 캐러셀에 맞지 않는다.
+- 재사용하지 않는다: lightbox `stage`의 pointer 핸들러 전체. ① `touch-action: none`, pointerdown `preventDefault`, 즉시 `setPointerCapture`는 페이지 세로 스크롤과 탭(click)을 막는다. ② 끌어 닫기 분기가 캐러셀에는 필요 없다(2026-10-17 사진 보호: lightbox의 핀치·팬·더블탭 분기는 없어졌다). ③ `setTrack`의 `-100% * index`는 슬라이드 폭이 무대 폭과 같다는 전제라 peek가 있는 캐러셀에 맞지 않는다.
 
 #### 4-1-4. 스와이프
 
 | 항목 | 값 |
 |---|---|
-| 입력 | Pointer Events, `.g-viewport`에 등록. `e.isPrimary`만, 마우스는 왼쪽 버튼만. 드래그 중 두 번째 손가락이 닿으면(페이지 핀치 확대) 손을 뗀 것처럼 제자리로 되돌리고 그 제스처는 무시 |
-| touch-action | `.js .g-viewport { touch-action: pan-y pinch-zoom; }`. 세로 스크롤과 페이지 확대(WCAG 1.4.4)는 브라우저에 남긴다 |
+| 입력 | Pointer Events, `.g-viewport`에 등록. `e.isPrimary`만, 마우스는 왼쪽 버튼만. 드래그 중 두 번째 손가락이 닿으면 손을 뗀 것처럼 제자리로 되돌리고 그 제스처는 무시한다. 두 손가락 제스처는 캐러셀에서 아무 동작도 하지 않는다. 페이지 핀치 확대는 4-10-3이 막는다 (2026-10-17 사진 보호: "두 번째 손가락은 페이지 핀치 확대가 넘겨받는다" 전제 삭제) |
+| touch-action | `.js .g-viewport { touch-action: pan-y; }`. 세로 스크롤만 브라우저에 남기고 핀치 확대는 허용하지 않는다 (2026-10-17 사진 보호: `pan-y pinch-zoom` → `pan-y`. 페이지 확대 차단의 전체 조합은 4-10-3) |
 | 방향 판정 | 처음 8px(`LB.AXIS_LOCK`) 이동에서 `abs(dx) > abs(dy)`이면 가로(스와이프), 아니면 세로. 세로면 손을 뗄 때까지 아무것도 하지 않는다(브라우저가 페이지를 스크롤하고 `pointercancel`을 보낸다). 판정 전에는 트랙을 움직이지 않는다 |
 | 포인터 캡처 | 가로로 판정된 순간에만 `setPointerCapture`. pointerdown에서 바로 캡처하거나 `preventDefault`하지 않는다. 그래야 탭이 버튼 click으로 이어진다(캡처하면 click 대상이 뷰포트로 바뀐다) |
 | 드래그 | 손가락 1:1(트랜지션 없음, `.is-dragging`). 드래그 중에만 트랙 `will-change: transform`. 세로 성분은 무시 |
@@ -932,7 +934,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 | 연속 입력 | 전환 중 버튼을 또 누르면 목표만 바뀐다. CSS transition이 지금 위치에서 이어 간다 |
 | 전환 중 잡기 (Nice) | 전환 중 pointerdown이면 `getComputedStyle(track).transform`의 x 이동값과 목표 위치의 차이를 초기 dx로 삼아 그 자리에서 이어 끈다. 구현하지 않으면 손가락을 대는 순간 목표 위치로 짧게 점프한다(지금 lightbox와 같은 동작) |
 | click 억제 | 가로 스와이프로 판정된 제스처, 또는 이웃 탭으로 이동한 제스처 뒤의 click 1회를 뷰포트 캡처 단계에서 `preventDefault` + `stopPropagation`. ① 마우스로 끌고 놓았을 때 lightbox가 열리지 않게 ② 이웃을 탭하면 `pointerup`에서 이미 그 장이 현재가 되므로, 뒤따르는 click이 새 현재 슬라이드 버튼에 떨어져 lightbox가 열리지 않게 한다(시험 페이지에서 확인된 문제). 플래그는 다음 pointerdown에서 초기화 |
-| 이미지 끌기·선택 | img `draggable="false"`, 뷰포트 `user-select: none`. 길게 눌러 사진 저장하는 iOS 메뉴(`-webkit-touch-callout`)는 막지 않는다. 하객이 사진을 저장할 수 있게 둔다 |
+| 이미지 끌기·선택·저장 메뉴 | img `draggable="false"`, 뷰포트 `user-select: none`(둘 다 그대로). 길게 눌러 뜨는 사진 저장 메뉴(iOS `-webkit-touch-callout`, Android `contextmenu`), PC 우클릭 메뉴, 끌어서 저장을 막는다. 페이지의 모든 img에 공통 규칙으로 적용하며 기준은 4-10-2 (2026-10-17 사진 보호: "iOS 저장 메뉴는 막지 않는다. 하객이 사진을 저장할 수 있게 둔다" 결정을 대체) |
 | 햅틱 | 없음(lightbox와 같음) |
 | 자동 넘김 | 없음. 그래서 정지 버튼도 두지 않는다 |
 | iOS 가장자리 뒤로가기 | 화면 왼쪽 끝에서 시작한 오른쪽 스와이프는 Safari·카카오톡 인앱 브라우저가 '뒤로 가기'로 가져간다. 막을 수 없고 막지 않는다. 프레임이 가장자리에서 24px 안쪽이라 사진 위에서 시작한 스와이프는 해당하지 않는다 |
@@ -1018,7 +1020,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 | 포커스 유실 방지 | `goTo` 순서: 새 현재 슬라이드의 `inert`를 먼저 푼다 → (필요하면) 그 버튼으로 포커스 → 나머지 슬라이드에 `inert`. 포커스가 든 슬라이드가 먼저 inert가 되면 포커스가 body로 빠진다. 이전·다음 버튼은 끝에서도 `disabled`가 아니라 포커스가 남는다 |
 | 포커스 링 | 전역 규칙(2px accent, offset 2px). 현재 슬라이드 버튼의 링은 뷰포트 `padding-block: 4px` 안에 그려진다 |
 | 뷰포트가 스크롤되지 않게 | 뷰포트 `overflow: clip`(미지원 브라우저는 `overflow: hidden`). clip이면 포커스 이동으로 뷰포트가 스크롤될 수 없다. hidden 폴백에 대비해 `goTo` 끝에서 `viewport.scrollLeft = 0` |
-| 페이지 확대 | `touch-action`에 `pinch-zoom`을 넣어 캐러셀 위에서도 페이지 확대가 된다. viewport meta는 바꾸지 않는다 |
+| 페이지 확대 | 막는다. viewport meta `maximum-scale=1, user-scalable=no`, 뷰포트 `touch-action: pan-y`, WebKit gesture 이벤트 차단으로 캐러셀 위에서도 페이지가 확대되지 않는다. 기준은 4-10-3 (2026-10-17 사진 보호: "`pinch-zoom`으로 페이지 확대를 남기고 viewport meta는 바꾸지 않는다" 결정을 대체. 사용자가 WCAG 1.4.4 위반을 알고 고른 범위) |
 
 카피 메모: "웨딩 사진 15장"(묶음 이름), "슬라이드"(roledescription), 낭독 문장의 조합 방식은 모션 명세의 기본값이다. copy-writer 카피 시트에 같은 항목이 생기면 그쪽을 쓴다.
 
@@ -1039,7 +1041,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 | 이전/다음 버튼 누름 | scale 0.97 | scale 없음, `opacity: 0.85` 즉시(5장) |
 | 런타임 설정 변경 | — | 토큰만 바뀌므로 새로고침 없이 반영된다. 캐러셀 JS에는 reduced 분기가 없다 |
 
-#### 4-1-11. 참고 CSS
+#### 4-1-11. 참고 CSS (2026-10-17 사진 보호: `.js .g-viewport` touch-action)
 
 ```css
 /* Gallery carousel (motion spec 4-1). Tokens --g-w, --g-gap: section 6. */
@@ -1090,7 +1092,7 @@ html.lb-open .bulb { animation-play-state: paused; }
   overflow: hidden;
   overflow: clip;                           /* not scrollable, so focus can never scroll it */
   scroll-snap-type: none;
-  touch-action: pan-y pinch-zoom;
+  touch-action: pan-y;                      /* vertical page scroll only, no pinch (4-10-3) */
   user-select: none;
   -webkit-user-select: none;
   cursor: grab;
@@ -1141,7 +1143,7 @@ html:not(.js) .g-controls { display: none; }
 
 이전/다음 버튼의 `:active` scale 0.97과 reduced-motion 대체는 5장 "모든 버튼" 규칙을 그대로 따른다.
 
-#### 4-1-12. 참고 JS
+#### 4-1-12. 참고 JS (2026-10-17 사진 보호: 두 번째 손가락 주석)
 
 ```js
 // Gallery carousel (motion spec 4-1). Swipe thresholds are shared with the lightbox via LB.
@@ -1220,7 +1222,7 @@ function initCarousel() {
   let g = null;
   let suppressClick = false;
   viewport.addEventListener('pointerdown', (e) => {
-    if (!e.isPrimary) {                              // second finger: page pinch-zoom takes over
+    if (!e.isPrimary) {                              // second finger: two-finger gestures do nothing here (4-10-3)
       if (g?.axis === 'x') { track.classList.remove('is-dragging'); goTo(index); }
       g = null;
       return;
@@ -1300,9 +1302,9 @@ QA 확인값:
 - 4번째 슬라이드에서 lightbox를 열어 7번째까지 넘기고 닫으면 카운터 "7 / 15", `document.activeElement`가 7번째 슬라이드 버튼.
 - 세로로 쓸어 올리면 캐러셀 위에서 시작해도 페이지가 스크롤되고 트랙은 움직이지 않는다.
 
-### 4-2. 갤러리 Lightbox (Must)
+### 4-2. 갤러리 Lightbox (Must) (2026-10-17 사진 보호: 확대·팬 제거)
 
-라이브러리 없음. Pointer Events 하나로 터치·마우스·펜을 처리한다.
+라이브러리 없음. Pointer Events 하나로 터치·마우스·펜을 처리한다. 사진은 화면에 맞춘 크기로만 보여 주고 확대하지 않는다(아래 "확대 없음").
 
 **구조와 레이아웃**
 
@@ -1311,7 +1313,7 @@ QA 확인값:
 | 요소 | `<dialog class="lightbox" aria-label="사진 크게 보기">` + `showModal()`. 모달이 열리면 배경이 inert가 되어 Tab 포커스가 lightbox 안에서만 돈다(포커스 트랩) |
 | 배경 | dialog 전체 면 `rgb(28 21 20 / 0.96)` (lightbox_scrim `#1C1514`, 불투명도 0.96). `::backdrop`은 투명 |
 | 3단 레이아웃 | 위 바(높이 56px + `env(safe-area-inset-top)`): 오른쪽 닫기 버튼 / 가운데 무대(`flex: 1; overflow: hidden; touch-action: none`) / 아래 바(높이 64px + `env(safe-area-inset-bottom)`): 이전 버튼, "n / 15" 카운터, 다음 버튼 |
-| 사진 표시 | 무대 안에서 `object-fit: contain`, 원본 비율. 사진 위에는 글자·버튼·그라데이션을 얹지 않는다(컨셉). 확대해도 무대가 `overflow: hidden`이라 위아래 바를 덮지 않는다 |
+| 사진 표시 | 무대 안에서 `object-fit: contain`, 원본 비율. 사진 위에는 글자·버튼·그라데이션을 얹지 않는다(컨셉). 화면에 맞춘 이 크기가 최대이고 더 키우지 않는다. 무대가 `overflow: hidden`이라 끌어 닫는 동안에도 사진이 위아래 바를 덮지 않는다 (2026-10-17 사진 보호: 확대 전제 삭제) |
 | 트랙 | 가로 트랙에 15개 슬라이드, `transform: translate3d(calc(-100% * index + dragX px), 0, 0)` |
 | 카운터 | "3 / 15", Cormorant Garamond 16px, letter-spacing 0.1em, 색 `#FBF6F1`(scrim 대비 약 16:1), `aria-live="polite"` |
 | 버튼 | 닫기·이전·다음 각 44x44, 인라인 SVG 아이콘 stroke `#FBF6F1` 1.4px, 면 투명. 양 끝에서 이전/다음 `disabled`(opacity 0.3) |
@@ -1324,14 +1326,14 @@ QA 확인값:
 |---|---|
 | 열기 | 캐러셀 현재 슬라이드 탭(또는 Enter·Space) → 캐러셀과 같은 index로 `showModal()` → dialog `opacity 0→1` 250ms(`--dur-modal`) `--ease-out`. scale·blur 없음. 4-1-6 (2026-10-10 갤러리 캐러셀로 변경) |
 | 열 때 처리 | `html.lb-open` 클래스(스크롤 잠금 `overflow: hidden` + 전구·스크롤 큐 일시정지), 보케 정지 사유 `'lightbox'` 추가. 첫 포커스는 닫기 버튼 |
-| 닫기 수단 | 닫기 버튼, `Esc`, 사진 밖 빈 무대 탭(scale 1일 때), 아래로 끌어내리기(Should), Android 뒤로가기(Should) |
+| 닫기 수단 | 닫기 버튼, `Esc`, 사진 밖 빈 무대 탭, 아래로 끌어내리기(Should), Android 뒤로가기(Should) (2026-10-17 사진 보호: "scale 1일 때" 조건 삭제) |
 | 닫기 모션 | `opacity 1→0` 200ms `--ease-in` → `dialog.close()` |
 | Esc | `cancel` 이벤트에서 `preventDefault()` 후 닫기 모션 → `close()`. 브라우저가 cancel 없이 바로 닫는 경우가 있으므로 정리 작업(아래)은 `close` 이벤트에서 한다 |
-| 닫은 뒤 정리 | `html.lb-open` 제거, 보케 `'lightbox'` 사유 제거(재개), 확대 상태 초기화, **캐러셀을 lightbox에서 마지막으로 보던 index로 즉시 맞춘 뒤 그 슬라이드 버튼으로 포커스 복귀**. 캐러셀 동기화는 닫기 모션 시작 시점에도 한 번 한다(4-1-6) (2026-10-10 갤러리 캐러셀로 변경) |
-| 아래로 끌어 닫기 (Should) | scale 1이고 세로 이동이 가로보다 클 때. 사진이 손가락을 따라 `translateY`, dialog 배경 opacity `0.96 * (1 - dy / 400)`(최저 0.4). 80px 이상에서 놓으면 닫기, 미만이면 250ms에 원위치 |
+| 닫은 뒤 정리 | `html.lb-open` 제거, 보케 `'lightbox'` 사유 제거(재개), **캐러셀을 lightbox에서 마지막으로 보던 index로 즉시 맞춘 뒤 그 슬라이드 버튼으로 포커스 복귀**. 캐러셀 동기화는 닫기 모션 시작 시점에도 한 번 한다(4-1-6) (2026-10-10 갤러리 캐러셀로 변경) (2026-10-17 사진 보호: "확대 상태 초기화" 삭제) |
+| 아래로 끌어 닫기 (Should) | 세로 이동이 가로보다 클 때. 사진이 손가락을 따라 `translateY`, dialog 배경 opacity `0.96 * (1 - dy / 400)`(최저 0.4). 80px 이상에서 놓으면 닫기, 미만이면 250ms에 원위치 (2026-10-17 사진 보호: "scale 1이고" 조건 삭제) |
 | Android 뒤로가기 (Should) | 열 때 `history.pushState({ lb: 1 }, '')`, `popstate`에서 열려 있으면 닫기. UI로 닫을 때는 `history.state?.lb`이면 `history.back()`으로 기록을 되돌린다(이중 닫기 방지 플래그) |
 
-**스와이프 (scale === 1일 때만)**
+**스와이프** (2026-10-17 사진 보호: "scale === 1일 때만" 조건 삭제. 확대가 없어 항상 동작)
 
 | 항목 | 값 |
 |---|---|
@@ -1341,23 +1343,135 @@ QA 확인값:
 | 스냅 | 350ms(`--dur-snap`) `--ease-standard` |
 | 양 끝 | 순환하지 않는다. 1번에서 오른쪽·15번에서 왼쪽으로 끌면 이동량의 0.3배만 따라오고 놓으면 제자리 |
 | 키보드 | `←` / `→` 이동(스냅 모션 동일), `Esc` 닫기 |
-| 전환 시 | 떠나는 슬라이드의 확대를 scale 1로 초기화 |
 | 자동 재생·햅틱 | 없음. 넘길 때마다 진동이 오는 것은 사진 감상에 방해가 된다 |
 
-**핀치 줌 / 더블탭 / 팬**
+**확대 없음** (2026-10-17 사진 보호: "핀치 줌 / 더블탭 / 팬" 표 전체를 대체)
+
+핀치 확대, 더블탭 확대, `ctrl + wheel` 확대, 키보드 확대(`+`, `=`, `-`, `0`), 확대 상태의 팬을 모두 없앤다. 이전 표의 "viewport meta에 `user-scalable=no`, `maximum-scale=1` 금지" 결정도 4-10-3으로 대체됐다.
 
 | 항목 | 값 |
 |---|---|
-| 범위 | scale 1~3 |
-| 기준점 | `transform-origin: 0 0`, `transform: translate(tx, ty) scale(s)`. 두 손가락 중점 (mx, my)가 고정되도록 `tx' = mx - (mx - tx) * (s' / s)`, `ty'`도 같은 식 |
-| 더블탭 | 300ms 안에 두 번 탭, 이동 10px 이하. scale 1이면 탭 지점 기준 2배, 1보다 크면 1로. 250ms `--ease-standard` |
-| 한 번 탭 | 사진 위 한 번 탭은 아무 동작 없음(더블탭과 구분). 사진 밖 빈 무대 한 번 탭만 닫기 |
-| 팬 | scale > 1에서 한 손가락 드래그. 사진 가장자리가 무대 안쪽으로 들어오지 않게 clamp: `tx ∈ [stageW - imgW*s, 0]`. 확대한 사진이 무대보다 작은 축은 가운데 고정 |
-| 1 미만 | 핀치로 1 아래로 줄였다 놓으면 250ms에 1로 복귀 |
-| 확대 중 | 스와이프·끌어 닫기 비활성 |
-| 페이지 확대 | viewport meta에 `user-scalable=no`, `maximum-scale=1` **금지**. 무대의 `touch-action: none`만으로 lightbox 안 제스처를 가져온다 |
-| 키보드 줌 (Nice) | `+` / `-`로 1.5배씩, `0`으로 1배 |
-| 트랙패드 (Nice) | `ctrl + wheel`로 줌 |
+| 남는 조작 | 전체 화면으로 열기, 좌우 스와이프, 이전/다음 버튼, `←`/`→`, `Esc`, 아래로 끌어 닫기(Should), 사진 밖 빈 무대 탭으로 닫기, Android 뒤로가기(Should). 모두 지금 동작 그대로 |
+| 두 번째 손가락 | 손가락이 둘 이상 닿으면 진행 중인 스와이프는 350ms에 제자리로, 끌어 닫기는 250ms에 원위치로 되돌린다. 그 뒤 마지막 손가락이 떨어질 때까지 입력을 무시하고(`g.type = 'idle'`), 손을 뗄 때 탭·넘김·닫기 판정을 하지 않는다 |
+| 한 번 탭 | 손을 뗄 때 이동이 `TAP_SLOP` 10px 이하면 탭. 사진 밖 빈 무대: 바로 닫기. 사진 위: 아무 동작 없음(사진을 보다가 무심코 닿은 손가락으로 닫히지 않게) |
+| `DOUBLE_TAP_MS` | **삭제.** 지금 코드도 한 번 탭을 처리하려고 기다리지 않는다. 사진 밖 탭은 바로 닫고, 사진 위 탭은 다음 탭과 비교하려고 시각(`lastTap`)만 적어 둔다. 더블탭 판정이 없어지면 적어 둘 이유도 없으므로 `lastTap`과 함께 지운다. 탭 반응 지연은 지금과 같이 0이다 |
+| 키보드 | `←`/`→`/`Esc`만 처리한다. `+`, `=`, `-`, `0`은 처리하지 않는다. `Ctrl`/`Cmd` + `+`·`-`·`0`은 브라우저 확대로 그대로 간다(4-10-3 "막지 않는 것") |
+| 휠 | 무대에 `wheel` 리스너를 두지 않는다. 트랙패드 핀치(`ctrl + wheel`)는 4-10-3의 `window` 리스너가 막는다 |
+| 무대 `touch-action` | `none` 그대로. 스와이프·끌어 닫기를 JS가 받으려는 것이다. lightbox 위의 페이지 핀치는 4-10-3 전역 차단이 막는다 |
+| 커서 | lightbox 안에는 `zoom-in`·`zoom-out`·`grab`·`move` 커서를 두지 않는다(지금 style.css에도 없다). 버튼 `pointer`, 끝 버튼 `default` 그대로 |
+| `LB` 상수 | 삭제: `ZOOM_MAX`, `DOUBLE_TAP_ZOOM`, `DOUBLE_TAP_MS`, `PINCH_MIN`, `KEY_ZOOM_STEP`. 유지: `AXIS_LOCK 8`, `SWIPE_DIST 50`, `SWIPE_VELOCITY 0.3`, `EDGE_RESIST 0.3`, `CLOSE_DIST 80`, `CLOSE_FADE_RANGE 400`, `SCRIM_ALPHA 0.96`, `SCRIM_MIN 0.4`, `TAP_SLOP 10`, `VELOCITY_WINDOW 100` |
+
+**참고 코드 (2026-10-17 사진 보호)**: 지금 `script.js` `initLightbox`에서 바뀌는 부분이다.
+
+삭제할 것: `const zoom`, `origin`, `clampZoom`, `applyZoom`, `resetZoom`, `zoomAt`, `startPinch`, `settlePinch`, `lastTap`, 무대 `wheel` 리스너, keydown의 `+`·`=`·`-`·`0` 분기, 그리고 `resetZoom(false)` 호출 4곳(`show`의 첫 줄, `open`, `close` 핸들러, ResizeObserver). ResizeObserver 콜백은 `measure(); setTrack(0, false);`만 남는다.
+
+```js
+const LB = Object.freeze({      // spec 4-2
+  AXIS_LOCK: 8, SWIPE_DIST: 50, SWIPE_VELOCITY: 0.3, EDGE_RESIST: 0.3,
+  CLOSE_DIST: 80, CLOSE_FADE_RANGE: 400, SCRIM_ALPHA: 0.96, SCRIM_MIN: 0.4,
+  TAP_SLOP: 10, VELOCITY_WINDOW: 100,
+});
+
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); show(index - 1); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); show(index + 1); }
+    });
+
+    /* Gestures: one Pointer Events path for touch, mouse and pen. The photo is never zoomed (spec 4-2). */
+    const pointers = new Set();   // ids of the pointers down on the stage
+    let g = null;                 // active gesture
+    let rect = null;              // stage rect cached per gesture
+
+    const toStage = (e) => ({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+
+    function endGesture() {
+      pointers.clear();
+      g = null;
+      track.classList.remove('is-dragging');
+    }
+
+    // returnFromDrag() and finishSwipe() stay as they are.
+
+    stage.addEventListener('pointerdown', (e) => {
+      if (closing || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      e.preventDefault();
+      if (stage.setPointerCapture) stage.setPointerCapture(e.pointerId);
+      if (!pointers.size) rect = stage.getBoundingClientRect();
+      pointers.add(e.pointerId);
+      if (pointers.size === 1) {
+        const p = toStage(e);
+        g = { type: 'pending', x0: p.x, y0: p.y, dx: 0, dy: 0, moved: false, samples: [{ t: e.timeStamp, x: p.x }] };
+        return;
+      }
+      // Two or more fingers: settle what the first finger started, then ignore input until all are up.
+      if (g?.type === 'swipe') { track.classList.remove('is-dragging'); setTrack(0, true); }
+      else if (g?.type === 'dragclose') returnFromDrag();
+      g = { type: 'idle' };
+    });
+
+    stage.addEventListener('pointermove', (e) => {
+      if (!g || g.type === 'idle' || !pointers.has(e.pointerId)) return;
+      const p = toStage(e);
+      const dx = p.x - g.x0;
+      const dy = p.y - g.y0;
+      g.dx = dx;
+      g.dy = dy;
+      if (Math.hypot(dx, dy) > LB.TAP_SLOP) g.moved = true;
+
+      if (g.type === 'pending') {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < LB.AXIS_LOCK) return;
+        g.type = Math.abs(dx) > Math.abs(dy) ? 'swipe' : 'dragclose';
+        if (g.type === 'swipe') track.classList.add('is-dragging');
+      }
+
+      if (g.type === 'swipe') {
+        const atEdge = (index === 0 && dx > 0) || (index === total - 1 && dx < 0);
+        setTrack(atEdge ? dx * LB.EDGE_RESIST : dx, false);
+        g.samples.push({ t: e.timeStamp, x: p.x });
+        while (g.samples.length > 2 && e.timeStamp - g.samples[0].t > LB.VELOCITY_WINDOW) g.samples.shift();
+      } else {
+        const down = Math.max(0, dy);
+        cur().li.style.transform = down ? `translateY(${down}px)` : '';
+        scrim.style.opacity = String(Math.max(LB.SCRIM_MIN, LB.SCRIM_ALPHA * (1 - down / LB.CLOSE_FADE_RANGE)));
+      }
+    });
+
+    // A tap outside the fitted photo closes; a tap on the photo does nothing.
+    function tap(p) {
+      const { fw, fh } = cur();
+      const left = (W - fw) / 2;
+      const top = (H - fh) / 2;
+      const onImage = p.x >= left && p.x <= left + fw && p.y >= top && p.y <= top + fh;
+      if (!onImage) requestClose();
+    }
+
+    function onPointerEnd(e) {
+      if (!pointers.delete(e.pointerId)) return;
+      if (!g || pointers.size > 0) return;           // wait for the last finger
+      const cancelled = e.type === 'pointercancel';
+      if (g.type === 'swipe') finishSwipe();
+      else if (g.type === 'dragclose') {
+        if (!cancelled && g.dy >= LB.CLOSE_DIST) requestClose();
+        else returnFromDrag();
+      } else if (g.type === 'pending' && !cancelled && !g.moved) {
+        tap({ x: g.x0 + g.dx, y: g.y0 + g.dy });
+      }
+      g = null;
+    }
+    stage.addEventListener('pointerup', onPointerEnd);
+    stage.addEventListener('pointercancel', onPointerEnd);
+```
+
+CSS는 확대에만 쓰던 `.lb-img.is-zooming` 규칙 전체와 `.lb-img`의 `transform-origin: 0 0`을 지운다. 남는 `.lb-img`:
+
+```css
+.lb-img {
+  flex: none;
+  max-width: none;
+  transition: opacity var(--dur-base) var(--ease-out);
+  -webkit-user-drag: none;
+}
+```
 
 **이미지 로딩**
 
@@ -1369,7 +1483,7 @@ QA 확인값:
 | 원본 크기 | 긴 변 1600px, 121~651KB. 09(651KB), 08(490KB), 10(486KB), 02(374KB)가 크다 |
 | 로딩 중 | 캐러셀에서도 아직 받지 않은 사진(lightbox 안에서 키보드로 이웃 밖까지 건너뛴 경우)은 scrim 면만 보이다가 `load` 후 `opacity 0→1` 300ms. 스피너 없음 (2026-10-10 갤러리 캐러셀로 변경) |
 
-- **reduced-motion**: 열기·닫기 페이드, 스냅, 더블탭 줌 전환, 원위치 복귀 모두 0ms(즉시). 손가락을 그대로 따라가는 드래그·핀치·팬은 사용자가 직접 조작하는 것이므로 유지한다.
+- **reduced-motion**: 열기·닫기 페이드, 스냅, 원위치 복귀 모두 0ms(즉시). 손가락을 그대로 따라가는 드래그(스와이프·끌어 닫기)는 사용자가 직접 조작하는 것이므로 유지한다. (2026-10-17 사진 보호: 더블탭 줌 전환·핀치·팬 삭제)
 
 ### 4-3. BGM 토글 (Must: 토글·상태 / Should: glow 링·볼륨 페이드)
 
@@ -1534,6 +1648,137 @@ QA 확인값:
 | 압축 화면 | `@media (max-height: 640px)`에서는 컨셉대로 스크롤 큐를 숨긴다(루프도 없음) |
 | reduced-motion | primary 100% 정지 선. 스크롤하면 즉시 숨김 |
 
+### 4-10. 사진 보호: 저장 메뉴 차단과 확대 차단 (Must) (2026-10-17 사진 보호: 신설)
+
+사용자 결정(2026-10-17): "캡처 방지"는 사진에만 적용하고, "사진 확대 방지"는 확대 범위 "모든 확대 차단"으로 한다. 페이지 확대를 막으면 글자 확대도 막혀 WCAG 1.4.4(텍스트 크기 조정)에 어긋난다는 점을 사용자가 미리 듣고 고른 범위다. 이 절은 그 결정을 구현 기준으로 옮긴 것이고 범위를 다시 정하지 않는다. 화면에 보이는 모션은 없으므로 reduced-motion 분기도 없다. frontend 작업 목록과 QA 기준은 12장에 모았다.
+
+#### 4-10-1. 한계
+
+**웹 페이지는 OS 스크린샷·화면 녹화·다른 기기로 찍기를 막거나 감지할 수 없고 개발자 도구·페이지 저장·이미지 주소 직접 열기도 막을 수 없으므로, 이 절은 길게 누르기·우클릭·끌기로 사진을 바로 저장하는 경로만 막는다.**
+
+#### 4-10-2. 사진 저장 경로 차단
+
+| 경로 | 막는 방법 | 적용 범위 |
+|---|---|---|
+| iOS Safari·WKWebView 길게 누르기 메뉴(사진 저장, 공유, 복사, 미리보기) | CSS `img { -webkit-touch-callout: none; }` | 페이지의 모든 `<img>`. CSS 선택자라 lightbox가 런타임에 만드는 `.lb-img`에도 걸린다 |
+| Android Chrome·Samsung Internet·WebView 길게 누르기 메뉴(이미지 다운로드, 새 탭에서 이미지 열기, 이미지 공유) | `document`에 `contextmenu` 위임 리스너 1개. 대상이 사진이면 `preventDefault()` | 위임이라 나중에 생긴 img도 포함 |
+| PC 우클릭 메뉴(이미지를 다른 이름으로 저장, 이미지 복사, 이미지 주소 복사) | 같은 `contextmenu` 위임 | 같음 |
+| 끌어서 바탕화면·다른 탭에 놓기 | CSS `img { -webkit-user-drag: none; }` + `document`에 `dragstart` 위임 `preventDefault()`. Firefox는 `-webkit-user-drag`를 모르므로 JS가 필요하다 | 같음. 기존 `draggable="false"`(갤러리 img, `.lb-img`)와 `.g-viewport`의 `dragstart` 리스너는 그대로 둔다 |
+| 길게 누를 때 사진 자체가 선택되어 파랗게 덮이는 것 | CSS `img { -webkit-user-select: none; user-select: none; }` | img에만. 글자 선택에는 영향이 없다 |
+
+- "대상이 사진이면"의 판정: `e.target instanceof Element && e.target.closest('img, .g-open')`. `.g-open`을 함께 넣는 이유: 버튼 안 요소의 이벤트를 버튼 자체로 보내는 브라우저에서도 갤러리 사진이 빠지지 않게 한다. 글자·버튼·빈 곳의 우클릭과 길게 누르기는 브라우저 기본 동작 그대로다. 글자를 끄는 `dragstart`는 대상이 Text 노드라 막히지 않는다.
+- 판정에 걸리는 장식 img(hero wreath SVG)와 카카오 지도 타일 img는 함께 막혀도 동작에 영향이 없다. 지도는 끌기·확대가 없는 고정 지도다(4-7).
+- CSS 배경 이미지와 인라인 SVG 장식은 길게 눌러도 저장 메뉴가 뜨지 않으므로 대상이 아니다.
+- JS 꺼짐: CSS 부분(iOS 길게 누르기 메뉴, Chrome·Safari 끌기, 사진 선택)은 그대로 동작한다. Android·PC 우클릭 메뉴는 막히지 않는다. 받아들인다.
+
+**글자 선택은 막지 않는다.**
+- 전역(`html`, `body`, `*`, 섹션, 카드) `user-select: none`을 쓰지 않는다. 계좌 복사가 실패하면 "길게 눌러 직접 복사해 주세요"(`copy-failed`)라고 안내하고 해당 글자를 `Selection`으로 선택해 두므로(4-4), 하객이 글자를 길게 눌러 선택·복사할 수 있어야 한다.
+- `-webkit-touch-callout: none`도 img에만 둔다. 이 속성은 상속되므로 글자를 감싼 요소에 두면 iOS에서 글자를 선택한 뒤 뜨는 "복사" 메뉴까지 사라진다.
+- 이미 `user-select: none`이 걸린 곳(`.js .g-viewport`, `.lb-stage`, `.venue__map`)은 그대로 둔다.
+
+**`showModal` 미지원 폴백 (Should)**: 지금 `initLightbox`는 `dialog.showModal`이 없으면 사진 버튼이 원본 JPEG를 새 탭(`window.open`)으로 연다. 새 탭은 이미지 문서 하나라 이 절의 CSS·JS가 닿지 않고, 그 탭에서는 길게 눌러 저장할 수 있다. 이 폴백의 리스너 등록을 지우고 `return`만 남긴다. 해당 브라우저(Safari·iOS 15.3 이하)에서는 캐러셀 넘기기만 되고 사진 버튼을 눌러도 아무 일이 없다.
+
+참고 CSS (기존 `img, svg, canvas { display: block; }` 규칙 바로 아래):
+
+```css
+/* Photo protection (spec 4-10-2): every <img>, including the lightbox images created at runtime. */
+img {
+  -webkit-touch-callout: none;   /* iOS long-press sheet: save, share, copy */
+  -webkit-user-drag: none;       /* drag-out to the desktop or another tab */
+  -webkit-user-select: none;
+  user-select: none;             /* the image only; text stays selectable for the copy-failed fallback (4-4) */
+}
+```
+
+참고 JS:
+
+```js
+  /* ---------- Photo protection (spec 4-10-2) ---------- */
+
+  // Delegated on document, so the lightbox images created later are covered too.
+  function initPhotoGuard() {
+    const block = (e) => {
+      if (e.target instanceof Element && e.target.closest('img, .g-open')) e.preventDefault();
+    };
+    document.addEventListener('contextmenu', block);   // Android long-press menu, desktop right-click
+    document.addEventListener('dragstart', block);     // Firefox ignores -webkit-user-drag
+  }
+```
+
+#### 4-10-3. 페이지 확대 차단
+
+**결정한 조합**: viewport meta `maximum-scale=1, user-scalable=no` + `html { touch-action: manipulation; }` + `document`의 `gesturestart`·`gesturechange` 차단 + `window`의 `ctrl + wheel` 차단 + 캐러셀 `touch-action: pan-y`. 모바일 스크롤 경로에는 non-passive 터치 리스너를 하나도 추가하지 않는다.
+
+| 환경 · 입력 | 막는 방법 | 비고 |
+|---|---|---|
+| Android Chrome·Samsung Internet·WebView(카카오톡 인앱 포함) 핀치·더블탭 확대 | viewport meta `maximum-scale=1, user-scalable=no` | 하객이 브라우저 접근성 설정에서 직접 켠 강제 확대(Chrome "확대/축소 강제 사용", Samsung Internet "확대/축소 항상 허용" 등)는 이 meta를 무시한다. 그 설정은 막지 않는다(아래 "막지 않는 것") |
+| iOS Safari·WKWebView 핀치 | `document`에 `gesturestart`·`gesturechange` 리스너, `preventDefault()`, `{ passive: false }` | iOS 10부터 Safari는 `user-scalable=no`를 무시하므로 스크립트로 막는다. `gesture*`는 WebKit에만 있는 이벤트라 다른 브라우저에서는 불리지 않는다 |
+| iOS Safari 더블탭 확대 | `html { touch-action: manipulation; }` | `manipulation`은 이동과 핀치를 허용하고 더블탭 확대만 뺀다. 핀치는 위 줄이 막는다. iOS 9.3부터 지원 |
+| macOS Safari 트랙패드 핀치 | 위 `gesturestart`·`gesturechange` 리스너 | 같은 리스너 |
+| PC Chrome·Edge·Firefox 트랙패드 핀치 | `window`에 `wheel` 리스너, `e.ctrlKey`이면 `preventDefault()`, `{ passive: false }` | 이 브라우저들은 트랙패드 핀치를 `ctrlKey: true`인 wheel로 보낸다. **같은 신호라 `Ctrl` + 마우스 휠 확대도 함께 막힌다.** 둘을 구분할 방법이 없다 |
+| 캐러셀 위 | `.js .g-viewport { touch-action: pan-y; }` | 4-1-4. `html`의 `manipulation`과 겹치면 `pan-y`가 된다 |
+| lightbox 위 | 무대 `touch-action: none`(기존) + 위 전역 리스너 | 4-2 |
+
+**막지 않는 것** (페이지가 막을 수 없거나 막으면 안 되는 브라우저·OS 기능):
+- `Ctrl`/`Cmd` + `+`·`-`·`0` 키보드 확대와 브라우저 메뉴의 확대/축소(iOS Safari 주소창 "가가"(Aa) 메뉴의 페이지 확대 포함). 키 리스너로 막지 않는다. PC에서 글자를 키우려는 하객에게 남는 방법이다.
+- 하객이 직접 켠 브라우저 접근성 설정(Chrome·Samsung Internet·Firefox의 강제 확대)과 OS 확대 기능(iOS 손쉬운 사용 "확대/축소", Android "확대"). 저시력 하객이 미리 켜 둔 설정이라 페이지가 무력화하지 않는다.
+- Windows 터치스크린 노트북에서 손가락으로 하는 핀치. PC 브라우저는 viewport meta를 따르지 않고 `manipulation`은 핀치를 허용한다. 청첩장의 대상 기기가 아니라 남긴다.
+
+**쓰지 않는 방법과 이유**:
+
+| 방법 | 쓰지 않는 이유 |
+|---|---|
+| `document`의 `touchmove`(passive: false)에서 손가락이 둘이면 `preventDefault()` | 모든 터치 스크롤이 메인 스레드의 리스너 응답을 기다리게 된다. 보케(30fps)가 도는 구간에서 스크롤 시작이 늦어질 수 있다. 실기기에서 iOS 핀치가 `gesture*` 차단으로도 남을 때만 대안으로 다시 본다(12-3) |
+| `touchend`에서 300ms 안의 두 번째 탭을 `preventDefault()` (더블탭 차단) | 빠르게 두 번 누르는 버튼 탭(캐러셀·lightbox 이전/다음, 방명록 페이지 번호, 복사)의 두 번째 click이 사라진다 |
+| `html { touch-action: pan-x pan-y; }` | Chromium에서는 하객이 켠 강제 확대 설정과 상관없이 핀치를 막을 수 있어, 위 "막지 않는 것"과 어긋난다. meta를 따르는 환경에서는 `manipulation`과 결과가 같다. 실기기에서 카카오톡 Android 인앱 브라우저가 meta를 따르지 않아 핀치가 남을 때만 이 값으로 바꾼다(12-3) |
+| `visualViewport.scale`을 감시해 확대를 되돌리기 | 확대된 뒤에 되돌리므로 화면이 튀고, 강제 확대 설정도 무력화한다 |
+
+**제스처 공존** (어느 것도 지금과 달라지지 않아야 한다):
+
+| 제스처 | 결과 | 이유 |
+|---|---|---|
+| 페이지 세로 스크롤(어디서든) | 그대로 | `manipulation`·`pan-y` 모두 세로 이동을 허용한다. 새 리스너 중 touch 이벤트 리스너는 없다 |
+| 캐러셀 가로 스와이프·이웃 탭 | 그대로 | Pointer Events 경로(4-1-4)는 바뀌지 않는다. `pan-y`라 가로 이동은 JS가 받는다 |
+| lightbox 스와이프·끌어 닫기·사진 밖 탭 닫기 | 그대로 | 무대 `touch-action: none` + Pointer Events. `gesture*` 차단은 포인터 이벤트를 막지 않는다 |
+| 버튼 탭(복사, BGM, 이전/다음, 방명록, 공유), 빠른 연속 탭 포함 | 그대로 | click·touchend를 건드리지 않는다. `manipulation`은 탭을 지연시키지 않는다 |
+| 글자 길게 눌러 선택·복사 | 그대로 | 선택은 `touch-action`과 무관하다. `-webkit-touch-callout`·`user-select`는 img에만 있다 |
+| 입력칸 포커스 | 확대 없음(지금과 같음) | 입력 글자가 16px이라 iOS 포커스 확대가 원래 없고, `maximum-scale=1`이 한 번 더 막는다 |
+| 카카오 지도 | 그대로 | 고정 지도(4-7) |
+| iOS·카카오톡 화면 가장자리 뒤로 가기 | 그대로 | 브라우저 몫(4-1-4) |
+
+**WCAG·자동 검사**: Lighthouse 접근성의 `meta-viewport` 감사와 axe `meta-viewport` 규칙이 실패로 나온다. 사용자 결정에 따른 알려진 예외이므로 QA는 FAIL이 아니라 "사용자 수용 예외(WCAG 1.4.4)"로 기록한다. 8장의 Lighthouse Mobile Performance 목표에는 영향이 없다.
+
+참고 HTML (index.html 6행):
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+```
+
+참고 CSS (기존 `html` 규칙에 한 줄 추가):
+
+```css
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;    /* no double-tap zoom (iOS); pinch is blocked by the viewport meta and gesture events */
+}
+```
+
+참고 JS (Boot 맨 앞에 `safe('zoom-guard', initZoomGuard);`, `safe('photo-guard', initPhotoGuard);` 두 줄):
+
+```js
+  /* ---------- Page zoom block (spec 4-10-3) ---------- */
+
+  function initZoomGuard() {
+    const block = (e) => e.preventDefault();
+    // WebKit only: iOS Safari ignores user-scalable=no; also macOS Safari trackpad pinch.
+    document.addEventListener('gesturestart', block, { passive: false });
+    document.addEventListener('gesturechange', block, { passive: false });
+    // Chrome, Edge and Firefox send a trackpad pinch as ctrl + wheel; Ctrl + mouse wheel is the same event.
+    window.addEventListener('wheel', (e) => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+  }
+```
+
 ---
 
 ## 5. 트랜지션 & 디테일
@@ -1551,7 +1796,7 @@ QA 확인값:
 | sprig-divider | 진입 | stroke-draw 시퀀스 | 2400ms | `--ease-draw` | 완성 상태 |
 | string-lights | 진입 / 루프 | 점등 0.3→1, 호흡 1↔0.65 | 500ms / 4.2~6.0s | `--ease-out` / `--ease-in-out` | 정지, opacity 1 |
 | lightbox | 열기 / 닫기 | dialog opacity | 250ms / 200ms | `--ease-out` / `--ease-in` | 즉시 |
-| lightbox | 스냅 / 줌 / 원위치 | transform | 350ms / 250ms / 250ms | `--ease-standard` | 즉시 |
+| lightbox (2026-10-17 사진 보호: 줌 삭제) | 스냅 / 원위치 | transform | 350ms / 250ms | `--ease-standard` | 즉시 |
 | 복사 버튼 라벨 | 성공·복귀 | 라벨 opacity 크로스 | 120ms + 120ms | `--ease-standard` | 즉시 교체 |
 | 토스트 | 등장 / 퇴장 | opacity + translateY 8px | 200ms / 200ms | `--ease-out` / `--ease-in` | 즉시 |
 | BGM 아이콘 | 토글 | 꺼짐 ↔ 켜짐 opacity | 200ms | `--ease-standard` | 즉시 |
@@ -1559,7 +1804,7 @@ QA 확인값:
 | 보케 캔버스 | 구간 진입·이탈 | 캔버스 opacity | 600ms (hero 첫 등장 1200ms) | linear | 정지 불빛 7개(hero만) (2026-10-12 보케 B안) |
 | 보케 불빛 (2026-10-12 보케 B안) | 생성·소멸 / 반짝임 | 캔버스 `globalAlpha`(밝기) | 페이드 1.2s / 주기 2.4~4.8s | smoothstep / cos | 정지 그림(밝기 0.85) |
 
-**쓰지 않는 것 (QA 확인용)**: 꽃잎·컨페티·하트 파티클, 터치·클릭 반응 파티클, 패럴랙스, hero 사진 scale·Ken Burns, 사진 위 색 오버레이·그라데이션·filter, 마스킹 텍스트 리빌, split char, 카운트업, 달력 펄스·발광, 갤러리 자동 슬라이드, 슬라이드 전환 햅틱, 캐러셀 순환·스와이프 힌트 흔들기·이웃 사진 흐리게/축소·사진 위 화살표 (2026-10-10 갤러리 캐러셀로 변경), 클릭 ripple, hover lift + 그림자, 첫 화면 게이트(봉투 열기), BGM 자동재생, `box-shadow`·`filter`·`backdrop-filter` 애니메이션, 캔버스 `shadowBlur`·`ctx.filter`, `scroll-behavior: smooth`.
+**쓰지 않는 것 (QA 확인용)**: 꽃잎·컨페티·하트 파티클, 터치·클릭 반응 파티클, 패럴랙스, hero 사진 scale·Ken Burns, 사진 위 색 오버레이·그라데이션·filter, 마스킹 텍스트 리빌, split char, 카운트업, 달력 펄스·발광, 갤러리 자동 슬라이드, 슬라이드 전환 햅틱, 캐러셀 순환·스와이프 힌트 흔들기·이웃 사진 흐리게/축소·사진 위 화살표 (2026-10-10 갤러리 캐러셀로 변경), 클릭 ripple, hover lift + 그림자, 첫 화면 게이트(봉투 열기), BGM 자동재생, `box-shadow`·`filter`·`backdrop-filter` 애니메이션, 캔버스 `shadowBlur`·`ctx.filter`, `scroll-behavior: smooth`, lightbox 핀치·더블탭·휠·키보드 확대와 팬, 페이지 확대 (2026-10-17 사진 보호).
 
 ---
 
@@ -1570,7 +1815,7 @@ QA 확인값:
   /* Easing */
   --ease-out:      cubic-bezier(0.33, 1, 0.68, 1);    /* reveal, photo fade, toast in, carousel image fade */
   --ease-in:       cubic-bezier(0.32, 0, 0.67, 0);    /* lightbox close, toast out */
-  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);      /* press, slide snap (carousel + lightbox), zoom, label swap */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);      /* press, slide snap (carousel + lightbox), label swap */
   --ease-in-out:   cubic-bezier(0.37, 0, 0.63, 1);    /* breathing loops: bulbs, BGM ring, scroll cue */
   --ease-draw:     cubic-bezier(0.65, 0, 0.35, 1);    /* sprig stroke-draw, pen-like accel/decel */
 
@@ -1623,7 +1868,7 @@ QA 확인값:
 }
 ```
 
-**JS 쪽 분기**: `const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');`를 한 번 만들고, JS가 직접 쓰는 시간(lightbox 스냅·줌·열기/닫기, 보케 루프 시작 여부, hero 시퀀스 지연)은 `reducedMotion.matches`일 때 0 또는 생략한다. `change` 리스너로 런타임 전환을 새로고침 없이 반영한다(1-6).
+**JS 쪽 분기**: `const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');`를 한 번 만들고, JS가 직접 쓰는 시간(lightbox 스냅·열기/닫기, 보케 루프 시작 여부, hero 시퀀스 지연)은 `reducedMotion.matches`일 때 0 또는 생략한다. `change` 리스너로 런타임 전환을 새로고침 없이 반영한다(1-6). (2026-10-17 사진 보호: lightbox 줌 삭제. 위 토큰 블록 `--ease-standard` 주석에서도 "zoom"을 뺐다)
 
 **캐러셀 토큰 (2026-10-10 갤러리 캐러셀로 변경)**: 캐러셀 전환은 `--dur-snap`·`--ease-standard`, 이미지 로드 페이드는 `--dur-base`·`--ease-out`을 쓴다. 둘 다 위 reduce 블록에서 이미 0ms가 되므로 reduce 블록에 추가할 규칙은 없고, 캐러셀 JS에도 reduced 분기가 없다. `--g-*`는 모션 시간이 아니라 트랙 `transform` 계산에 쓰는 치수라 reduce에서도 그대로다. `@property`를 지원하지 않는 브라우저에서는 두 변수가 일반 상속 변수로 동작할 뿐 결과는 같다.
 
@@ -1641,8 +1886,9 @@ QA 확인값:
 | **Must** | 2-1 hero 로드 시퀀스 (사진 scale 금지) |
 | **Must** | 3-1 sprig-divider stroke-draw 3곳 |
 | **Must** | 3-2 string-lights 전구 호흡 (점등 시퀀스 제외) + 화면 밖 일시정지 |
-| **Must** | 4-1 갤러리 캐러셀: 2:3 프레임(세로 cover, 가로 02·15 contain + surface 매트), peek 16px, transform 트랙(`--g-i`·`--g-dx`), 스와이프(8px 축 판정, 50px 또는 0.3px/ms, 양 끝 정지·저항 0.3, 350ms), `touch-action: pan-y pinch-zoom`, 이전/다음 버튼(`aria-disabled`) + "n / 15" 카운터, ←/→, click 억제, 접근성 구조(group·roledescription·inert·`.g-status` 낭독·포커스 이동), lightbox 같은 번호로 열기·닫으면 lightbox 번호로 동기화·포커스 복귀, `srcset`/`sizes` + 로딩 창(index −1 ~ +2), JS 꺼짐 scroll-snap 폴백 (2026-10-10 갤러리 캐러셀로 변경) |
-| **Must** | 4-2 lightbox: 스와이프(판정식 `swipeTarget`을 캐러셀과 공유), 핀치 줌 1~3, 더블탭, 팬 clamp, 키보드(←/→/Esc), `showModal` 포커스 트랩, 캐러셀 현재 슬라이드로 포커스 복귀, 스크롤 잠금, 캐러셀 `currentSrc`→원본 교체·±1 로딩, 보케 정지 (2026-10-10 갤러리 캐러셀로 변경) |
+| **Must** | 4-1 갤러리 캐러셀: 2:3 프레임(세로 cover, 가로 02·15 contain + surface 매트), peek 16px, transform 트랙(`--g-i`·`--g-dx`), 스와이프(8px 축 판정, 50px 또는 0.3px/ms, 양 끝 정지·저항 0.3, 350ms), `touch-action: pan-y`(2026-10-17 사진 보호: `pinch-zoom` 제거), 이전/다음 버튼(`aria-disabled`) + "n / 15" 카운터, ←/→, click 억제, 접근성 구조(group·roledescription·inert·`.g-status` 낭독·포커스 이동), lightbox 같은 번호로 열기·닫으면 lightbox 번호로 동기화·포커스 복귀, `srcset`/`sizes` + 로딩 창(index −1 ~ +2), JS 꺼짐 scroll-snap 폴백 (2026-10-10 갤러리 캐러셀로 변경) |
+| **Must** | 4-2 lightbox: 스와이프(판정식 `swipeTarget`을 캐러셀과 공유), 확대 없음(핀치·더블탭·휠·키보드 확대와 팬 삭제, 두 번째 손가락은 제스처 취소), 키보드(←/→/Esc), `showModal` 포커스 트랩, 캐러셀 현재 슬라이드로 포커스 복귀, 스크롤 잠금, 캐러셀 `currentSrc`→원본 교체·±1 로딩, 보케 정지 (2026-10-10 갤러리 캐러셀로 변경) (2026-10-17 사진 보호: 핀치 줌 1~3·더블탭·팬 clamp → 확대 없음) |
+| **Must** | 4-10 사진 보호 (2026-10-17 사진 보호): 모든 img의 저장 메뉴·끌기·선택 차단(CSS `img` 규칙 + `document` 위임 `contextmenu`·`dragstart`), 글자 선택 유지, viewport meta `maximum-scale=1, user-scalable=no`, `html { touch-action: manipulation }`, WebKit `gesturestart`·`gesturechange` 차단, `ctrl + wheel` 차단. 작업 목록은 12-1 |
 | **Must** | 4-3 BGM 토글: 자동재생 없음, `preload="none"`, 꺼짐/켜짐 아이콘, `aria-pressed`, 탭 숨김 시 일시정지, 재생 실패 복구 |
 | **Must** | 4-4 복사 피드백(계좌·주소·링크 공용): 버튼 라벨 전환 + 토스트 + `role="status"` 낭독 + execCommand·Selection 폴백 |
 | **Must** | 4-5 D-day 한국 시간 계산과 표기 분기 |
@@ -1653,9 +1899,11 @@ QA 확인값:
 | Should | 4-4 계좌 접기 |
 | Should | 4-6 카카오 공유 폴백, 4-7 길찾기, 4-8 방명록 상태 문구, 4-8-1 방명록 목록 모션 (2026-10-13 방명록 목록) |
 | Should | 4-9 hero 스크롤 큐 |
+| Should | 4-10-2 `showModal` 미지원 폴백(원본을 새 탭으로 열기) 제거 (2026-10-17 사진 보호) |
 | **Must** | 1-7 `window.__bokeh` QA 훅과 `stats()`의 회피 검증값(`excludeHits`, `pairHits`, `minExcludeGap`, `still`). 대비를 실행 중 회피로 지키므로 Should에서 올렸다 (2026-10-12 보케 B안) |
-| Nice-to-have | 4-2 `+`/`-`/`0` 키 줌, `ctrl + wheel` 줌 |
 | Nice-to-have | 4-1 전환 중 잡기, 트랙패드 가로 휠 (2026-10-10 갤러리 캐러셀로 변경) |
+
+(2026-10-17 사진 보호: Nice-to-have "4-2 `+`/`-`/`0` 키 줌, `ctrl + wheel` 줌" 줄 삭제)
 
 ---
 
@@ -1671,6 +1919,7 @@ QA 확인값:
 - 한 화면에서 동시에 도는 루프는 최대 3개(hero: 보케 + 스크롤 큐 + BGM 링 / calendar: 보케 + 전구 + BGM 링).
 - 보케 캔버스 메모리는 3개 합계 DPR 2에서 14MB 이하(실측 10.8~13.7MB), 보케 스크립트는 프레임당 1ms 이하(4x throttle 실측 최대 0.7ms). 자세한 값은 1-8 (2026-10-12 보케 B안).
 - scroll 이벤트 리스너는 스크롤 큐 1개뿐(passive, 1회 후 해제). 나머지는 전부 IntersectionObserver·ResizeObserver.
+- (2026-10-17 사진 보호) 확대 차단이 더하는 non-passive 리스너는 `window`의 `wheel`(`ctrlKey`일 때만 `preventDefault`)과 WebKit `gesturestart`·`gesturechange`뿐이다. `wheel` 때문에 데스크톱 휠 스크롤이 메인 스레드를 한 번 거치지만 처리는 비교 한 번이다. `touchstart`·`touchmove`에는 non-passive 리스너를 두지 않으므로 모바일 스크롤 경로는 바뀌지 않는다. `contextmenu`·`dragstart` 위임 리스너는 스크롤과 무관하다.
 - `will-change`는 lightbox·캐러셀 드래그 중 각 트랙에만 잠깐. 그 밖에는 쓰지 않는다. (2026-10-10 갤러리 캐러셀로 변경: 캐러셀 트랙 추가. 캐러셀은 무한 루프가 아니라 위 표에 넣지 않는다)
 - 목표: Lighthouse Mobile Performance 90 이상, LCP 2.5초 이하(hero 227KB preload), CLS 0.05 이하, INP 200ms 이하, 보케 구간 스크롤 중 60fps 유지(DevTools 4x throttle에서 드롭 프레임 5% 이하).
 
@@ -1706,9 +1955,10 @@ QA 확인값:
 - [ ] lightbox: `showModal` 포커스 트랩, Esc 닫기, 닫은 뒤 캐러셀이 lightbox에서 마지막으로 보던 번호로 맞춰지고 그 슬라이드 버튼으로 포커스 복귀, ←/→ 이동, "n / 15" `aria-live`, 슬라이드 alt, 포커스 링 `#FBF6F1` (2026-10-10 갤러리 캐러셀로 변경)
 - [ ] 캐러셀 구조: `.g-carousel`에 `role="group"` + `aria-roledescription="슬라이드"` + `aria-label`. 현재 슬라이드만 노출되고 나머지 14장은 `inert` + `aria-hidden="true"`(JS 꺼짐에서는 붙지 않음). 탭 순서는 현재 슬라이드 버튼 → 이전 → 다음 (2026-10-10 갤러리 캐러셀로 변경)
 - [ ] 캐러셀 조작: 버튼 이름 "이전 사진"·"다음 사진", 처음·끝에서 `aria-disabled="true"`이고 포커스가 사라지지 않는다. 포커스가 캐러셀 안에 있을 때 ←/→로 이동한다. 버튼·스와이프로 바뀌면 `.g-status`가 "15장 중 n번째 사진, {alt}"를 읽는다. 슬라이드 버튼에서 ←/→를 누르면 포커스가 새 슬라이드 버튼으로 옮겨 가고 같은 내용을 두 번 읽지 않는다 (2026-10-10 갤러리 캐러셀로 변경)
-- [ ] 캐러셀 제스처: 자동 넘김 없음. 캐러셀 위에서 시작한 세로 스크롤이 막히지 않는다(`touch-action: pan-y pinch-zoom`). 캐러셀 위에서도 페이지 핀치 확대가 된다. 마우스로 끌고 놓아도 lightbox가 열리지 않는다 (2026-10-10 갤러리 캐러셀로 변경)
+- [ ] 캐러셀 제스처: 자동 넘김 없음. 캐러셀 위에서 시작한 세로 스크롤이 막히지 않는다(`touch-action: pan-y`). 캐러셀 위에서 핀치해도 페이지가 확대되지 않는다. 마우스로 끌고 놓아도 lightbox가 열리지 않는다 (2026-10-10 갤러리 캐러셀로 변경) (2026-10-17 사진 보호: "캐러셀 위에서도 페이지 핀치 확대가 된다" → "확대되지 않는다")
 - [ ] 캐러셀 시각: 사진 위에 화살표·글자·오버레이 없음, 이웃 사진 흐리게·축소 없음, 가로 사진 02·15 잘림 없음(contain), 이전/다음 버튼 터치 영역 44x44 (2026-10-10 갤러리 캐러셀로 변경)
-- [ ] viewport meta에 `user-scalable=no`·`maximum-scale=1` 없음
+- [ ] viewport meta에 `maximum-scale=1, user-scalable=no` 있음. Lighthouse·axe `meta-viewport` 실패는 사용자 수용 예외(WCAG 1.4.4)로 기록한다 (2026-10-17 사진 보호: "없음" → "있음")
+- [ ] 사진 보호와 확대 차단이 12-2 기준을 모두 통과한다. 글자는 길게 눌러 선택·복사할 수 있다 (2026-10-17 사진 보호)
 - [ ] 복사 성공·실패가 `role="status"` 영역으로 낭독된다(시각 토스트는 `aria-hidden`)
 - [ ] 모든 아이콘 버튼 `aria-label`, 터치 영역 44x44 이상
 - [ ] 장식 SVG·캔버스 모두 `aria-hidden="true"`
@@ -1734,3 +1984,91 @@ QA 확인값:
 ## 11. 한 줄 정리
 
 배경은 hero·calendar·closing의 background 위에서 거의 제자리에서 반짝이는 작은 전구 불빛(흰 심 + glow 후광, 구간당 8개, 모바일 합산 12개 이하, 서로 겹치지 않고 글자·사진·장식에서 13px 이상 떨어짐, 화면 밖·탭 숨김·라이트박스에서 정지)이고, 그 밖의 모션은 섹션 fade-in 하나와 디바이더 그리기·전구 호흡·BGM 링뿐이다. prefers-reduced-motion에서는 hero에 정지한 불빛 7개만 남고 나머지는 모두 즉시 표시된다. (2026-10-12 보케 B안)
+
+---
+
+## 12. 2026-10-17 사진 보호 변경 요약 (2026-10-17 사진 보호: 신설)
+
+결정과 근거는 4-10, lightbox 동작은 4-2 "확대 없음", 캐러셀은 4-1-4·4-1-8이다. 이 장은 frontend-developer의 작업 목록과 QA 기준만 모은다. 줄 번호는 지금 파일 기준이라 편집하면서 바뀐다.
+
+### 12-1. frontend-developer 작업 목록
+
+| # | 우선순위 | 파일 · 위치 | 내용 | 기준 |
+|---|---|---|---|---|
+| 1 | Must | index.html 6행 viewport meta | content를 `width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover`로 바꾼다 | 4-10-3 |
+| 2 | Must | style.css `html` 규칙(88행) | `touch-action: manipulation;` 추가 | 4-10-3 |
+| 3 | Must | style.css `img, svg, canvas` 규칙(108행) 바로 아래 | 사진 보호 `img` 규칙 추가: `-webkit-touch-callout`·`-webkit-user-drag`·`-webkit-user-select`·`user-select` 모두 `none` | 4-10-2 |
+| 4 | Must | style.css `.js .g-viewport`(619행) | `touch-action: pan-y pinch-zoom` → `touch-action: pan-y` | 4-1-4, 4-1-11 |
+| 5 | Must | style.css `.lb-img`(1297행 근처) | `transform-origin: 0 0` 삭제, `.lb-img.is-zooming` 규칙 전체 삭제 | 4-2 |
+| 6 | Must | style.css 41행 `--ease-standard` 주석 | "zoom, " 삭제 | 6 |
+| 7 | Must | script.js 17-22행 `LB` | `ZOOM_MAX`, `DOUBLE_TAP_ZOOM`, `DOUBLE_TAP_MS`, `PINCH_MIN`, `KEY_ZOOM_STEP` 삭제 | 4-2 |
+| 8 | Must | script.js `initCarousel` 776행 주석 | "second finger: page pinch-zoom takes over" → 4-1-12의 주석. 코드는 그대로 | 4-1-12 |
+| 9 | Must | script.js `initLightbox`(917-1249행) | 4-2 "참고 코드"의 삭제 목록을 지우고 keydown·제스처 블록을 교체한다. 두 번째 손가락은 제스처 취소, 사진 밖 탭은 바로 닫기 | 4-2 |
+| 10 | Must | script.js 새 함수 2개 + Boot | `initZoomGuard`, `initPhotoGuard`를 추가하고 Boot 맨 앞(`initBokeh`보다 먼저)에 `safe('zoom-guard', initZoomGuard);`, `safe('photo-guard', initPhotoGuard);` | 4-10-2, 4-10-3 |
+| 11 | Should | script.js `initLightbox` 876-879행 | `showModal` 미지원 시 `window.open`으로 원본을 여는 리스너 등록을 지우고 `return`만 남긴다 | 4-10-2 |
+
+**건드리지 않는 것**: `.js .g-viewport`·`.lb-stage`·`.venue__map`의 `user-select: none`, `.lb-stage { touch-action: none }`, 갤러리·lightbox img의 `draggable="false"`, `.g-viewport`의 `dragstart` 리스너, 캐러셀 트랙패드 가로 휠(4-1-5), `.g-open { cursor: zoom-in }`(4-1-2), 복사 실패 시 `Selection` 폴백(4-4). 전역 `user-select: none`과 글자 요소의 `-webkit-touch-callout: none`은 추가하지 않는다.
+
+**산출물 문서**: `05_frontend-developer_summary.md`의 lightbox 설명(핀치·더블탭·팬·`pinch-zoom` 언급)을 새 동작으로 고친다.
+
+### 12-2. QA 검증 기준
+
+QA 스킬 6.4의 "갤러리 lightbox 핀치 줌 → max scale 3, 더블탭 토글" 항목은 이 결정으로 폐기됐다. 핀치·더블탭이 아무 확대도 일으키지 않아야 PASS다. 컨셉 시트의 lightbox 줄("좌우 스와이프, 핀치 줌")과 README의 "핀치 줌 lightbox"는 이 결정 이전 기록이며 이 명세가 우선한다.
+
+**A. 정적 확인** (worktree 루트에서):
+
+| # | 명령 | 기대 결과 |
+|---|---|---|
+| A1 | `grep -c 'maximum-scale=1, user-scalable=no' index.html` | `1` |
+| A2 | `grep -n 'pinch-zoom' style.css script.js` | 출력 없음 |
+| A3 | `grep -n -e ZOOM_MAX -e DOUBLE_TAP -e PINCH_MIN -e KEY_ZOOM_STEP -e zoomAt -e resetZoom -e clampZoom -e applyZoom -e startPinch -e settlePinch -e lastTap -e is-zooming -e 'transform-origin: 0 0' script.js style.css` | 출력 없음 |
+| A4 | `grep -n -e gesturestart -e gesturechange script.js` | `initZoomGuard` 안 2줄, 둘 다 `{ passive: false }` |
+| A5 | `grep -n 'ctrlKey' script.js` | `initZoomGuard`의 1줄만 |
+| A6 | `grep -n "e.key === '[-+=0]'" script.js` | 출력 없음(지금은 1066-1068행 3줄) |
+| A7 | `grep -n 'touch-callout' style.css` | 1줄, `img` 규칙 안 |
+| A8 | `grep -n 'user-select: none' style.css` | 각 줄이 속한 규칙이 `.js .g-viewport`, `.venue__map`, `.lb-stage`, 새 `img` 규칙 중 하나다. `html`·`body`·`*`·섹션·카드 규칙에는 없다 |
+| A9 | `grep -n 'touch-action' style.css` | `html` `manipulation`, `.js .g-viewport` `pan-y`, `.lb-stage` `none` 세 규칙. 그 밖은 지도 설명 주석 속 언급뿐 |
+| A10 | `grep -n -e zoom-in -e zoom-out style.css` | `.g-open`의 `zoom-in` 1줄만. `.lb-`로 시작하는 규칙에 `zoom-*`·`grab`·`move` 커서가 없다 |
+| A11 | (Should 반영 시) `grep -n 'window.open(btn.dataset.full' script.js` | 출력 없음 |
+
+**B. 브라우저 자동 확인** (Playwright Chromium, 390 x 664, `isMobile: true`, `hasTouch: true`, DPR 3. B13만 WebKit):
+
+| # | 방법 | 통과 기준 |
+|---|---|---|
+| B1 | `getComputedStyle(...).touchAction`: `document.documentElement`, `.g-viewport`, `.lb-stage` | `manipulation`, `pan-y`, `none` |
+| B2 | `const fire = (el, ev) => (el.dispatchEvent(ev), ev.defaultPrevented);`로 `document.body`에 `new Event('gesturestart', { bubbles: true, cancelable: true })`, 같은 옵션의 `gesturechange`, `new WheelEvent('wheel', { bubbles: true, cancelable: true, ctrlKey: true, deltaY: -10 })` | 셋 다 `true` |
+| B3 | 같은 방법으로 `ctrlKey` 없는 `wheel`(`deltaY: 10`) | `false`. 일반 휠 스크롤은 막지 않는다 |
+| B4 | `new MouseEvent('contextmenu', { bubbles: true, cancelable: true })`를 `.hero__photo`, 현재 캐러셀 슬라이드 img, 그 `.g-open` 버튼에, 그리고 lightbox를 연 뒤 현재 `.lb-img`에 | 모두 `true`. `.lb-img`로 런타임에 만든 img에도 위임이 걸리는지 확인한다 |
+| B5 | 같은 `contextmenu`를 `.hero__names`, 계좌번호 글자 요소, 방명록 입력칸에 | 모두 `false` |
+| B6 | `new DragEvent('dragstart', { bubbles: true, cancelable: true })`를 `.hero__photo`에 | `true` |
+| B7 | `getComputedStyle(el).userSelect`: `.hero__photo` / `body`와 계좌번호 글자 요소 | `none` / `none`이 아님 |
+| B8 | CDP `Input.dispatchTouchEvent` 두 손가락 핀치와 `Input.synthesizePinchGesture`(`scaleFactor: 2`, `gestureSourceType: 'default'`)를 hero 가운데, 캐러셀 위, lightbox 무대 위에서 각각 실행한 뒤. 같은 시험을 변경 전 HEAD 사본에도 돌려 확대가 잡히는지 비교한다(`gestureSourceType: 'touch'`는 HEAD에서도 scale 1이라 판별력이 없다) | 매번 `visualViewport.scale === 1`. lightbox에서는 현재 `.lb-img`의 `style.transform === ''`, 카운터 그대로, dialog 열린 채. Chromium은 viewport meta를 따르므로 이 항목은 Android 경로만 확인한다 |
+| B9 | CDP `Input.synthesizeTapGesture`(`tapCount: 2`)를 본문 글자 위에서 | `visualViewport.scale === 1`. headless Chromium은 HEAD에서도 1이라 판별력이 없다. 실제 확인은 C2 |
+| B10 | lightbox에서 `+`, `=`, `-`, `0` 키 | `.lb-img` `style.transform === ''`, 카운터 그대로 |
+| B11 | lightbox를 2번(가로 사진 02)으로 열고 사진 가운데를 연달아 두 번 탭 / 사진 위쪽 빈 무대를 한 번 탭 | 확대 없음, dialog 열린 채 / 닫힘 |
+| B12 | 회귀: 4-1-12 "QA 확인값" 전부, lightbox 4번에서 열어 7번까지 스와이프 후 닫기, 아래로 끌어 닫기 | 지금과 같이 통과(카운터 "7 / 15", 포커스 복귀) |
+| B13 | Playwright WebKit: `getComputedStyle(el).webkitTouchCallout`을 `.hero__photo`, 캐러셀 img, `.lb-img` / `body`와 계좌번호 글자 요소에서 | `none` / `none`이 아님. Chromium은 이 속성을 지원하지 않아 WebKit에서만 잴 수 있다 |
+
+**C. 실기기 수동 확인** (자동화로 대신할 수 없다): iPhone Safari(iOS 17 이상), iPhone 카카오톡 인앱, Android Chrome, Android 카카오톡 인앱 네 가지는 필수, Samsung Internet·PC Chrome(트랙패드)·macOS Safari는 가능하면.
+
+| # | 동작 | 통과 기준 |
+|---|---|---|
+| C1 | 본문·캐러셀·lightbox 위에서 두 손가락 핀치 | 화면이 확대되지 않고 lightbox 사진도 커지지 않는다 |
+| C2 | 본문 글자·빈 곳·lightbox 사진을 더블탭 | 확대되지 않는다 |
+| C3 | hero·캐러셀·lightbox 사진을 2초 길게 누르기 | 저장·공유·복사 메뉴와 미리보기가 뜨지 않고 사진이 파랗게 선택되지 않는다 |
+| C4 | 사진을 길게 누른 채 끌기 | 사진이 끌려 나오지 않는다 |
+| C5 | 계좌번호 글자를 길게 누르기 | 선택 핸들과 "복사" 메뉴가 뜬다 |
+| C6 | 세로 스크롤, 캐러셀 스와이프·이전/다음 빠른 연타, lightbox 스와이프·끌어 닫기·사진 밖 탭 닫기, 방명록 페이지 번호 빠른 연타 | 지금과 같다. 빠른 두 번째 탭도 click이 된다 |
+| C7 | PC: 트랙패드 핀치 / `Ctrl`·`Cmd` + `+`·`-`·`0` / 사진 우클릭 / 글자 우클릭 / 사진 끌기 | 확대 안 됨 / 확대·축소 됨 / 메뉴 없음 / 메뉴 뜸 / 끌리지 않음 |
+| C8 | C1·C2 직후 Safari Web Inspector 또는 Chrome 원격 디버깅으로 `visualViewport.scale` | `1` |
+
+### 12-3. 실기기에서만 드러나는 위험과 그때 할 일
+
+| 위험 | 확인 | 결과가 나쁘면 |
+|---|---|---|
+| 카카오톡 인앱 브라우저(iOS·Android)가 앱 자체의 길게 누르기 메뉴("이미지 저장" 등)를 띄운다 | C3 | 페이지의 `contextmenu`·`-webkit-touch-callout`은 앱 메뉴를 막지 못한다. 대안은 사진 위에 투명 덮개(`::after`, `position: absolute; inset: 0`)를 얹어 길게 누른 대상이 img가 아니게 하는 것이다. `.g-open`, `.lb-slide`에는 바로 얹을 수 있고 hero는 img를 감싸는 요소가 필요하다. 채택하면 이 명세를 다시 고쳐 정한다 |
+| 카카오톡 Android 인앱(WebView)이 viewport meta를 따르지 않아 핀치가 된다 | C1 | `html`의 `touch-action`을 `pan-x pan-y`로 바꾼다(4-10-3 "쓰지 않는 방법"). Chromium의 강제 확대 설정도 무력화될 수 있으므로 바꾸기 전에 사용자에게 알린다 |
+| iOS(버전 또는 인앱)가 `gesturestart` 차단을 무시해 핀치가 된다 | C1 | `document`에 `touchmove`(`passive: false`) 리스너를 더해 `e.touches.length > 1`이면 `preventDefault()`하고, 보케 구간 스크롤이 60fps를 지키는지 실기기에서 다시 잰다(8장) |
+| iOS 16 이상의 피사체 들어올리기·라이브 텍스트가 사진 길게 누르기로 동작한다 | C3 | 위 투명 덮개 대안과 같다 |
+| Android OS 기능(Circle to Search, 스마트 셀렉트)과 스크린샷 | — | 웹이 막을 수 없다(4-10-1) |
+| 하객이 Chrome·Samsung Internet 강제 확대 설정을 켜 두었다 | — | 확대된다. 의도한 동작이다(4-10-3 "막지 않는 것") |

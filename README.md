@@ -11,7 +11,7 @@
 - 모바일 우선 단일 페이지 청첩장 (`index.html` + `style.css` + `script.js`)
 - 워터컬러 보태니컬 이미지 9장 (gpt-image-2로 생성)
 - Canvas 꽃잎 파티클 · 그라디언트 메시 배경
-- D-day 카운트업 · 갤러리 스와이프 · 핀치 줌 lightbox · 음악 토글 · 계좌 복사 · 햅틱
+- D-day 카운트업 · 갤러리 스와이프 · 전체 화면 lightbox(확대 없음) · 사진 저장 메뉴 차단 · 음악 토글 · 계좌 복사 · 햅틱
 - `prefers-reduced-motion` 글로벌 분기 + 정적 SVG 폴백
 - 외부 프레임워크 없는 vanilla JS — 어떤 정적 호스팅에서도 동작
 

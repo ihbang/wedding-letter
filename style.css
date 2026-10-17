@@ -38,7 +38,7 @@
   /* Easing (motion spec 6) */
   --ease-out:      cubic-bezier(0.33, 1, 0.68, 1);    /* reveal, photo fade, toast in, carousel image fade */
   --ease-in:       cubic-bezier(0.32, 0, 0.67, 0);    /* lightbox close, toast out */
-  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);      /* press, slide snap (carousel + lightbox), zoom, label swap */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);      /* press, slide snap (carousel + lightbox), label swap */
   --ease-in-out:   cubic-bezier(0.37, 0, 0.63, 1);    /* breathing loops: bulbs, BGM ring, scroll cue */
   --ease-draw:     cubic-bezier(0.65, 0, 0.35, 1);    /* sprig stroke-draw, pen-like accel/decel */
 
@@ -89,6 +89,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  touch-action: manipulation;    /* no double-tap zoom (iOS); pinch is blocked by the viewport meta and gesture events */
 }
 
 body {
@@ -106,6 +107,13 @@ body {
 h1, h2, h3, p, ul, ol, dl, dd { margin: 0; padding: 0; }
 ul { list-style: none; }
 img, svg, canvas { display: block; }
+/* Photo protection (spec 4-10-2): every <img>, including the lightbox images created at runtime. */
+img {
+  -webkit-touch-callout: none;   /* iOS long-press sheet: save, share, copy */
+  -webkit-user-drag: none;       /* drag-out to the desktop or another tab */
+  -webkit-user-select: none;
+  user-select: none;             /* the image only; text stays selectable for the copy-failed fallback (4-4) */
+}
 button, input, textarea { font: inherit; color: inherit; }
 a { color: inherit; }
 
@@ -616,7 +624,7 @@ html.lb-open { overflow: hidden; }
   overflow: hidden;
   overflow: clip;                           /* not scrollable, so focus can never scroll it */
   scroll-snap-type: none;
-  touch-action: pan-y pinch-zoom;
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
   cursor: grab;
@@ -1298,18 +1306,12 @@ html:not(.js) .venue__map { display: none; }
 .lb-img {
   flex: none;
   max-width: none;
-  transform-origin: 0 0;
   transition: opacity var(--dur-base) var(--ease-out);
   -webkit-user-drag: none;
 }
 .lb-img.is-empty {
   opacity: 0;
   transition: none;
-}
-.lb-img.is-zooming {
-  transition:
-    transform var(--dur-modal) var(--ease-standard),
-    opacity var(--dur-base) var(--ease-out);
 }
 
 /* ===== Reveal (motion spec 2-0); html.js gate keeps everything visible without JS ===== */
