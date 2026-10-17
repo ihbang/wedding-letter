@@ -17,6 +17,8 @@
 > 8차 QA(방명록 공개 목록, 2026-10-13) 결과는 문서 맨 끝 "8차 QA" 절에 있다: PASS 50 / FAIL 0 / WARNING 2(새로 생긴 W14·W15, 모두 문서). 검증 중 찾은 화면 낭독기 알림 결함 1건은 `script.js`에서 직접 고쳤다. W11·W12·W13은 해소됐고 W7은 그대로다.
 >
 > 10차 QA(사진 보호: 저장 메뉴 차단 + 모든 확대 차단, 2026-10-17) 결과는 문서 맨 끝 "10차 QA" 절에 있다: PASS 58 / FAIL 0 / WARNING 7(문서 W18·W19, 실기기 확인 RD1~RD5). WCAG 1.4.4 위반은 사용자 수용 예외(E1)이고, QA 스킬 6.4의 핀치 줌 항목은 폐기됐다. W7은 그대로다.
+>
+> 11차 QA(갤러리 재배치와 사진 파일 이름 변경, 2026-10-17) 결과는 문서 맨 끝 "11차 QA" 절에 있다: PASS 34 / FAIL 0 / WARNING 1(새로 생긴 W20, 배포 직후 캐시). 문서에 남은 이전 사진 번호 3곳은 직접 고쳤다. W18·W19는 해소됐고 W7과 실기기 확인 RD1~RD5는 그대로다.
 
 ## 요약
 
@@ -1597,3 +1599,129 @@ PC(C7: 트랙패드 핀치, `Ctrl`/`Cmd` + `+`·`-`·`0`, 사진·글자 우클�
 | 작업 트리 결과 | `new-real.out`, `new-zoom.out`, `new-lb2.out`, `new-rapid.out`, `new-misc.out`(reduce·widths·nojs), `new-nomodal.out` |
 | HEAD 비교 | `head-zoom.out`(확대 잡힘), `head-lb2.out`, `head-lb2-rapid.out`(회귀 묶음 같은 결과), `head/`(`git show HEAD:` 사본) |
 | 선택 판별력 확인 | `selprobe.out` |
+
+---
+
+## 11차 QA (갤러리 재배치와 사진 파일 이름 변경) — 2026-10-17
+
+10차 뒤 바뀐 것은 갤러리 사진 순서와 파일 이름이다(worktree `feat+reorder-gallery-photos`, 미커밋, 사진 30개 이름 변경은 stage됨). 사용자 요청 "05 → 03 → 04 → 01 → 나머지(06~15) → 02"를 새 이름 01~15로 옮겼다. 대응(새 ← 이전): 01 ← 05, 02 ← 03, 03 ← 04, 04 ← 01, 05~14 ← 06~15, 15 ← 02. 기준은 `00_user-input.md` 맨 끝 절과 `05` 19장이다.
+
+**이 보고서의 1~10차 절에 나오는 사진 번호(예: 10차 #24·#40의 "02(가로)")는 그때 파일 이름 기준이다.** 지금 파일로 읽으려면 위 대응을 쓴다. 이 절의 번호는 모두 새 파일 이름 기준이다.
+
+### 요약
+
+- 전체 결과: **PASS** (FAIL 0)
+- 11차 판정 35항목: PASS 34 / FAIL 0 / WARNING 1 (W20 배포 직후 캐시)
+- **사진은 내용 그대로 이름만 바뀌었고, 페이지와 문서 4종이 새 이름과 맞는다.** 새 파일 30개의 git blob 해시가 HEAD 대응 파일과 같고, 슬라이드 15개의 파일 번호·alt·크기 속성·가로 클래스가 실제 JPEG와 HEAD의 이전 사진 값에 맞는다. 사진 15장과 alt를 화면으로 하나씩 대조했다
+- **갤러리 동작 회귀 없음.** 1번·15번 끝 처리, 로딩 창, 가로 14·15의 contain, lightbox 번호·카운터·낭독·원본, 닫은 뒤 번호 동기화·포커스, 사진 보호·확대 차단이 모두 PASS다. `style.css`·`script.js`는 바뀌지 않았다
+- **og는 바뀌지 않았다.** og 메타 diff 0줄, `og-garden.jpg` 해시 그대로, 픽셀 비교로 지금의 15.jpg 크롭과 일치
+- **W20(배포 직후 캐시):** GitHub Pages는 사진과 HTML 모두 `cache-control: max-age=600`이다. 배포 직후 최대 약 10분 동안 일부 하객에게 사진과 alt·비율이 엇갈릴 수 있다. 캐시 무효화 코드는 필요 없다고 판단했다(11-4)
+- 직접 수정 3건, 모두 문서(아래 "11차 직접 수정")
+- 검증 방법
+  - 정적: 독립 스크립트 `qa-reorder/hashes.sh`(git blob 해시를 실시간으로 비교), `qa-reorder/static_check.py`(`html.parser`로 슬라이드를 읽고 JPEG SOF에서 실제 크기를 읽어 HEAD 사본과 대조). 문서는 grep으로 사진 번호 언급을 전부 뽑아 대응표로 하나씩 확인
+  - 브라우저: Playwright 1.63 headless Chromium 1243, 390 x 664, `isMobile`, `hasTouch`, DPR 2, 외부 요청 차단. 독립 시험 `qa-reorder/qa-gallery.cjs` 25개(:8873), HEAD 사본 비교 `hero-probe.cjs`(:8874), 사진·alt 대조표 `contact.cjs`
+  - frontend 시험(`verify_hashes.py`, `verify_slides.py`, `verify_manifest.py`, `gallery-check.cjs`)을 내용을 읽은 뒤 그대로 돌렸다. 모두 의미 있는 검사다. 다만 `verify_hashes.py`는 11:04에 저장한 트리 목록을 읽으므로 그 뒤 변경을 잡지 못해, 같은 내용을 `hashes.sh`로 실시간 확인했다
+  - 배포 사이트: `curl -sI`로 사진·HTML·og 이미지 응답 헤더
+  - 끝난 뒤 정적 서버(8817·8873·8874)와 headless 브라우저가 남지 않았음을 확인했다
+
+### 11-1. 파일과 HTML (정적)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 1 | 이름 변경 30개 | 새 원본·썸네일 각 15개 모두 작업 트리 blob = stage blob = HEAD의 이전 파일 blob. 원본 15개, 썸네일 15개가 각각 서로 다른 blob | PASS |
+| 2 | 바뀌면 안 되는 파일 | `hero.jpg`, `thumb/hero.jpg`, `og-garden.jpg` 해시 그대로. `images/` 아래 다른 변경 0, 파일 목록(01~15, hero, thumb) 그대로 | PASS |
+| 3 | 슬라이드 순서와 파일 번호 | `index.html:212-226`, n번째 슬라이드의 `data-full`·`src`·`srcset` 두 항목이 모두 `n.jpg` | PASS |
+| 4 | alt·버튼 이름 | 새 n번 alt = HEAD에서 이전 파일의 alt(15장 모두). `aria-label` = "사진 n / 15 크게 보기: {alt}". alt 15개의 집합이 HEAD와 같다(빠지거나 새로 생긴 문장 없음) | PASS |
+| 5 | 크기 속성 | `data-w`·`data-h`·img `width`·`height` = 실제 원본 크기, `srcset`의 w = 실제 썸네일 폭과 원본 폭(13번 `1067w`, 14번 `900w`·`1600w`, 15번 `804w`·`1600w`). HEAD의 이전 사진 값과도 같다. `sizes`·`loading="lazy"`·`draggable="false"` 15장 그대로 | PASS |
+| 6 | 가로 클래스 | `g-slide--landscape`는 실제 가로인 14(1600x1066)·15(1600x1194)에만 | PASS |
+| 7 | 썸네일 = 같은 사진 | `thumb/n.jpg`와 `n.jpg` 축소본의 평균 픽셀 차 1.2~6.1(07·08·09는 전구·잎 디테일로 4.8~6.1). 같은 비율의 다른 사진과는 최소 19.6 | PASS |
+| 8 | 사진 내용 ↔ alt | 대조표(`shots/contact.png`)로 15장 모두 확인. 1 비눗방울·검은 배경, 2 흰 배경 하트 풍선, 3 케이크·비눗방울, 4 안아 올리기, 5 베일, 6 꽃잎, 7 잎·전구 벽, 8 무릎 꿇고 꽃, 9 꽃다발, 10 신부 단독, 11 반지 낀 손, 12 얼굴 맞댐, 13 서랍장·반지, 14 커튼 창가 입맞춤, 15 창가 벤치 | PASS |
+| 9 | 변경 범위 | `index.html` diff는 갤러리 주석 1줄(`:184` "landscape 14/15")과 슬라이드 15줄뿐. `style.css`·`script.js` diff 0. 두 파일에 사진 번호를 쓰는 코드 0건(`grep 'photos/[0-9]'`) | PASS |
+| 10 | og 메타·카카오 공유 | `index.html:11-20` diff 0줄. 카카오 `imageUrl`은 `script.js:1337`이 `og:image`를 읽는다 | PASS |
+| 11 | og 이미지 소스 | `og-garden.jpg` 1200x630. 지금의 15.jpg를 y 64~904로 잘라 줄인 것과 평균 픽셀 차 1.64, 14.jpg 38.39, hero.jpg 41.95. 같은 사진(지금의 15, 이전 02)에서 나왔다 | PASS |
+| 12 | og:image:alt | "분홍 꽃가지 장식 아래 창가 벤치에 …" = 15 사진 내용 | PASS |
+
+### 11-2. 문서 정합성
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 13 | 카피 `gallery_alt` | 15행 모두 파일 n = 슬라이드 n alt, HEAD 표의 이전 번호 행과 같다. "desc와 다르게 쓴 곳"의 번호 15·02·12·08이 각각 벚꽃→분홍 꽃가지, 풍선 두 개, 얼굴 맞댐, 잔디 생략 사진과 맞다 | PASS |
+| 14 | 컨셉 시트 | `photos.gallery.order` 15항목: pos = file, desc·orientation = 이전 파일 항목, 가로 표기 = 실제 크기. 본문 번호(전신 05·06·08·10, 가로 14·15, 전구 벽 07·08·09, 컨페티 06, 비눗방울 01·03, 케이크 03, 벚꽃 15, og 소스 15)가 대응표와 맞다 | PASS |
+| 15 | 이미지 매니페스트 | 사진 표 15행의 크기·바이트가 디스크와 같고 쓰임 "갤러리 n", 가로 2행은 "contain". og 소스 `15.jpg` 1600 x 1194. 합계(원본 16장 3,899,539 B, 썸네일 15장 1,481,710 B), 1px 차이 13.jpg, 200KB 넘는 썸네일 07·08·09를 다시 계산해 같다 | PASS |
+| 16 | 모션 명세 | 0, 4-1, 4-1-1, 4-1-4, 4-1-7, 4-1-8, 7, 10, 12-2 B11과 맨 위 변경 기록. 4-1-1 표("가로 15 / 14")의 50/44%, 60/53%, 86/100px, 매트 129/143px를 다시 계산해 같고, 실측 매트도 129/143px(#24). 4-1-7 첫 화면 예산 0.52MB = 01+02+03 원본 518,686 B. 4-1-12 QA 확인값·4-2는 위치 번호라 바꿀 것이 없다 | PASS |
+| 17 | `05` 19장 | 대응표, 바꾼 범위, 확인 결과가 diff와 시험 재실행 결과와 같다 | PASS |
+| 18 | `05`의 현재 상태 서술 | 3장 Must 4-1 행에 "가로 02·15 contain", 4장 갤러리 순서 행에 "가로 사진은 2번(02)과 15번(15)"이 남아 있었다. 3장은 지금 구현을 적는 표라 부분 재실행 때 오해할 수 있다. 직접 고쳤다 | PASS (직접 수정 후) |
+| 19 | `00_user-input.md` 안내 범위 | 새 절의 안내가 "사진" 절 표만 가리켰다. 같은 문서 "컨셉" 절의 "꽃·전구 벽 사진(hero, 02, 08, 09, 10)"(지금 번호 15, 07, 08, 09)과 "갤러리 방식 변경" 절의 순서·가로 사진 번호도 이전 번호다. 직접 고쳤다 | PASS (직접 수정 후) |
+| 20 | 과거 확인 기록 | `05` 7·10·13·18장, 이 보고서 1~10차는 날짜가 붙은 기록이다. `05` 19장과 이 절 머리말이 번호 기준을 밝혀 혼동 없이 읽힌다 | PASS |
+
+### 11-3. 갤러리 동작 (브라우저, 390 x 664, DPR 2)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 21 | 로딩 창 | 갤러리 근처에서 1번일 때 `loading="eager"`가 1·2·3번, 요청은 01·02·03 원본. 14번으로 옮긴 뒤 13~15 eager | PASS |
+| 22 | hero 체류 중 요청 | 3초 동안 01·02 원본 2건. HEAD 사본도 1·2번 슬라이드 2건(01, `thumb/02`)이고, 390 x 664 DPR 3과 375 x 548 DPR 2에서도 두 쪽 모두 1·2번 슬라이드 2건이다. Chromium lazy 거리 안에 캐러셀(top 2645px)이 들어와서이고 이번 변경의 회귀가 아니다. 바이트만 287,623 → 352,279 B(DPR 2, 2번이 가로 썸네일에서 세로 원본으로 바뀜) | PASS |
+| 23 | 1번 | 현재 슬라이드 01.jpg, 카운터 "1", 이전 버튼 `aria-disabled="true"`, 프레임 342 x 513 | PASS |
+| 24 | 가로 14·15 contain | 계산 스타일 `object-fit: contain`은 14·15만, 나머지 13장 `cover`. 14는 342 x 228·위아래 매트 143px, 15는 342 x 256·매트 129px, 둘 다 폭을 꽉 채운다. 스크린샷으로 잘림 없음을 확인 | PASS |
+| 25 | 14·15 낭독과 끝 | 14: `thumb/14.jpg`(900w, 명세 4-1-7대로 DPR 2 썸네일), "15장 중 14번째 사진, 커튼 사이로 …". 15: `thumb/15.jpg`(804w), "15장 중 15번째 사진, 분홍 꽃가지 …", 카운터 "15", 다음 `aria-disabled="true"`, 한 번 더 눌러도 15(순환 없음) | PASS |
+| 26 | lightbox 15번 | "15 / 15", 낭독 "15장 중 15번째 사진", `15.jpg` 원본 1600x1194, img `width`·`height` 속성 1600·1194 | PASS |
+| 27 | lightbox 14번과 닫기 | ← 키 → "14 / 15", `14.jpg` 1600x1066, 입맞춤 alt → Esc → 캐러셀 14번, 포커스 "사진 14 / 15 크게 보기: …" 버튼 | PASS |
+| 28 | lightbox 1번과 닫기 | "1 / 15", `01.jpg` 1066x1600 → 다음 버튼 3번 → "4 / 15", `04.jpg`(이전 01, 안아 올리기) → 닫기 버튼 → 캐러셀 4번, 포커스 4번째 슬라이드 버튼, `html.lb-open` 해제 | PASS |
+| 29 | lightbox 목록 | 15장, alt 순서 = 캐러셀 | PASS |
+| 30 | 사진 보호 | 1·14·15번 슬라이드 img와 lightbox 15번 img의 `contextmenu`·`dragstart` `defaultPrevented` true, 글자(`.venue__name`) `contextmenu` false, 슬라이드 img 15장 `draggable="false"` | PASS |
+| 31 | 확대 차단 | viewport meta `maximum-scale=1, user-scalable=no` 그대로, `html` `touch-action: manipulation`, `ctrl + wheel`·`gesturestart` 취소 | PASS |
+| 32 | 375px | `scrollWidth` 375 = `clientWidth` | PASS |
+| 33 | 콘솔 | page error 0, 로컬 4xx 0, 외부 요청 차단 3건 말고는 `console.error` 0 | PASS |
+| 34 | frontend 시험 재실행 | `verify_slides.py` 0, `verify_manifest.py` 0, `verify_hashes.py` 0(저장된 목록 기준, #1이 실시간 확인), `gallery-check.cjs` 17/17. 시험에 쓴 `head-index.html`·`head-concept.md`·`head-copy.md`가 HEAD 사본과 바이트 단위로 같음을 먼저 확인 | PASS |
+
+### 11-4. 배포 후 캐시 (W20)
+
+2026-10-17 11:25 GMT `curl -sI` 결과:
+
+| URL | 주요 헤더 |
+|---|---|
+| `images/photos/01.jpg` | `cache-control: max-age=600`, `expires` +10분, `etag: "6ad33da9-2a109"`(마지막 수정 시각-크기), `last-modified: Sat, 17 Oct 2026 09:19:37 GMT`, `via: 1.1 varnish`(Fastly), `x-cache: MISS`, `content-length: 172297` |
+| `index.html` | `cache-control: max-age=600`, 같은 `last-modified` |
+| `images/og-garden.jpg` | `cache-control: max-age=600` |
+
+- 배포된 01.jpg는 172,297 B, 즉 지금의 04(이전 01)다. 이 변경은 아직 배포되지 않았다.
+- `max-age=600`이 HTML과 사진 모두에 붙는다. `immutable`이나 긴 캐시가 없고 service worker도 없다. 배포하면 모든 파일의 `last-modified`가 바뀌어 ETag가 달라지므로, 10분이 지나 재검증하면 새 파일을 받는다.
+- **어긋나는 경우:** 배포 전 10분 안에 갤러리를 본 하객이 배포 직후 다시 열면, 새 `index.html`(문서는 새로 고칠 때 재검증된다)과 브라우저 캐시의 예전 사진이 섞인다. 배포 전에 연 탭을 그대로 둔 하객은 반대로 예전 HTML과 새로 받는 사진이 섞인다. Fastly 엣지가 배포 뒤에도 예전 사진을 들고 있는지는 확인하지 못했다. 들고 있다면 최악은 약 20분이다.
+- **증상:** 사진이 다른 번호에 나오고 alt·낭독 문구가 사진과 다르다. 가로·세로가 바뀐 자리(2·14·15번)에서는 캐러셀이 가로 사진을 cover로 자르거나 세로 사진을 작게 보인다. lightbox는 `data-w`·`data-h`로 상자를 잡고 `.lb-img`에 `object-fit`이 없어서(`style.css:1306-1311`, `script.js:917-918`) 그 자리의 사진이 일그러져 보일 수 있다. 새로 고치거나 10분이 지나면 저절로 풀린다. 카카오톡 공유 미리보기(`og-garden.jpg`)는 바뀌지 않아 영향이 없다.
+- **판단: 캐시 무효화 코드는 필요 없다.** 창이 최대 약 10분이고, 그 사이 갤러리를 다시 본 하객에게만 생긴다. 하객이 적은 시간에 배포하고, 배포 10분 뒤 실제 폰(카카오톡 인앱 브라우저 포함)에서 1·2·14·15번과 lightbox를 한 번 확인하는 것으로 충분하다. 위험을 0으로 하려면 사진 URL 60개(슬라이드마다 `src`, `srcset` 두 항목, `data-full`)에 `?v=20261017`을 붙이는 방법이 있지만, 사진을 바꿀 때마다 값을 올려야 해서 권하지 않는다. 카카오톡 인앱 브라우저가 `max-age`를 그대로 따르는지는 확인하지 못했다.
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 35 | 배포 직후 캐시 | 위 내용 | WARNING (W20) |
+
+### 11차 직접 수정
+
+모두 문서이고 코드는 바꾸지 않았다.
+
+- `_workspace/05_frontend-developer_summary.md:71`(3장 Must 4-1 행): "가로 02·15 contain" → "가로 14·15 contain, 2026-10-17 재배치 뒤 번호, 19장"
+- `_workspace/05_frontend-developer_summary.md:126`(4장 갤러리 순서 행): 끝에 "(2026-10-17 재배치와 파일 이름 변경 뒤에도 파일 번호 순서이고, 가로 사진은 14번(14)과 15번(15)이다. 19장)"를 덧붙였다. 같은 파일 `:12`(머리 갱신 줄)와 `:903`(19장 바꾼 범위)에 이 두 행을 고친 사실과 7장도 과거 기록이라는 점을 적었다
+- `_workspace/00_user-input.md:235`: 안내 범위를 "'사진' 절 표"에서 "'컨셉' 절의 'hero, 02, 08, 09, 10', '사진' 절 표, '갤러리 방식 변경' 절의 순서와 가로 사진 번호"로 넓혔다
+
+### 기존 WARNING 현황
+
+- W18·W19: **해소.** HEAD(`3b63bfc`)에 이미 반영돼 있다. 컨셉 시트 `:117` lightbox "확대 없음(2026-10-17 사진 보호, …)", `:357` "(원본 비율, 확대 없음)", 명세 12-2 B8 `gestureSourceType: 'default'`, B9 "판별력이 없다. 실제 확인은 C2". 10차 뒤 이 보고서에 기록이 없어 여기서 닫는다
+- W7: 그대로(`script.js:852-863`, `GAL.WHEEL_LOCK` `:23`, 코드 변경 없음)
+- RD1~RD5(실기기 확인): 그대로. 이번 변경과 관계없다
+
+### 11차에서 나온 이슈와 수정 제안
+
+- [ ] **W20 (배포, 오케스트레이터·사용자) 배포 직후 최대 약 10분 동안 사진과 alt·비율이 엇갈릴 수 있다** → 코드는 바꾸지 않는다. 하객이 적은 시간에 배포하고, 배포 10분 뒤 실제 폰에서 1·2·14·15번 슬라이드와 lightbox가 새 순서로 보이는지 확인한다. 위험을 0으로 해야 하면 그때 사진 URL에 `?v=` 쿼리를 붙이는 안을 frontend에 맡긴다(11-4)
+
+### 참고 (판정 대상 아님)
+
+- 모션 명세 4-1-1 표 머리 "가로 15 / 14"는 값 순서(1194 높이 → 1066 높이)에 맞춘 것이라 15가 먼저 온다. 값과 번호는 맞다
+- worktree 루트의 추적되지 않은 파일(`.bashrc`, `.gitconfig`, `.mcp.json`, `.claude/settings.json` 등)이 10차 때처럼 남아 있다. 커밋할 때 넣지 않도록 주의한다. 내용은 열어 보지 않았다
+
+### 원자료 (scratchpad, 저장소에 넣지 않음)
+
+`/data/inhyeok/tmp/claude-1725399451/-home-inhyeok-bang-a2sys-ai-Workspace-private-wedding-letter/a7d91fc2-72e4-4b46-90ca-ac6ef3f0bcbd/scratchpad/qa-reorder/` 아래.
+
+| 대상 | 파일 |
+|---|---|
+| 정적 확인 | `hashes.sh`, `static_check.py`, `head-index.html`·`head-concept.md`·`head-copy.md`·`head-manifest.md`·`head-motion.md`(HEAD 사본) |
+| 브라우저 확인 | `qa-gallery.cjs`·`run-qa.sh`(:8873), `hero-probe.cjs`·`run-probe.sh`(작업 트리 :8873, HEAD 사본 `head-site/` :8874), `contact.cjs`·`run-contact.sh` |
+| 스크린샷 | `shots/qa-slide01.png`, `shots/qa-slide14.png`, `shots/qa-slide15.png`, `shots/qa-lb14.png`, `shots/qa-lb15.png`, `shots/contact.png` |

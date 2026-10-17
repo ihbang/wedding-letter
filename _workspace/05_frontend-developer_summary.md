@@ -9,6 +9,7 @@
 - 갱신: 2026-10-13, 보케를 B안 "작은 전구 불빛"으로 바꿨다(15장). 3장 표의 보케 행, 4장의 보케 행, 7장의 보케·reduced-motion 행을 고쳤다.
 - 갱신: 2026-10-13, 방명록을 Formspree 전송 폼에서 Apps Script 웹 앱에 저장하고 페이지에 공개 목록을 보여 주는 방명록으로 바꿨다(16장). 1장 외부 리소스, 2장 guestbook 행, 3장 4-8 행, 6장 방명록 행, 8장 배포 가이드 1·5번을 고쳤다.
 - 갱신: 2026-10-17, 사진 보호(사진 저장 메뉴 차단 + 페이지·lightbox의 모든 확대 제거)를 반영했다(18장). 2장 lightbox 행, 3장 4-1·4-2 행과 4-10 행(신설), Nice-to-have의 키·휠 줌 행, 4장의 줌 관련 행과 `showModal` 폴백 행, 7장 라이트박스 행 주석, 8장 배포 가이드 5번을 고쳤다.
+- 갱신: 2026-10-17, 갤러리 사진을 이전 파일 번호 05 03 04 01 06~15 02 순서로 재배치하고 파일 이름을 새 순서대로 바꿨다(19장). 2장 표 아래 갤러리 문단, 3장 Must 4-1 행, 4장 갤러리 순서 행을 고쳤다.
 - 입력: `00_user-input.md`, `01_concept-director_concept-sheet.md`, `02_copy-writer_copy.md`, `03_image-artist_manifest.md`, `04_motion-designer_motion-spec.md`
 - 산출물: `index.html`(454줄), `style.css`(1,099줄), `script.js`(1,442줄). 줄 수와 3장의 `파일:줄`은 캐러셀 반영 후 기준이다. 어제의 "Warm Paper & Ink" 파일을 전부 새로 썼다.
 - 이전 컨셉 자산(`jo--*`, `op1789048062-*`, `divider-hairline.svg`, `og-thumbnail.jpg`, `monogram-iy.svg`, `floral-*`, `gallery-placeholder-*`, `hero-illustration.png`)은 세 파일 어디에서도 참조하지 않는다(grep 0건). 파일 자체는 지우지 않았다.
@@ -43,7 +44,7 @@
 | - | lightbox (`dialog#lightbox`) | scrim #1C1514 / 0.96 | - | 스와이프·끌어 닫기·사진 밖 탭 닫기. 사진은 화면에 맞춘 크기로만 보이고 확대되지 않는다(2026-10-17, 18장). 캐러셀 현재 장과 같은 번호로 열리고, 닫으면 캐러셀이 마지막으로 본 번호로 맞춰진다 |
 | - | BGM 토글 (`.bgm-toggle`, fixed) | 반투명 면 | hero 시퀀스 t=0 | glow 링 |
 
-RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(2026-10-12)으로 파일 번호 순서 01~15다(그 전에는 01 02 08 / 03 09 12 / 07 13 05 / 11 06 14 / 10 04 15). 카피 시트 `gallery_alt` 표도 같은 순서이고, 컨셉 시트 `photos.gallery.order`보다 이 순서가 우선한다(`00_user-input.md`). alt는 파일별 문장 그대로이고 버튼 이름의 번호("사진 n / 15 크게 보기")가 곧 파일 번호다. hero.jpg는 갤러리에 없다. 프레임은 모두 2:3이다. 세로 13장은 `object-fit: cover`, 가로 2장(2번 02, 15번 15)은 `contain`이며 surface 매트 위에 올라간다. 그리드에서 쓰던 02·15의 `object-position`은 지웠다.
+RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(2026-10-12)으로 파일 번호 순서 01~15다(그 전에는 01 02 08 / 03 09 12 / 07 13 05 / 11 06 14 / 10 04 15). 2026-10-17 사용자 요청으로 이전 파일 번호 05 03 04 01 06~15 02 순서로 재배치하고 파일 이름을 새 순서대로 바꿨으므로 지금도 파일 번호 순서다(19장). 카피 시트 `gallery_alt` 표도 같은 순서이고, 컨셉 시트 `photos.gallery.order`보다 이 순서가 우선한다(`00_user-input.md`). alt는 파일별 문장 그대로이고 버튼 이름의 번호("사진 n / 15 크게 보기")가 곧 파일 번호다. hero.jpg는 갤러리에 없다. 프레임은 모두 2:3이다. 세로 13장은 `object-fit: cover`, 가로 2장(14번 14, 15번 15)은 `contain`이며 surface 매트 위에 올라간다. 그리드에서 쓰던 가로 사진의 `object-position`은 지웠다.
 
 ## 3. 모션 명세 매핑
 
@@ -67,7 +68,7 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 2-5 gallery reveal 2그룹(헤더 / 캐러셀 전체), 슬라이드 개별 등장 없음 | 구현. reveal은 `.g-carousel`, 슬라이드 이동은 안쪽 `.g-track`이라 서로 덮어쓰지 않는다 | index.html:203, 208 |
 | 3-1 sprig-divider stroke-draw 3곳(인라인 SVG, `sp-*` 클래스, IO threshold 0.5) | 구현 | index.html 각 `svg.sprig`, style.css:1027-1038, script.js:547 |
 | 3-2 전구 호흡(주기 표 그대로) + 화면 밖·라이트박스 일시정지 | 구현 | style.css:493-499, 1040-1048, script.js:565 |
-| 4-1 갤러리 캐러셀: 2:3 프레임(세로 cover, 가로 02·15 contain + surface 매트), peek 16px, transform 트랙(`--g-i`·`--g-dx`), 스와이프(8px 축 판정, 50px 또는 0.3px/ms, 양 끝 정지·저항 0.3, 350ms), `touch-action: pan-y`(2026-10-17 `pinch-zoom` 제거, 18장), 가로로 판정된 뒤에만 포인터 캡처, 이전/다음 버튼 `aria-disabled` + "n / 15" 카운터, ←/→(포커스가 캐러셀 안일 때만), click 억제, `role="group"`·`aria-roledescription`·비현재 14장 `inert`+`aria-hidden`·`.g-status` 낭독·←/→ 시 포커스 이동, lightbox 같은 번호로 열기·닫으면 동기화·포커스 복귀, `srcset`/`sizes` + 로딩 창(index −1 ~ +2를 `eager`로, IO `rootMargin: 100% 0px`), JS 꺼짐 scroll-snap 폴백, `inert` 미지원 브라우저는 `tabindex="-1"` | 구현. 명세 4-1-11 CSS·4-1-12 JS를 옮겼고 차이는 4장 | index.html:208-238, style.css:559-669, script.js:22-23, 607-769 |
+| 4-1 갤러리 캐러셀: 2:3 프레임(세로 cover, 가로 14·15 contain + surface 매트, 2026-10-17 재배치 뒤 번호, 19장), peek 16px, transform 트랙(`--g-i`·`--g-dx`), 스와이프(8px 축 판정, 50px 또는 0.3px/ms, 양 끝 정지·저항 0.3, 350ms), `touch-action: pan-y`(2026-10-17 `pinch-zoom` 제거, 18장), 가로로 판정된 뒤에만 포인터 캡처, 이전/다음 버튼 `aria-disabled` + "n / 15" 카운터, ←/→(포커스가 캐러셀 안일 때만), click 억제, `role="group"`·`aria-roledescription`·비현재 14장 `inert`+`aria-hidden`·`.g-status` 낭독·←/→ 시 포커스 이동, lightbox 같은 번호로 열기·닫으면 동기화·포커스 복귀, `srcset`/`sizes` + 로딩 창(index −1 ~ +2를 `eager`로, IO `rootMargin: 100% 0px`), JS 꺼짐 scroll-snap 폴백, `inert` 미지원 브라우저는 `tabindex="-1"` | 구현. 명세 4-1-11 CSS·4-1-12 JS를 옮겼고 차이는 4장 | index.html:208-238, style.css:559-669, script.js:22-23, 607-769 |
 | 4-2 lightbox: `showModal` 포커스 트랩, 스와이프(판정은 캐러셀과 같은 `swipeTarget`), 확대 없음(2026-10-17, 18장: 핀치·더블탭·`ctrl + wheel`·`+`/`=`/`-`/`0` 키 확대와 팬 삭제, 두 번째 손가락이 닿으면 진행 중인 스와이프·끌어 닫기를 되돌리고 손을 다 뗄 때까지 입력 무시, 사진 밖 탭은 바로 닫기·사진 위 탭은 동작 없음), ←/→/Esc, 스크롤 잠금, 슬라이드 목록을 캐러셀 `.g-open`의 `data-full`·`data-w`·`data-h`·img alt로 생성, 현재 장은 캐러셀 img `currentSrc`로 시작해 원본으로 교체(절대 URL 비교, 캐러셀이 아직 못 받았으면 처음부터 원본), ±1 원본, 닫기 시작과 `close` 두 곳에서 캐러셀을 lightbox 번호로 맞춤(애니메이션·낭독 없음), 그 뒤 캐러셀 현재 슬라이드 버튼으로 포커스, 보케 정지 | 구현 | script.js:17-21(`LB`), 719-726(`swipeTarget`), 893-1151 (2026-10-17 기준) |
 | 4-10 사진 보호 (2026-10-17, 18장): 모든 img의 저장 메뉴·끌기·선택 차단(CSS `img` 규칙 + `document` 위임 `contextmenu`·`dragstart`, 판정 `closest('img, .g-open')`), 글자 선택 유지, viewport meta `maximum-scale=1, user-scalable=no`, `html { touch-action: manipulation }`, WebKit `gesturestart`·`gesturechange` 차단, `window`의 `ctrl + wheel` 차단, 캐러셀 `touch-action: pan-y` | 구현. 4-10-2·4-10-3 참고 코드를 그대로 옮겼다 | index.html:6; style.css:89-93, 110-116, 627; script.js:115-135(`initZoomGuard`, `initPhotoGuard`), 1938-1939 |
 | 4-3 BGM: 자동재생 없음, `preload="none"`, 꺼짐(사선 음표)/켜짐 아이콘, `aria-pressed`, `aria-busy`, 탭 숨김 일시정지·복귀, 재생 실패 복구 | 구현 | index.html:39-60, script.js:1166 |
@@ -122,7 +123,7 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | SVG 인라인 수정 | 9장 자산 협의 | sprig에 `sp-flower`/`sp-stem`/`sp-leaf--1~3`/`sp-dot--center`/`sp-dot--end` 클래스, string-lights 전구에 `data-i="0"~"6"`, 후광 `opacity="0.25"` → `fill-opacity="0.25"` | 원본 SVG 파일은 그대로 두고 인라인 사본에서 반영 |
 | hero 아래 여백 | 예산에 없음 | `padding-bottom: 24px` | 스크롤 큐가 화면 끝에 붙지 않게. 390x844, 375x667, 375x548 모두 첫 화면 안에 들어가는 것을 측정으로 확인 |
 | 캘린더 일요일 | 머리글 accent | 머리글만 accent, 날짜 숫자는 text | 컨셉 시트 지정 범위 그대로 |
-| 갤러리 순서 (2026-10-11, 2026-10-12) | 4-1: 02 01 08 …, "순서상 첫 장이 가로(02)", QA 확인값 "02, 01, 08만 요청" | 2026-10-11에 01 02 08 03 09 12 07 13 05 11 06 14 10 04 15로, 2026-10-12에 파일 번호 순서 01~15로 바꿨다. 첫 장은 세로 01, 가로 사진은 2번(02)과 15번(15). 첫 요청은 01, 02, 03 세 장이다 | 사용자 요청(오케스트레이터 전달, `00_user-input.md`). 첫 화면이 위아래 매트가 큰 가로 사진으로 시작하지 않게, 그다음 파일 번호와 같게 |
+| 갤러리 순서 (2026-10-11, 2026-10-12) | 4-1: 02 01 08 …, "순서상 첫 장이 가로(02)", QA 확인값 "02, 01, 08만 요청" | 2026-10-11에 01 02 08 03 09 12 07 13 05 11 06 14 10 04 15로, 2026-10-12에 파일 번호 순서 01~15로 바꿨다. 첫 장은 세로 01, 가로 사진은 2번(02)과 15번(15). 첫 요청은 01, 02, 03 세 장이다. (2026-10-17 재배치와 파일 이름 변경 뒤에도 파일 번호 순서이고, 가로 사진은 14번(14)과 15번(15)이다. 19장) | 사용자 요청(오케스트레이터 전달, `00_user-input.md`). 첫 화면이 위아래 매트가 큰 가로 사진으로 시작하지 않게, 그다음 파일 번호와 같게 |
 | 캐러셀 click 억제 해제 | 플래그는 다음 pointerdown에서 초기화 | 같고, 키보드로 일어난 click(`e.detail === 0`)은 플래그와 상관없이 막지 않는다 | 터치 스와이프 뒤에는 click이 오지 않아 플래그가 남는다(70px 터치 스와이프에서 click 0건 실측). 그대로면 스와이프 다음의 Enter·Space 한 번이 사라져 lightbox가 열리지 않는다 |
 | 이전/다음 버튼 CSS | 4-1-11 참고 CSS | 참고 CSS에 더해 `border-radius: 50%`(포커스 링이 보이는 원을 따라감), `cursor: pointer`, 탭 하이라이트 끔, 5장 누름 규칙(`:active` scale 0.97, 120ms), `svg { position: relative }`. chevron 색은 BGM 아이콘처럼 SVG `stroke="#8E5558"` 속성 | 포커스 링이 44px 사각형으로 그려지지 않게, 그리고 hover 때 `::before` 원 면이 chevron 위에 칠해지지 않게 |
 | reduce의 누름 피드백 | 모든 버튼 `opacity: 0.85` | 이전/다음 버튼은 `:not([aria-disabled="true"]):active`에만 적용 | 끝에서 비활성(0.3)인 버튼을 누르면 0.85로 밝아지는 것을 막는다 |
@@ -884,3 +885,33 @@ wreath.svg 위쪽에 여백이 있어 sprig와 화환 잎 사이는 24보다 넓
 - `photo-guard-check.js`: 위 표의 29개 검사. `--baseline`이면 B8a·B9·B8b만 돈다
 - `pinch-probe.js`: 입력 방식별로 `HEAD`와 작업 트리의 확대 여부를 비교
 - `run-check.sh`, `run-probe.sh`: 작업 트리(:8743)와 `HEAD` 사본(:8744)을 서빙하고 끝나면 서버를 내린다
+
+## 19. 갤러리 재배치와 사진 파일 이름 변경 (2026-10-17)
+
+사용자 요청: "사진 순서를 05 → 03 → 04 → 01 → 나머지 → 02 순서로 재배치하고, 사진 이름도 재배치된 순서에 맞게 변경해 달라." 나머지는 06~15를 기존 순서대로 둔 것이다. 갤러리의 n번째 사진은 지금도 `images/photos/n.jpg`다.
+
+| 새 | 01 | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 | 12 | 13 | 14 | 15 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 이전 | 05 | 03 | 04 | 01 | 06 | 07 | 08 | 09 | 10 | 11 | 12 | 13 | 14 | 15 | 02 |
+
+### 바꾼 범위
+
+| 파일 | 바꾼 것 |
+|---|---|
+| `images/photos/NN.jpg`, `images/photos/thumb/NN.jpg` | 각 15개를 위 표대로 `git mv`(임시 이름을 거쳐서). 파일 내용은 그대로다. `hero.jpg`, `thumb/hero.jpg`, `images/og-garden.jpg`는 그대로 |
+| index.html | 갤러리 슬라이드 15줄을 새 순서로 옮기고 `data-full`·`src`·`srcset`의 파일 번호와 버튼 이름 "사진 n / 15"를 새 위치로 다시 매겼다. alt, `data-w`·`data-h`, img `width`·`height`, 썸네일 `w` 값, `g-slide--landscape`는 사진을 따라 옮겼다. 가로 사진은 14번(1600x1066)과 15번(1600x1194), 1067px 세로 사진은 13번이다. 갤러리 주석의 "landscape 02/15" → "14/15" |
+| 문서 | 컨셉 시트 `photos.gallery.order`와 사진 번호 언급, 카피 시트 `gallery_alt` 표, 이미지 매니페스트(og 소스 15.jpg, 사진 자산 표, 1px 차이 13.jpg, 200KB 넘는 썸네일 07·08·09), 모션 명세(0, 4-1, 4-1-1, 4-1-4, 4-1-7, 4-1-8, 7, 10, 12-2와 맨 위 변경 기록). 이 문서는 2장 표 아래 갤러리 문단을 고쳤다. 3장 Must 4-1 행의 가로 사진 번호(02·15 → 14·15)와 4장 갤러리 순서 행의 덧붙임은 QA가 고쳤다(06 보고서 11차). 7장·10장·13장·18장의 확인 기록에 남은 사진 번호는 그때 파일 이름 기준이라 그대로 둔다 |
+
+style.css와 script.js는 바꾸지 않았다. 가로 사진 처리는 `.g-slide--landscape` 클래스로, 로딩 창과 lightbox 목록은 DOM 순서로 정해져서 특정 사진 번호를 쓰는 코드가 없다.
+
+### 확인
+
+- 파일 해시: 새 파일 30개(원본·썸네일 각 15) 모두 `HEAD`의 대응 파일과 git blob 해시가 같다. `hero.jpg` 2개도 그대로다.
+- 정적 대조: 15개 슬라이드가 1~15 순서이고, 각 슬라이드의 파일 번호, `data-w`·`data-h`·`width`·`height`(실제 JPEG 크기), 썸네일 `w`(실제 썸네일 폭), 가로 클래스(가로 비율일 때만), alt와 버튼 이름이 해시로 대응한 이전 사진의 값과 같다. 카피 시트 표와 컨셉 시트 order(desc, orientation)도 같은 기준으로 대조했다. 불일치 0건.
+- 브라우저(Playwright 1.63 headless Chromium 1243, 390 x 664, `isMobile`, `hasTouch`, DPR 2, 로컬 서버 :8817, 외부 요청 차단): 17개 검사 모두 통과. 캐러셀 1번 = `01.jpg`(검은 배경 비눗방울, 하트 풍선), 15번 = 가로 `15.jpg`(창가 벤치)이고 다음 버튼 `aria-disabled="true"`. 낭독 문구 "15장 중 15번째 사진, 분홍 꽃가지 장식 아래…", "15장 중 14번째 사진, 커튼 사이로…". lightbox는 15번에서 "15 / 15"·`15.jpg` 1600x1194, 1번에서 "1 / 15"·`01.jpg` 1066x1600, 슬라이드 15장의 alt 순서가 캐러셀과 같다. 페이지 오류·로컬 4xx 0건, 콘솔 오류는 차단한 외부 요청(Google Fonts, jsDelivr, 카카오맵 SDK) 3건뿐이다.
+
+### 알아 둘 점
+
+- 사진 파일 이름이 바뀌어 같은 URL(`images/photos/01.jpg` 등)이 다른 사진을 가리킨다. 배포 뒤 하객 브라우저나 CDN 캐시에 예전 파일이 남아 있으면 잠시 이전 사진과 새 alt가 엇갈려 보일 수 있다.
+- 매니페스트 사진 자산 표의 가로 사진 "쓰임"은 이미 쓰지 않는 `object-position` 대신 "contain"으로 적었다.
+- 모션 명세 4-1-7의 첫 화면 예산은 2026-10-11 순서(02 01 08) 기준 값이 남아 있어서, 새 01·02·03(모두 세로 원본) 합계 약 0.52MB로 고쳤다.
