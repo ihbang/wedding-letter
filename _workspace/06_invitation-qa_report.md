@@ -19,6 +19,8 @@
 > 10차 QA(사진 보호: 저장 메뉴 차단 + 모든 확대 차단, 2026-10-17) 결과는 문서 맨 끝 "10차 QA" 절에 있다: PASS 58 / FAIL 0 / WARNING 7(문서 W18·W19, 실기기 확인 RD1~RD5). WCAG 1.4.4 위반은 사용자 수용 예외(E1)이고, QA 스킬 6.4의 핀치 줌 항목은 폐기됐다. W7은 그대로다.
 >
 > 11차 QA(갤러리 재배치와 사진 파일 이름 변경, 2026-10-17) 결과는 문서 맨 끝 "11차 QA" 절에 있다: PASS 34 / FAIL 0 / WARNING 1(새로 생긴 W20, 배포 직후 캐시). 문서에 남은 이전 사진 번호 3곳은 직접 고쳤다. W18·W19는 해소됐고 W7과 실기기 확인 RD1~RD5는 그대로다.
+>
+> 12차 QA(지도 버튼을 장소 페이지로 연결, 2026-10-21) 결과는 문서 맨 끝 "12차 QA" 절에 있다: PASS 14 / FAIL 0 / WARNING 3(새로 생긴 실기기 확인 RD6~RD8). `05` 20장의 문장 1곳은 직접 고쳤다. W7, W20, RD1~RD5는 그대로다.
 
 ## 요약
 
@@ -1725,3 +1727,89 @@ PC(C7: 트랙패드 핀치, `Ctrl`/`Cmd` + `+`·`-`·`0`, 사진·글자 우클�
 | 정적 확인 | `hashes.sh`, `static_check.py`, `head-index.html`·`head-concept.md`·`head-copy.md`·`head-manifest.md`·`head-motion.md`(HEAD 사본) |
 | 브라우저 확인 | `qa-gallery.cjs`·`run-qa.sh`(:8873), `hero-probe.cjs`·`run-probe.sh`(작업 트리 :8873, HEAD 사본 `head-site/` :8874), `contact.cjs`·`run-contact.sh` |
 | 스크린샷 | `shots/qa-slide01.png`, `shots/qa-slide14.png`, `shots/qa-slide15.png`, `shots/qa-lb14.png`, `shots/qa-lb15.png`, `shots/contact.png` |
+
+## 12차 QA (지도 버튼을 장소 페이지로 연결) — 2026-10-21
+
+11차 뒤 바뀐 것은 오시는 길의 지도 버튼 두 개의 `href`다(worktree `feat+link-venue-place-pages`, 미커밋). 기준은 `00_user-input.md` 맨 끝 "지도 버튼을 장소 페이지로" 절과 `05` 20장이다. 카카오맵을 `scheme/place` 형식으로 정한 것은 오케스트레이터 결정이라 판정 대상이 아니다.
+
+### 요약
+
+- 전체 결과: **PASS** (FAIL 0)
+- 12차 판정 17항목: PASS 14 / FAIL 0 / WARNING 3 (실기기 확인 RD6~RD8)
+- **바뀐 줄은 `index.html:266-267`의 `href` 두 개뿐이다.** 문구·`aria-label`·`target`·`rel`·클래스는 그대로이고 태그 짝이 맞는다
+- **두 URL의 이동 경로가 `05` 20장과 같다.** iPhone·Android User-Agent 모두 네이버는 `appLink.naver`(장소 ID 1958047921, `appTargetPage=place`), 카카오는 `applink.map.kakao.com/place?id=167068900`에 200으로 도착한다
+- **두 장소 ID 모두 "서울 송파구 송파대로 155"의 더컨벤션 송파문정이다.** 장소 페이지를 직접 받아 이름·주소를 확인했다
+- 직접 수정 1건(문서, 아래 "12차 직접 수정")
+- 검증 방법
+  - 정적: `git diff`, `html.parser` 태그 짝 검사, 세 문서와 `index.html`에서 두 URL grep
+  - 네트워크: `curl -sSL -D -`, User-Agent는 iPhone Safari 18.5와 Android 14 Chrome 141
+  - 브라우저: Playwright headless Chromium, 375 x 667, `isMobile`, `hasTouch`, DPR 2, 외부 요청 차단, 로컬 서버 :8891. 끝난 뒤 서버와 브라우저가 남지 않았음을 확인했다
+
+### 12-1. 변경 범위와 HTML (정적)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 1 | `index.html` 변경 범위 | diff는 `:266`·`:267` 두 줄, 각 줄에서 `href` 값만 다르다 | PASS |
+| 2 | 유지된 속성 | 문구 "네이버 지도"·"카카오맵", `aria-label` "네이버 지도에서 예식장 위치 보기 (새 창)"·"카카오맵에서 예식장 위치 보기 (새 창)", `target="_blank"`, `rel="noopener"`, `class="btn btn--secondary"`가 HEAD와 같다 | PASS |
+| 3 | HTML 구조 | `html.parser` 태그 짝 검사에서 닫히지 않은 태그·어긋난 태그 0. `<a>` 3개로 HEAD와 같다 | PASS |
+| 4 | 다른 파일 | `style.css`·`script.js` diff 0. `script.js`에 `.venue__maps`나 지도 URL을 바꾸는 코드 0건 | PASS |
+
+### 12-2. 이동 경로 (curl, 2026-10-21)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 5 | 네이버 지도 | iPhone·Android 같음: 301 `map.naver.com/?pinId=1958047921&pinType=site&menu=location&appTargetPage=place&appSchemeName=nmap&mode=half&id=1958047921&app=Y&appmarket=N` → 302 `m.map.naver.com/?…` → 302 `/appLink.nhn?…` → 302 `/appLink.naver?…` → 200. `05` 20장 "이동 확인"과 같다 | PASS |
+| 6 | 카카오맵 | iPhone·Android 같음: 302 `applink.map.kakao.com/place?id=167068900` → 200. `05` 20장과 같다 | PASS |
+
+### 12-3. 장소 ID
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 7 | 네이버 `1958047921` | `m.place.naver.com/place/1958047921/home`: og:title "더컨벤션 송파문정 : 네이버", category "예식장", roadAddress "서울 송파구 송파대로 155 NH송파농협, 11~ 13층"(지번 문정동 651-8). `#venue-address` "서울 송파구 송파대로 155"(`index.html:251`)와 같은 곳 | PASS |
+| 8 | 카카오 `167068900` | `place.map.kakao.com/167068900`: title "더컨벤션 송파문정점 \| 카카오맵", og:description "서울 송파구 송파대로 155 송파농협신청사 11-13층". 같은 곳 | PASS |
+
+### 12-4. 문서 정합성
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 9 | URL 일치 | 두 URL이 `index.html`(1회씩), `05` 6장 표 행과 20장 표(2회씩), `00_user-input.md` 끝 절(1회씩)에 글자 그대로 같다. 장소 ID·장소명·주소도 세 곳이 같다 | PASS |
+| 10 | 이전 URL 기록 | `05` 20장 표의 "이전 (검색)" 두 값을 URL 디코딩하면 HEAD `index.html:266-267`의 검색 URL과 같다 | PASS |
+| 11 | `05` 20장 "장소 ID 근거"의 카카오 문장 | "이동이 끝나는 `place.map.kakao.com/167068900`"이라고 적혀 있었다. 지금 URL은 앱 연결 페이지(`applink.map.kakao.com`)에서 끝나고, `place.map.kakao.com`은 쓰지 않은 공개 형식이 도착하는 곳이다. 직접 고쳤다 | PASS (직접 수정 후) |
+
+### 12-5. 브라우저 (375 x 667, DPR 2)
+
+| # | 항목 | 측정 | 결과 |
+|---|------|------|------|
+| 12 | 버튼 `href` | `.venue__maps a` 2개. `getAttribute('href')`와 `a.href`가 모두 위 두 URL, 문구·`aria-label`·`target`·`rel`·클래스도 #2와 같다 | PASS |
+| 13 | 배치 | 버튼 159.5 x 44 두 개, `scrollWidth` = `clientWidth`(가로 넘침 0). 스크린샷으로 확인 | PASS |
+| 14 | 콘솔 | page error 0, 로컬 4xx 0. `console.error` 3건은 차단한 외부 요청(`fonts.googleapis.com`, `cdn.jsdelivr.net`, `dapi.kakao.com`)의 `ERR_FAILED`뿐이다 | PASS |
+
+### 12-6. 실기기 확인 (RD6~RD8)
+
+curl은 `appLink.naver`와 `applink.map.kakao.com`의 앱 스킴 JavaScript를 실행하지 않으므로, 앱이 어느 화면으로 열리는지는 휴대폰에서만 알 수 있다. 확인할 내용은 `05` 20장 "배포 후 휴대폰에서 확인할 것"과 같다.
+
+| # | 항목 | 확인할 것 | 결과 |
+|---|------|-----------|------|
+| 15 | RD6 네이버 지도 앱 | 앱이 있는 휴대폰(iPhone·Android)에서 버튼을 누르면 검색 목록이 아니라 예식장 장소 화면으로 열리는지. 앱이 없으면 예식장 정보가 보이는지 | WARNING |
+| 16 | RD7 카카오맵 앱 | 앱이 있는 휴대폰에서 앱 연결 페이지를 거쳐 예식장 장소 화면으로 열리는지. 앱이 없으면 "설치없이 지도보기"로 예식장 정보가 보이는지. 안 열리면 `05` 20장대로 공개 형식 `https://map.kakao.com/link/map/167068900`으로 되돌린다 | WARNING |
+| 17 | RD8 카카오톡 인앱 브라우저 | 카카오톡 공유로 연 청첩장에서 두 버튼이 RD6·RD7처럼 동작하는지(iOS·Android) | WARNING |
+
+### 12차 직접 수정
+
+- `_workspace/05_frontend-developer_summary.md:937`(20장 "장소 ID 근거"의 카카오 항목): "이동이 끝나는 `place.map.kakao.com/167068900`도" → "장소 웹 페이지 `place.map.kakao.com/167068900`(공개 형식 `link/map/167068900`이 휴대폰에서 도착하는 곳. 지금 URL은 앱 연결 페이지에 도착한다)도"
+
+### 기존 WARNING 현황
+
+- W7, W20, RD1~RD5: 그대로. 이번 변경과 관계없다
+
+### 12차에서 나온 이슈와 수정 제안
+
+- [ ] **RD6~RD8 (배포 후, 사용자) 휴대폰에서 두 지도 버튼이 앱의 예식장 장소 화면으로 열리는지 확인한다** → Safari·Chrome·카카오톡 인앱 브라우저에서 각각 본다. 카카오맵이 안 열리면 `index.html:267`의 `href`를 `https://map.kakao.com/link/map/167068900`으로 바꾼다
+
+### 참고 (판정 대상 아님)
+
+- worktree 루트의 추적되지 않은 파일(`.bashrc`, `.gitconfig`, `.mcp.json` 등)은 sandbox가 만든 문자 장치(`/dev/null` 바인드)다. 커밋할 때 넣지 않도록 주의한다
+
+### 원자료 (scratchpad, 저장소에 넣지 않음)
+
+`/data/inhyeok/tmp/claude-1725399451/-home-inhyeok-bang-a2sys-ai-Workspace-private-wedding-letter/a7d91fc2-72e4-4b46-90ca-ac6ef3f0bcbd/scratchpad/qa-map-links/` 아래 `check.cjs`, `run.sh`(:8891), `venue.png`(스크린샷).

@@ -10,6 +10,7 @@
 - 갱신: 2026-10-13, 방명록을 Formspree 전송 폼에서 Apps Script 웹 앱에 저장하고 페이지에 공개 목록을 보여 주는 방명록으로 바꿨다(16장). 1장 외부 리소스, 2장 guestbook 행, 3장 4-8 행, 6장 방명록 행, 8장 배포 가이드 1·5번을 고쳤다.
 - 갱신: 2026-10-17, 사진 보호(사진 저장 메뉴 차단 + 페이지·lightbox의 모든 확대 제거)를 반영했다(18장). 2장 lightbox 행, 3장 4-1·4-2 행과 4-10 행(신설), Nice-to-have의 키·휠 줌 행, 4장의 줌 관련 행과 `showModal` 폴백 행, 7장 라이트박스 행 주석, 8장 배포 가이드 5번을 고쳤다.
 - 갱신: 2026-10-17, 갤러리 사진을 이전 파일 번호 05 03 04 01 06~15 02 순서로 재배치하고 파일 이름을 새 순서대로 바꿨다(19장). 2장 표 아래 갤러리 문단, 3장 Must 4-1 행, 4장 갤러리 순서 행을 고쳤다.
+- 갱신: 2026-10-21, 오시는 길의 네이버 지도·카카오맵 버튼을 검색 결과 대신 예식장 장소 페이지로 연결했다(20장). 6장 표에 지도 버튼 링크 행을 더했다.
 - 입력: `00_user-input.md`, `01_concept-director_concept-sheet.md`, `02_copy-writer_copy.md`, `03_image-artist_manifest.md`, `04_motion-designer_motion-spec.md`
 - 산출물: `index.html`(454줄), `style.css`(1,099줄), `script.js`(1,442줄). 줄 수와 3장의 `파일:줄`은 캐러셀 반영 후 기준이다. 어제의 "Warm Paper & Ink" 파일을 전부 새로 썼다.
 - 이전 컨셉 자산(`jo--*`, `op1789048062-*`, `divider-hairline.svg`, `og-thumbnail.jpg`, `monogram-iy.svg`, `floral-*`, `gallery-placeholder-*`, `hero-illustration.png`)은 세 파일 어디에서도 참조하지 않는다(grep 0건). 파일 자체는 지우지 않았다.
@@ -159,6 +160,7 @@ placeholder(`[[TODO:...]]`)는 모두 채워졌고(2026-10-11), placeholder를 �
 | 지도 주소 | `#venue-address`의 글자 | "서울 송파구 송파대로 155". 주소 복사 버튼과 지도 주소 검색이 같은 글자를 쓴다. 좌표는 코드에 없다 |
 | 지도 확대 수준·로딩 | script.js 맨 위 `MAP` 상수 | `LEVEL: 4`(CSS 1px당 약 2m), `NEAR_MARGIN: '100% 0px'`(한 화면 앞에서 로드), `TIMEOUT: 10000`(10초 안에 마커까지 못 그리면 숨김) |
 | 지도 접근성 이름 | `#venue-map`의 `aria-label` | "더컨벤션 송파문정 위치 지도" |
+| 지도 버튼 링크 (2026-10-21) | `.venue__maps`의 두 `<a>`의 `href` | 네이버 지도 `https://map.naver.com/p/entry/place/1958047921`(장소 ID 1958047921), 카카오맵 `https://m.map.kakao.com/scheme/place?id=167068900`(장소 ID 167068900, 앱 연결 페이지 경유). 그 전에는 "더컨벤션 송파문정" 검색 URL이었다. 근거는 20장 |
 | 카카오 디벨로퍼스 설정(사용자) | 카카오 디벨로퍼스 앱 | 카카오맵 사용 설정 켜기, [플랫폼 > Web]에 `https://ihbang.github.io` 등록. 로컬에서 지도를 보려면 `http://localhost:8000`도 등록 |
 
 - 링크 복사와 카카오 공유 링크는 `og:url`을 쓴다. 로컬 미리보기에서도 배포 주소가 복사된다.
@@ -915,3 +917,44 @@ style.css와 script.js는 바꾸지 않았다. 가로 사진 처리는 `.g-slide
 - 사진 파일 이름이 바뀌어 같은 URL(`images/photos/01.jpg` 등)이 다른 사진을 가리킨다. 배포 뒤 하객 브라우저나 CDN 캐시에 예전 파일이 남아 있으면 잠시 이전 사진과 새 alt가 엇갈려 보일 수 있다.
 - 매니페스트 사진 자산 표의 가로 사진 "쓰임"은 이미 쓰지 않는 `object-position` 대신 "contain"으로 적었다.
 - 모션 명세 4-1-7의 첫 화면 예산은 2026-10-11 순서(02 01 08) 기준 값이 남아 있어서, 새 01·02·03(모두 세로 원본) 합계 약 0.52MB로 고쳤다.
+
+## 20. 지도 버튼을 장소 페이지로 연결 (2026-10-21)
+
+`00_user-input.md` 맨 아래 "지도 버튼을 장소 페이지로"만 반영했다. 사용자 요청: "지금 네이버지도와 카카오맵 버튼을 누르면 해당 앱에서 '더컨벤션 송파문정'을 검색한 결과로 연결되는데, 예식장의 장소 페이지 자체로 연결되게 해 달라."
+
+### 바꾼 범위
+
+index.html:266-267 두 지도 버튼의 `href`만 바꿨다. 문구, `aria-label`("네이버 지도에서 예식장 위치 보기 (새 창)", "카카오맵에서 예식장 위치 보기 (새 창)"), `target`, `rel`, 클래스는 그대로다. 내비게이션 안내 문구는 내비게이션 앱 안내라 그대로 두었다. style.css와 script.js는 바꾸지 않았다.
+
+| 버튼 | 이전 (검색) | 지금 (장소) |
+|---|---|---|
+| 네이버 지도 | `https://map.naver.com/p/search/더컨벤션 송파문정`(URL 인코딩) | `https://map.naver.com/p/entry/place/1958047921` |
+| 카카오맵 | `https://map.kakao.com/link/search/더컨벤션 송파문정`(URL 인코딩) | `https://m.map.kakao.com/scheme/place?id=167068900` |
+
+### 장소 ID 근거
+
+- 네이버 지도 `1958047921`: 네이버 지도 instant-search 결과 "더컨벤션 송파문정", 예식장, 서울특별시 송파구 송파대로 155 NH송파농협 11~13층(오케스트레이터 확인). `m.place.naver.com/place/1958047921/home`도 og:title "더컨벤션 송파문정 : 네이버", category "예식장", roadAddress "서울 송파구 송파대로 155 NH송파농협, 11~ 13층"이다.
+- 카카오맵 `167068900`: 카카오맵 검색 결과 "더컨벤션 송파문정점", 예식장, 서울 송파구 송파대로 155 송파농협신청사 11-13층, 02-6418-5000(오케스트레이터 확인). 장소 웹 페이지 `place.map.kakao.com/167068900`(공개 형식 `link/map/167068900`이 휴대폰에서 도착하는 곳. 지금 URL은 앱 연결 페이지에 도착한다)도 title "더컨벤션 송파문정점 | 카카오맵", og:description "서울 송파구 송파대로 155 송파농협신청사 11-13층"이다.
+- 두 장소의 주소는 청첩장 주소 "서울 송파구 송파대로 155"(`#venue-address`)와 같다.
+- 카카오맵 URL은 공개 형식 `map.kakao.com/link/map/{장소ID}` 대신 `m.map.kakao.com/scheme/place?id={장소ID}`를 쓴다(오케스트레이터 결정, 아래 알아 둘 점).
+
+### 이동 확인 (curl -L, 2026-10-21)
+
+User-Agent는 iPhone Safari 18.5와 Android 14 Chrome 141이다. 두 User-Agent의 이동 경로가 같았다.
+
+- 네이버 지도: 301 `map.naver.com/?pinId=1958047921&pinType=site&menu=location&appTargetPage=place&appSchemeName=nmap&mode=half&id=1958047921&app=Y&appmarket=N` → 302 `m.map.naver.com/?…` → 302 `/appLink.nhn?…` → 302 `/appLink.naver?…` → 200. 이전 검색 URL도 같은 `appLink.naver`에 도착했고 `query=…&appTargetPage=search`만 달랐다. 앱을 여는 페이지는 같고 앱에서 열 화면만 장소로 바뀐다.
+- 카카오맵(지금 URL): 302 `applink.map.kakao.com/place?id=167068900` → 200(앱 연결 페이지). Windows Chrome 141 User-Agent에서도 같은 페이지에 도착한다.
+- 카카오맵(쓰지 않은 공개 형식 `map.kakao.com/link/map/167068900`): 휴대폰에서 302 `m.map.kakao.com/actions/detailInfoView?id=167068900` → 302 `place.map.kakao.com/m/167068900` → 302 `/167068900` → 200(장소 웹 페이지). PC에서는 `map.kakao.com/?itemId=167068900`(PC 웹 지도의 장소 화면)이다.
+
+### 알아 둘 점
+
+- 카카오맵 URL을 `scheme/place`로 정한 이유(오케스트레이터 결정): 이전 검색 URL은 휴대폰에서 `m.map.kakao.com/scheme/search` → `applink.map.kakao.com/search`에 도착했고, 이 페이지는 "지도웹, 지도앱 이용 선택 / 연결중입니다 / 카카오맵 앱 설치 / 설치없이 지도보기"를 보여 주는 앱 연결 페이지다. 사용자는 이 경로로 앱이 열리는 것을 확인했다. 공개 형식 `link/map/{장소ID}`는 이 페이지를 거치지 않고 장소 웹 페이지에 바로 도착하며, `map.kakao.com`의 apple-app-site-association은 `NOT /link/*`라서 앱이 열린다는 보장이 없다. `scheme/place`는 같은 앱 연결 페이지에 도착하고, 그 페이지의 스크립트는 `place`를 별도 경로로 둔다(`NO_APP_EXTERNAL_ALLOWED_SCHEMES: ["place"]`, 앱 스킴은 `kakaomap://`).
+- 위험: `scheme/place`는 공개 문서에 있는 형식이 아니다. 카카오가 이 경로를 바꾸면 버튼이 동작하지 않을 수 있다. 그때는 공개 형식 `https://map.kakao.com/link/map/167068900`으로 되돌린다.
+- PC에서는 이 URL도 앱 연결 페이지가 열린다(공개 형식이었다면 PC 웹 지도의 장소 화면이 열렸다). 하객 대부분이 휴대폰으로 보므로 휴대폰 동작을 우선했다.
+
+### 배포 후 휴대폰에서 확인할 것
+
+- 네이버 지도 앱이 있는 휴대폰에서 버튼을 누르면 앱이 검색 목록이 아니라 예식장 장소 화면으로 열리는지 본다. curl은 `appLink.naver`가 앱 스킴을 만드는 JavaScript를 실행하지 않아 앱이 여는 화면은 확인하지 못했다.
+- 카카오맵 앱이 있는 휴대폰에서 앱 연결 페이지를 거쳐 앱이 예식장 장소 화면으로 열리는지 본다. 안 열리면 위 알아 둘 점의 공개 형식으로 되돌린다.
+- 앱이 없는 휴대폰에서 두 버튼 모두 예식장 정보가 보이는지 본다.
+- 위 세 가지를 Safari·Chrome과 카카오톡 인앱 브라우저(카카오톡 공유로 연 청첩장)에서 각각 본다.
