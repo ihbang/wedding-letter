@@ -126,9 +126,10 @@
   /* ---------- Photo protection (spec 4-10-2) ---------- */
 
   // Delegated on document, so the lightbox images created later are covered too.
+  // Photos skip hit testing, so a press on a photo lands on its .photo-shield.
   function initPhotoGuard() {
     const block = (e) => {
-      if (e.target instanceof Element && e.target.closest('img, .g-open')) e.preventDefault();
+      if (e.target instanceof Element && e.target.closest('img, .g-open, .photo-shield')) e.preventDefault();
     };
     document.addEventListener('contextmenu', block);   // Android long-press menu, desktop right-click
     document.addEventListener('dragstart', block);     // Firefox ignores -webkit-user-drag
@@ -919,7 +920,10 @@
       img.decoding = 'async';
       img.draggable = false;
       img.addEventListener('load', () => img.classList.remove('is-empty'));
-      li.append(img);
+      const shield = document.createElement('span');   // spec 4-10-2: long presses land here, not on the photo
+      shield.className = 'photo-shield';
+      shield.setAttribute('aria-hidden', 'true');
+      li.append(img, shield);
       track.append(li);
       return {
         li, img, source, full: btn.dataset.full, fullUrl: new URL(btn.dataset.full, document.baseURI).href,

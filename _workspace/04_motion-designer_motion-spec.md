@@ -46,6 +46,8 @@ concept_alignment:
 > **2026-10-17 변경 (사진 보호)**: 사진의 저장 메뉴(길게 누르기·우클릭·끌기)를 막고, 페이지와 lightbox의 모든 확대를 없앴다(사용자 결정: "캡처 방지", "사진 확대 방지", 확대 범위 "모든 확대 차단"). 페이지 확대를 막으면 글자 확대도 막혀 WCAG 1.4.4(텍스트 크기 조정)에 어긋난다는 점을 사용자가 미리 듣고 고른 범위다. 바뀐 곳은 frontmatter `reduced_motion_strategy` 주석, 4-1-2, 4-1-3, 4-1-4, 4-1-8, 4-1-11, 4-1-12, 4-2, 4-10(신설), 5, 6, 7, 8, 10, 12(신설: frontend 작업 목록과 QA 기준)이고 각 위치에 "(2026-10-17 사진 보호: ...)"를 붙였다. 4-1-4의 "iOS 저장 메뉴는 막지 않는다"와 4-2·4-1-8의 "viewport meta로 확대를 제한하지 않는다" 결정은 이 결정으로 대체됐다.
 >
 > **2026-10-17 변경 (갤러리 재배치)**: 사용자 요청으로 갤러리 사진을 이전 파일 번호 05 → 03 → 04 → 01 → 06~15 → 02 순서로 옮기고 파일 이름을 새 순서대로 01~15로 바꿨다. 갤러리는 지금도 파일 번호순이고 동작은 그대로다. 사진 번호를 특정한 0, 4-1, 4-1-1, 4-1-4, 4-1-7, 4-1-8, 7, 10, 12-2의 번호를 새 파일 이름 기준으로 고쳤다(가로 사진은 14·15, 1067px 세로 사진은 13).
+>
+> **2026-10-22 변경 (카카오톡 저장 차단)**: 사용자가 실제 휴대폰의 카카오톡 인앱 브라우저에서 사진을 길게 눌러 저장할 수 있음을 확인했다(iOS인지 Android인지는 모름. 둘 다 막는다). 12-3 첫 행의 위험이 실제로 일어난 것이므로 12-3이 정해 둔 투명 덮개 대안을 채택했다. 덮개는 pseudo-element가 아니라 실제 빈 요소 `.photo-shield`이고, 사진 img에는 `pointer-events: none`을 더한다. hero 사진은 `.hero__frame`으로 감싼다. 바뀐 곳은 4-1-4, 4-1-8, 4-1-11, 4-2, 4-10, 4-10-1, 4-10-2, 7, 8, 10, 12-3, 13(신설: frontend 작업 목록, QA 기준, 다음 대안)이고 각 위치에 "(2026-10-22 카카오톡 저장 차단: ...)"을 붙였다. 4-10-2의 기존 차단(img CSS 규칙, `contextmenu`·`dragstart` 취소)은 그대로 두고 판정 대상에 `.photo-shield`만 더했다.
 
 ## 0. 모션 무드 결정
 
@@ -936,7 +938,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 | 연속 입력 | 전환 중 버튼을 또 누르면 목표만 바뀐다. CSS transition이 지금 위치에서 이어 간다 |
 | 전환 중 잡기 (Nice) | 전환 중 pointerdown이면 `getComputedStyle(track).transform`의 x 이동값과 목표 위치의 차이를 초기 dx로 삼아 그 자리에서 이어 끈다. 구현하지 않으면 손가락을 대는 순간 목표 위치로 짧게 점프한다(지금 lightbox와 같은 동작) |
 | click 억제 | 가로 스와이프로 판정된 제스처, 또는 이웃 탭으로 이동한 제스처 뒤의 click 1회를 뷰포트 캡처 단계에서 `preventDefault` + `stopPropagation`. ① 마우스로 끌고 놓았을 때 lightbox가 열리지 않게 ② 이웃을 탭하면 `pointerup`에서 이미 그 장이 현재가 되므로, 뒤따르는 click이 새 현재 슬라이드 버튼에 떨어져 lightbox가 열리지 않게 한다(시험 페이지에서 확인된 문제). 플래그는 다음 pointerdown에서 초기화 |
-| 이미지 끌기·선택·저장 메뉴 | img `draggable="false"`, 뷰포트 `user-select: none`(둘 다 그대로). 길게 눌러 뜨는 사진 저장 메뉴(iOS `-webkit-touch-callout`, Android `contextmenu`), PC 우클릭 메뉴, 끌어서 저장을 막는다. 페이지의 모든 img에 공통 규칙으로 적용하며 기준은 4-10-2 (2026-10-17 사진 보호: "iOS 저장 메뉴는 막지 않는다. 하객이 사진을 저장할 수 있게 둔다" 결정을 대체) |
+| 이미지 끌기·선택·저장 메뉴 | img `draggable="false"`, 뷰포트 `user-select: none`(둘 다 그대로). 길게 눌러 뜨는 사진 저장 메뉴(iOS `-webkit-touch-callout`, Android `contextmenu`), PC 우클릭 메뉴, 끌어서 저장을 막는다. 페이지의 모든 img에 공통 규칙으로 적용하며 기준은 4-10-2 (2026-10-17 사진 보호: "iOS 저장 메뉴는 막지 않는다. 하객이 사진을 저장할 수 있게 둔다" 결정을 대체). 슬라이드마다 투명 덮개 `.photo-shield`를 얹고 슬라이드 img는 `pointer-events: none`이다. 인앱 브라우저 앱이 띄우는 자체 저장 메뉴를 막는다 (2026-10-22 카카오톡 저장 차단: 4-10-2 "투명 덮개") |
 | 햅틱 | 없음(lightbox와 같음) |
 | 자동 넘김 | 없음. 그래서 정지 버튼도 두지 않는다 |
 | iOS 가장자리 뒤로가기 | 화면 왼쪽 끝에서 시작한 오른쪽 스와이프는 Safari·카카오톡 인앱 브라우저가 '뒤로 가기'로 가져간다. 막을 수 없고 막지 않는다. 프레임이 가장자리에서 24px 안쪽이라 사진 위에서 시작한 스와이프는 해당하지 않는다 |
@@ -995,6 +997,7 @@ html.lb-open .bulb { animation-play-state: paused; }
                srcset="images/photos/thumb/01.jpg 600w, images/photos/01.jpg 1066w"
                sizes="(min-width: 480px) 432px, calc(100vw - 48px)"
                width="1066" height="1600" loading="lazy" decoding="async" draggable="false" alt="{alt}">
+          <span class="photo-shield" aria-hidden="true"></span>
         </button>
       </div>
       <!-- 14 more slides in file-number order (01-15); landscape slides 14 and 15 add the g-slide--landscape modifier -->
@@ -1023,6 +1026,7 @@ html.lb-open .bulb { animation-play-state: paused; }
 | 포커스 링 | 전역 규칙(2px accent, offset 2px). 현재 슬라이드 버튼의 링은 뷰포트 `padding-block: 4px` 안에 그려진다 |
 | 뷰포트가 스크롤되지 않게 | 뷰포트 `overflow: clip`(미지원 브라우저는 `overflow: hidden`). clip이면 포커스 이동으로 뷰포트가 스크롤될 수 없다. hidden 폴백에 대비해 `goTo` 끝에서 `viewport.scrollLeft = 0` |
 | 페이지 확대 | 막는다. viewport meta `maximum-scale=1, user-scalable=no`, 뷰포트 `touch-action: pan-y`, WebKit gesture 이벤트 차단으로 캐러셀 위에서도 페이지가 확대되지 않는다. 기준은 4-10-3 (2026-10-17 사진 보호: "`pinch-zoom`으로 페이지 확대를 남기고 viewport meta는 바꾸지 않는다" 결정을 대체. 사용자가 WCAG 1.4.4 위반을 알고 고른 범위) |
+| 사진 덮개 (2026-10-22 카카오톡 저장 차단) | 각 `.g-open` 안, img 바로 뒤에 빈 `<span class="photo-shield" aria-hidden="true"></span>`(위 마크업). 15장 모두(이웃 포함). 내용 없는 `aria-hidden` 요소라 버튼 이름("사진 n / 15 크게 보기: …"), 탭 순서, 낭독이 그대로다. 기준은 4-10-2 "투명 덮개" |
 
 카피 메모: "웨딩 사진 15장"(묶음 이름), "슬라이드"(roledescription), 낭독 문장의 조합 방식은 모션 명세의 기본값이다. copy-writer 카피 시트에 같은 항목이 생기면 그쪽을 쓴다.
 
@@ -1142,6 +1146,8 @@ html:not(.js) .g-controls { display: none; }
 }
 .g-counter__now { color: var(--color-text); }
 ```
+
+(2026-10-22 카카오톡 저장 차단) `.g-open`의 `position: relative`, `.g-open img`의 `pointer-events: none`, `.photo-shield` 규칙은 4-10-2 참고 CSS에 모아 둔다. 위 블록은 바꾸지 않는다.
 
 이전/다음 버튼의 `:active` scale 0.97과 reduced-motion 대체는 5장 "모든 버튼" 규칙을 그대로 따른다.
 
@@ -1321,6 +1327,7 @@ QA 확인값:
 | 버튼 | 닫기·이전·다음 각 44x44, 인라인 SVG 아이콘 stroke `#FBF6F1` 1.4px, 면 투명. 양 끝에서 이전/다음 `disabled`(opacity 0.3) |
 | 포커스 링 | lightbox 안에서는 2px `#FBF6F1`, offset 2px (accent는 어두운 scrim 위에서 약 3:1로 경계값이라 쓰지 않는다) |
 | 사진 alt | 슬라이드 `<img alt>` = 컨셉 시트 desc |
+| 사진 덮개 (2026-10-22 카카오톡 저장 차단) | `initLightbox`가 슬라이드마다 `.lb-img` 뒤에 빈 `<span class="photo-shield" aria-hidden="true">`를 함께 만든다. 덮개는 슬라이드 면 전체(사진 바깥 무대 포함)를 덮는다. `.lb-img`는 `pointer-events: none`. 사진 밖 탭 판정은 무대 좌표로 하므로(`tap(p)`) 덮개와 무관하다. 기준은 4-10-2 "투명 덮개" |
 
 **열기 / 닫기**
 
@@ -1652,26 +1659,29 @@ CSS는 확대에만 쓰던 `.lb-img.is-zooming` 규칙 전체와 `.lb-img`의 `t
 
 ### 4-10. 사진 보호: 저장 메뉴 차단과 확대 차단 (Must) (2026-10-17 사진 보호: 신설)
 
-사용자 결정(2026-10-17): "캡처 방지"는 사진에만 적용하고, "사진 확대 방지"는 확대 범위 "모든 확대 차단"으로 한다. 페이지 확대를 막으면 글자 확대도 막혀 WCAG 1.4.4(텍스트 크기 조정)에 어긋난다는 점을 사용자가 미리 듣고 고른 범위다. 이 절은 그 결정을 구현 기준으로 옮긴 것이고 범위를 다시 정하지 않는다. 화면에 보이는 모션은 없으므로 reduced-motion 분기도 없다. frontend 작업 목록과 QA 기준은 12장에 모았다.
+사용자 결정(2026-10-17): "캡처 방지"는 사진에만 적용하고, "사진 확대 방지"는 확대 범위 "모든 확대 차단"으로 한다. 페이지 확대를 막으면 글자 확대도 막혀 WCAG 1.4.4(텍스트 크기 조정)에 어긋난다는 점을 사용자가 미리 듣고 고른 범위다. 이 절은 그 결정을 구현 기준으로 옮긴 것이고 범위를 다시 정하지 않는다. 화면에 보이는 모션은 없으므로 reduced-motion 분기도 없다. frontend 작업 목록과 QA 기준은 12장에 모았다. (2026-10-22 카카오톡 저장 차단: 투명 덮개의 작업 목록·QA 기준·다음 대안은 13장)
 
 #### 4-10-1. 한계
 
 **웹 페이지는 OS 스크린샷·화면 녹화·다른 기기로 찍기를 막거나 감지할 수 없고 개발자 도구·페이지 저장·이미지 주소 직접 열기도 막을 수 없으므로, 이 절은 길게 누르기·우클릭·끌기로 사진을 바로 저장하는 경로만 막는다.**
 
-#### 4-10-2. 사진 저장 경로 차단
+(2026-10-22 카카오톡 저장 차단) 인앱 브라우저 앱이 자체 저장 메뉴를 띄우는 경로는 엔진의 "누른 지점이 이미지인가" 판정을 바꾸는 투명 덮개로 막는다(4-10-2). 앱이 페이지의 사진 목록이나 내려받은 리소스를 직접 읽으면 페이지가 막을 수 없다(13-3).
+
+#### 4-10-2. 사진 저장 경로 차단 (2026-10-22 카카오톡 저장 차단: 투명 덮개 추가)
 
 | 경로 | 막는 방법 | 적용 범위 |
 |---|---|---|
+| 인앱 브라우저(카카오톡 등) 앱이 자체로 띄우는 길게 누르기 메뉴("이미지 저장", "공유" 등). Android WebView `getHitTestResult()`, iOS WKWebView 이미지 분석(피사체 들어올리기·라이브 텍스트·시각 검색)을 통한 메뉴 포함 (2026-10-22 카카오톡 저장 차단: 신설) | 사진마다 투명 덮개 `.photo-shield`(실제 빈 요소) + 사진 img `pointer-events: none`. 아래 "투명 덮개" | hero 1, 캐러셀 슬라이드 15(이웃 포함), lightbox가 런타임에 만드는 슬라이드 15 |
 | iOS Safari·WKWebView 길게 누르기 메뉴(사진 저장, 공유, 복사, 미리보기) | CSS `img { -webkit-touch-callout: none; }` | 페이지의 모든 `<img>`. CSS 선택자라 lightbox가 런타임에 만드는 `.lb-img`에도 걸린다 |
 | Android Chrome·Samsung Internet·WebView 길게 누르기 메뉴(이미지 다운로드, 새 탭에서 이미지 열기, 이미지 공유) | `document`에 `contextmenu` 위임 리스너 1개. 대상이 사진이면 `preventDefault()` | 위임이라 나중에 생긴 img도 포함 |
 | PC 우클릭 메뉴(이미지를 다른 이름으로 저장, 이미지 복사, 이미지 주소 복사) | 같은 `contextmenu` 위임 | 같음 |
 | 끌어서 바탕화면·다른 탭에 놓기 | CSS `img { -webkit-user-drag: none; }` + `document`에 `dragstart` 위임 `preventDefault()`. Firefox는 `-webkit-user-drag`를 모르므로 JS가 필요하다 | 같음. 기존 `draggable="false"`(갤러리 img, `.lb-img`)와 `.g-viewport`의 `dragstart` 리스너는 그대로 둔다 |
 | 길게 누를 때 사진 자체가 선택되어 파랗게 덮이는 것 | CSS `img { -webkit-user-select: none; user-select: none; }` | img에만. 글자 선택에는 영향이 없다 |
 
-- "대상이 사진이면"의 판정: `e.target instanceof Element && e.target.closest('img, .g-open')`. `.g-open`을 함께 넣는 이유: 버튼 안 요소의 이벤트를 버튼 자체로 보내는 브라우저에서도 갤러리 사진이 빠지지 않게 한다. 글자·버튼·빈 곳의 우클릭과 길게 누르기는 브라우저 기본 동작 그대로다. 글자를 끄는 `dragstart`는 대상이 Text 노드라 막히지 않는다.
+- "대상이 사진이면"의 판정: `e.target instanceof Element && e.target.closest('img, .g-open, .photo-shield')`. `.g-open`을 함께 넣는 이유: 버튼 안 요소의 이벤트를 버튼 자체로 보내는 브라우저에서도 갤러리 사진이 빠지지 않게 한다. 글자·버튼·빈 곳의 우클릭과 길게 누르기는 브라우저 기본 동작 그대로다. 글자를 끄는 `dragstart`는 대상이 Text 노드라 막히지 않는다. (2026-10-22 카카오톡 저장 차단: `.photo-shield` 추가. 사진 img가 `pointer-events: none`이 되어 사진 위의 우클릭·길게 누르기·끌기는 이제 덮개가 받는다. 캐러셀 덮개는 `.g-open` 안이라 원래 판정으로도 걸리지만, hero 덮개(조상 `.hero__frame`, `header`, `main`)와 lightbox 덮개(조상 `.lb-slide`, `.lb-track`, `.lb-stage`, `dialog`)는 조상에 `img`도 `.g-open`도 없어서 판정을 넓히지 않으면 취소되지 않는다)
 - 판정에 걸리는 장식 img(hero wreath SVG)와 카카오 지도 타일 img는 함께 막혀도 동작에 영향이 없다. 지도는 끌기·확대가 없는 고정 지도다(4-7).
 - CSS 배경 이미지와 인라인 SVG 장식은 길게 눌러도 저장 메뉴가 뜨지 않으므로 대상이 아니다.
-- JS 꺼짐: CSS 부분(iOS 길게 누르기 메뉴, Chrome·Safari 끌기, 사진 선택)은 그대로 동작한다. Android·PC 우클릭 메뉴는 막히지 않는다. 받아들인다.
+- JS 꺼짐: CSS 부분(iOS 길게 누르기 메뉴, Chrome·Safari 끌기, 사진 선택)은 그대로 동작한다. Android·PC 우클릭 메뉴는 막히지 않는다. 받아들인다. (2026-10-22 카카오톡 저장 차단: hero·캐러셀 덮개와 img `pointer-events: none`은 HTML·CSS라 JS 없이도 동작한다. lightbox는 JS 꺼짐에서 열리지 않는다)
 
 **글자 선택은 막지 않는다.**
 - 전역(`html`, `body`, `*`, 섹션, 카드) `user-select: none`을 쓰지 않는다. 계좌 복사가 실패하면 "길게 눌러 직접 복사해 주세요"(`copy-failed`)라고 안내하고 해당 글자를 `Selection`으로 선택해 두므로(4-4), 하객이 글자를 길게 눌러 선택·복사할 수 있어야 한다.
@@ -1680,7 +1690,96 @@ CSS는 확대에만 쓰던 `.lb-img.is-zooming` 규칙 전체와 `.lb-img`의 `t
 
 **`showModal` 미지원 폴백 (Should)**: 지금 `initLightbox`는 `dialog.showModal`이 없으면 사진 버튼이 원본 JPEG를 새 탭(`window.open`)으로 연다. 새 탭은 이미지 문서 하나라 이 절의 CSS·JS가 닿지 않고, 그 탭에서는 길게 눌러 저장할 수 있다. 이 폴백의 리스너 등록을 지우고 `return`만 남긴다. 해당 브라우저(Safari·iOS 15.3 이하)에서는 캐러셀 넘기기만 되고 사진 버튼을 눌러도 아무 일이 없다.
 
-참고 CSS (기존 `img, svg, canvas { display: block; }` 규칙 바로 아래):
+**투명 덮개** (2026-10-22 카카오톡 저장 차단: 신설)
+
+위 차단은 브라우저가 페이지에 보내는 신호(`contextmenu` 이벤트, `-webkit-touch-callout`)만 다룬다. 인앱 브라우저 앱은 이 신호를 거치지 않고 웹 엔진에 "누른 지점이 이미지인가"를 직접 물어 자기 메뉴를 띄울 수 있다. 엔진은 누른 지점의 맨 위 노드가 `<img>`인지로 답한다. 그래서 사진 위에 이미지가 아닌 빈 요소를 얹어 맨 위 노드를 바꾼다.
+
+판정 원리와 근거 (Chromium·WebKit main 소스를 2026-10-22에 직접 확인. 카카오톡이 어느 경로를 쓰는지는 공개 자료가 없어 **실기기 확인 필요**):
+
+| # | 경로 | 엔진이 이미지라고 판정하는 기준 | 덮개를 얹으면 | 확신 |
+|---|---|---|---|---|
+| 1 | Android WebView `WebView.getHitTestResult()`(앱이 자체 메뉴를 띄울 때 쓰는 공개 API) | 한 손가락 `touchstart`마다 Blink가 window에 단 내장 리스너(capture, passive)가 탭 기준 hit test를 한다(`web_local_frame_impl.cc` `TouchStartEventListener` → `EventHandler::HitTestResultForGestureEvent`, 터치 보정 뒤 마지막은 한 점의 hit test). 결과 노드의 `HitTestResult::AbsoluteImageURL()`이 비어 있지 않으면 `IMAGE_TYPE`이다(`aw_render_frame_ext.cc` `HandleHitTestResult` → `PopulateHitTestData`). URL이 나오는 노드는 `<img>`, `<input type="image">`, 이미지를 띄운 `<embed>`·`<object>`, SVG `<image>`뿐이다(`hit_test_result.cc` `HasImageSourceURL`). **페이지의 `contextmenu` 취소와 무관하게 `touchstart` 때 계산되므로 2026-10-17 차단으로는 막히지 않는다** | 맨 위 노드가 덮개 span이라 URL이 비고 `UNKNOWN_TYPE`이 된다. img는 `pointer-events: none`이라 hit test에서 아예 빠진다 | 소스 확인 |
+| 2 | iOS WKWebView 기본 길게 누르기 메뉴(사진 앱에 저장, 공유, 복사, 미리보기) | 누른 지점에서 "클릭에 반응하는 노드"를 찾고(`LocalFrame::nodeRespondingToClickEvents`, 맨 위 노드에서 조상으로) 그 노드가 이미지(`RenderImage`)일 때만 `isImage`다(`PositionInformationForWebPage.mm` `elementPositionInformation`). `<img>`는 `-webkit-touch-callout`이 기본값일 때만 클릭에 반응하는 노드로 친다(`HTMLImageElement::willRespondToMouseClickEventsWithEditability`). 지금 img 규칙이 `none`이라 탐색이 `.g-open` 버튼이나 `main[tabindex="-1"]`까지 올라가고 이미지 메뉴가 뜨지 않는다. **이 경로는 2026-10-17 차단으로 이미 막혀 있다** | 그대로 막혀 있다(덮개 → 조상 탐색 → 이미지 아님) | 소스 확인 |
+| 3 | iOS WKWebView 이미지 분석(iOS 16+ 피사체 들어올리기, 라이브 텍스트, 시각 검색) | 별도 길게 누르기 제스처가 이미지 데이터를 포함한 위치 정보를 요청한다(`WKContentViewInteraction.mm`, `request.includeImageData = true`). 이때는 hit test 맨 위 노드(`innerNonSharedNode`)가 `HTMLImageElement`이면 `isImage`가 된다. 분석 대상은 이 `isImage`이거나 멈춘 동영상뿐이고(`canAttemptTextRecognitionForNonImageElements`), 시작 조건에 `touchCalloutEnabled`가 없다. **그래서 `-webkit-touch-callout: none`으로는 막히지 않는다.** iPhone에서 본 메뉴가 이것(피사체 "복사"·"공유")이었을 수 있다 | 맨 위 노드가 span이라 `isImage`가 거짓이고 분석을 시작하지 않는다 | 소스 확인. 카카오톡 앱에서 이 제스처가 켜져 있는지는 실기기 확인 필요 |
+| 4 | 앱이 주입한 JavaScript로 판정(예: 누른 좌표로 `document.elementFromPoint()`를 불러 `IMG`인지 보기) | 앱마다 다르다 | `elementFromPoint()`는 덮개 span을 돌려준다(자식 없음, 조상에 `<img>` 없음). img가 `pointer-events: none`이라 `elementsFromPoint()` 목록에도 img가 없다. 덮개의 조상(`.g-open` 등) 안에서 `img`를 찾는 방식, 페이지의 모든 `img`를 읽는 방식은 막지 못한다(13-3) | 실기기 확인 필요 |
+
+- pseudo-element의 hit test: Blink와 WebKit 모두 `::before`·`::after`가 맞으면 결과 노드를 그 원래 요소(host)로 바꾼다(Blink `HitTestResult::SetInnerNode` → `PseudoElement::InnerNodeForHitTesting()`, WebKit `HitTestResult::setInnerNode`·`setInnerNonSharedNode` → `hostElement()`). 그래서 엔진 경로 1~3만 보면 `::after`도 효과가 같다.
+- WebView는 링크(`<a>`) 안을 누르면 이미지 URL이 비어 있을 때 그 링크의 첫 `<img>` 자손으로 채우고, 포커스가 옮겨 갈 때도 포커스된 요소의 첫 `<img>` 자손으로 결과를 갱신한다(`GetChildImageUrlFromElement`). **사진을 `<a>`로 감싸지 않는다.** 포커스 경로는 길게 누를 때마다 그 `touchstart`가 결과를 다시 쓰므로 영향이 없다.
+
+**방식 결정: pseudo-element가 아니라 실제 빈 요소** `<span class="photo-shield" aria-hidden="true"></span>`
+- 엔진 경로 1~3에서는 `::after`와 실제 요소의 결과가 같다(위). 차이는 경로 4다. `::after`면 `elementFromPoint()`가 덮개를 가진 요소(`.g-open`, `.lb-slide`, `.hero__frame`)를 돌려주고 이 요소들은 `<img>`를 자식으로 가진다. "누른 요소 안의 img를 찾는" 방식(WebView 자체도 링크·포커스에 대해 이렇게 한다)에 그대로 걸린다. 실제 빈 요소는 자기 자신이 돌아오고 자식이 없다.
+- `contextmenu`·`dragstart` 판정: 실제 요소면 `e.target`이 덮개 자신이라 선택자 하나(`.photo-shield`)로 세 곳을 모두 잡는다. `::after`면 대상이 host라 `.hero__frame`, `.lb-slide`를 따로 넣어야 한다.
+- 비용: hero·캐러셀은 HTML에 span 16개, lightbox는 JS 4줄.
+- 버튼 자체를 덮개로 쓰는 구조(img를 `.g-open` 밖으로 빼고 버튼을 위에 겹치기)는 4-1 마크업·CSS, lightbox의 `btn.querySelector('img')`, `initPhotoFade` 선택자를 함께 고쳐야 해 택하지 않는다.
+
+**사진 img `pointer-events: none`**: 대상은 `.hero__photo`, `.g-open img`, `.lb-img`(사진 31개).
+- hit test가 img를 건너뛰므로 `elementsFromPoint()`에 img가 나오지 않고(경로 4), 덮개가 어떤 이유로 크기를 잃어도(예: `inset` 미지원인 iOS 14.4 이하) 엔진 경로 1~3이 img에 닿지 않는다.
+- img에 걸린 리스너는 `load`·`error`뿐이다(hero 페이드, 캐러셀 로드 페이드, lightbox `is-empty`). 탭·스와이프·우클릭은 원래도 조상(`.g-open`, `.g-viewport`, `.lb-stage`)이 처리한다. 영향이 없다.
+- 다른 `<img>`에는 걸지 않는다(아래 "적용 대상").
+
+**적용 대상**
+
+| 대상 | 덮개 위치 | 덮개가 덮는 면 | 만드는 곳 |
+|---|---|---|---|
+| hero 사진 | 새 감싸는 요소 `.hero__frame` 안, img 바로 뒤 | 사진 면(감싸는 요소 상자 = 사진 상자) | index.html |
+| 캐러셀 슬라이드 15장(이웃 포함) | 각 `.g-open` 안, img 바로 뒤 | 프레임 면 전체(가로 사진 14·15의 위아래 매트 포함) | index.html (4-1-8) |
+| lightbox 슬라이드 15장 | 각 `.lb-slide` 안, `.lb-img` 바로 뒤 | 슬라이드 면 전체(= 무대 면, 사진 바깥 포함) | `initLightbox` (4-2) |
+
+- 이웃 슬라이드: 비현재 슬라이드는 `inert` + `pointer-events: none`이라 hit test가 슬라이드를 통째로 건너뛰고 `.g-track`에 닿는다(이미지 아님. 이벤트는 `.g-viewport`로 올라간다. 2026-10-22 QA 13차 실측). 그래도 덮개는 15장 모두에 둔다. 넘겨서 현재가 되는 순간과 JS 꺼짐 폴백(scroll-snap, inert 없음)에 대비한다. **덮개에 `pointer-events`를 따로 주지 않는다.** 슬라이드의 `none`을 상속해야 이웃 탭 판정(4-1-5)이 지금처럼 `.g-viewport`에서 이뤄진다.
+- 페이지의 다른 `<img>`: index.html의 `<img>`는 17개다(hero 1, 캐러셀 15, closing wreath 1). 런타임에는 lightbox 15개와 카카오 지도 타일이 생긴다. 사진은 hero·캐러셀·lightbox뿐이다. wreath(`images/deco/wreath.svg`, `.monogram[role="img"]` 안의 장식 SVG)와 지도 타일에는 덮개를 두지 않는다. 기존 `contextmenu`·`dragstart` 취소만 걸린다.
+
+**hero 감싸기**
+
+| 항목 | 결정 | 이유 |
+|---|---|---|
+| 감싸는 요소 | `<div class="hero__frame">`. 자리는 지금 img 자리(`.hero__top`과 `.hero__bottom` 사이) | 덮개의 `position: absolute` 기준 상자가 필요하다 |
+| 치수 | `.hero__frame { width: 100%; margin: 28px 0; }`, `@media (max-height: 640px)`에서 `margin: 18px 0`. `.hero__photo`에서는 `margin`을 지우고 `width: 100%; height: auto`만 남긴다 | img의 세로 margin을 그대로 두면 감싸는 요소(flex item)가 그 margin을 품어 위아래로 28px씩 커지고 덮개도 빈 여백까지 덮는다. margin을 옮기면 감싸는 요소 상자가 사진 상자와 같고 화면 배치가 지금과 같다. `.hero`가 flex column이라 margin이 겹치지 않는 것도 지금과 같다 |
+| 쌓임 순서 | `.bokeh-zone > :not(.bokeh)`의 `position: relative; z-index: 1`이 img 대신 감싸는 요소에 걸린다 | 보케 캔버스(z-index 0) 위에 사진이 있다는 결과가 같다 |
+| reveal | `.js .hero__photo`(opacity 0 → `.is-visible` 1, 900ms)는 img에 그대로. `initHero`·`initBokeh`의 `.hero__photo` 선택자도 그대로 | 덮개는 투명이라 페이드가 그대로 보인다 |
+| 보케 회피 | `data-bokeh-exclude`는 img에 그대로 두고 감싸는 요소·덮개에는 붙이지 않는다 | 제외 상자가 그대로다. 1-3 표와 10장의 속성 수(값 없는 것 6개 중 `.hero__photo`)가 바뀌지 않는다 |
+| LCP·우선순위 | img 요소와 `src`, `width`/`height`, `fetchpriority="high"`, `decoding`, `<link rel="preload" … fetchpriority="high">` 모두 그대로 | LCP 후보는 계속 이 img다. 감싸는 div와 빈 span은 LCP 후보가 아니다 |
+| 접근성 | 감싸는 요소에 `role="img"` + `aria-label`(지금 img `alt` 문장 그대로), img는 `alt=""` | 덮개가 맨 위에 있어서 VoiceOver·TalkBack의 손가락 탐색(접근성 hit test)이 덮개에 닿고, `aria-hidden`인 덮개를 건너뛰어 가장 가까운 접근성 조상으로 간다. 그대로 두면 그 조상이 이름 없는 div, 그다음 `header`(`main` 안이라 landmark가 아니다), 그다음 `main`이라 hero 사진을 만져도 설명이 읽히지 않는다. 감싸는 요소를 이름 있는 이미지로 만들면 손가락 탐색과 순서 탐색 모두 같은 설명을 한 번 읽는다. `role="img"`의 자식은 접근성 트리에서 빠지므로 두 번 읽히지 않는다 |
+
+캐러셀은 손가락 탐색이 덮개 → `.g-open` 버튼(이름 "사진 n / 15 크게 보기: …")으로 가서 지금과 같다. lightbox는 덮개 → 현재 `.lb-slide`(목록 항목)로 가서 그 안의 사진 alt를 읽는다.
+
+**덮개에 주지 않는 것**: 배경, 테두리, `opacity`, `filter`, `z-index`, `pointer-events`, `transition`·`animation`, `content`, `tabindex`, `role`, `data-bokeh-exclude`. 덮개는 아무것도 그리지 않는 빈 요소다. DOM에서 img 뒤에 있고 위치 지정(positioned) 요소라 img 위에 놓인다. img가 페이드 중(opacity < 1)이어도 문서 순서가 뒤라 덮개가 위다. 그래서 `z-index`가 필요 없다.
+
+**보이지 않는다**: 덮개는 화면에 아무것도 그리지 않는다. 컨셉의 "사진 위 오버레이 금지"와 5장 "쓰지 않는 것"의 "사진 위 색 오버레이"는 보이는 효과를 말하며 덮개는 해당하지 않는다. 모션이 없으므로 reduced-motion 분기도 없다.
+
+**회귀 점검** (모두 지금과 같아야 한다):
+
+| 동작 | 결과 | 근거 |
+|---|---|---|
+| 캐러셀 가로 스와이프, 캐러셀 위에서 시작한 세로 스크롤 | 그대로 | Pointer 이벤트는 덮개에서 `.g-viewport`로 올라간다. `touch-action`은 누른 요소부터 조상까지의 교집합이라 덮개(auto) ∩ `.g-viewport`(pan-y) ∩ `html`(manipulation) = `pan-y`로 img를 누를 때와 같다 |
+| 현재 슬라이드 탭(또는 Enter·Space)으로 lightbox 열기 | 그대로 | click 대상이 덮개이고 `.g-open`으로 올라가 버튼 동작과 `btn.addEventListener('click')`이 실행된다. 지금 img 대상일 때와 같은 구조다 |
+| 이웃 슬라이드 탭으로 넘기기 | 그대로 | 덮개가 슬라이드의 `pointer-events: none`과 `inert`를 그대로 따른다. 탭은 `.g-track`에 떨어져 `.g-viewport`로 올라가고 `pointerup`의 `clientX` 판정이 그대로다 |
+| 키보드 포커스 링(`.g-open:focus-visible`, 2px, offset 2px) | 가려지지 않는다 | 링은 버튼 테두리 상자 바깥 2~4px에 그려진다. 덮개는 `position: relative` + `overflow: hidden`인 버튼 안에 잘려 있어 링과 겹칠 수 없다. lightbox의 포커스 가능한 요소는 위·아래 바 버튼뿐이고 hero에는 없다 |
+| lightbox 스와이프, 아래로 끌어 닫기 | 그대로 | 무대(`.lb-stage`) 리스너는 `e.target`을 보지 않는다. 끌어 닫기는 `.lb-slide`에 `transform`을 주므로 덮개도 함께 움직인다 |
+| lightbox 사진 바깥 탭으로 닫기, 사진 위 탭은 무시 | 그대로 | `tap(p)`가 무대 좌표 `p`를 가운데 맞춘 `fw x fh` 사각형과 비교한다(**좌표 기준**, target 기준 아님). 덮개가 슬라이드 전체를 덮어도 판정이 같다 |
+| 로딩 중 placeholder와 이미지 페이드 | 그대로 | 덮개는 투명하다. `.g-open img.is-loading`(surface 면이 보임), `.lb-img.is-empty`(scrim이 보임), hero `opacity` 페이드는 img에 그대로 걸린다 |
+| reduced-motion | 그대로 | 덮개에 모션이 없다 |
+| 스크린리더 | 덮개는 트리에 없다 | 내용 없는 `aria-hidden="true"` 요소다. 버튼 이름·탭 순서 그대로. hero는 위 "접근성" 행 |
+| 글자 길게 눌러 선택·복사(`copy-failed` 안내) | 그대로 | 덮개는 사진 위에만 있고 글자를 품지 않는다. 덮개의 `user-select: none`은 덮개 자신에게만 걸린다. 전역 `user-select`는 그대로 쓰지 않는다 |
+| 커서(마우스) | 그대로 | 덮개가 `.g-open`의 `zoom-in`, 드래그 중 `grabbing`을 상속한다 |
+| 우클릭·길게 누르기·끌기 취소 | 그대로 취소 | 대상이 덮개가 되므로 판정에 `.photo-shield`를 더했다(위 판정 줄) |
+
+참고 HTML (hero, index.html 74-76행을 바꾼다. `aria-label`은 지금 img `alt` 문장 그대로):
+
+```html
+      <div class="hero__frame" role="img" aria-label="꽃 장식과 전구 줄이 걸린 아이보리색 문 앞에서 서로를 향해 몸을 기울인 두 사람">
+        <img class="hero__photo" src="images/photos/hero.jpg" width="1600" height="1066"
+             fetchpriority="high" decoding="async" data-bokeh-exclude alt="">
+        <span class="photo-shield" aria-hidden="true"></span>
+      </div>
+```
+
+캐러셀 슬라이드(15개 모두, img 바로 뒤에 span 하나):
+
+```html
+<div class="g-slide"><button type="button" class="g-open" …><img … alt="{alt}"><span class="photo-shield" aria-hidden="true"></span></button></div>
+```
+
+참고 CSS (기존 `img, svg, canvas { display: block; }` 규칙 바로 아래. 2026-10-22 카카오톡 저장 차단: `img` 규칙 아래 덮개 블록 추가):
 
 ```css
 /* Photo protection (spec 4-10-2): every <img>, including the lightbox images created at runtime. */
@@ -1690,21 +1789,64 @@ img {
   -webkit-user-select: none;
   user-select: none;             /* the image only; text stays selectable for the copy-failed fallback (4-4) */
 }
+/* Photo shield (spec 4-10-2): in-app browsers ask the engine whether the pressed node is an <img>.
+   An empty element on top makes the answer "no"; the photos themselves skip hit testing. */
+.hero__frame,
+.g-open,
+.lb-slide { position: relative; }
+.photo-shield {
+  position: absolute;
+  inset: 0;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.hero__photo,
+.g-open img,
+.lb-img { pointer-events: none; }   /* also keeps them out of elementsFromPoint() */
 ```
 
-참고 JS:
+hero 부분 (기존 `.hero__photo` 규칙과 `@media (max-height: 640px)` 안의 한 줄을 바꾼다):
+
+```css
+.hero__frame { /* box = photo box: the margins live here, so the shield covers the photo only */
+  width: 100%;
+  margin: 28px 0;
+}
+.hero__photo { /* original 3:2 framing: no crop, no scale, no overlay, no filter */
+  width: 100%;
+  height: auto;
+}
+
+@media (max-height: 640px) {
+  /* ... */
+  .hero__frame { margin: 18px 0; }   /* was .hero__photo */
+}
+```
+
+참고 JS (2026-10-22 카카오톡 저장 차단: 판정 선택자에 `.photo-shield` 추가, lightbox 슬라이드에 덮개 생성):
 
 ```js
   /* ---------- Photo protection (spec 4-10-2) ---------- */
 
   // Delegated on document, so the lightbox images created later are covered too.
+  // Photos skip hit testing, so a press on a photo lands on its .photo-shield.
   function initPhotoGuard() {
     const block = (e) => {
-      if (e.target instanceof Element && e.target.closest('img, .g-open')) e.preventDefault();
+      if (e.target instanceof Element && e.target.closest('img, .g-open, .photo-shield')) e.preventDefault();
     };
     document.addEventListener('contextmenu', block);   // Android long-press menu, desktop right-click
     document.addEventListener('dragstart', block);     // Firefox ignores -webkit-user-drag
   }
+```
+
+`initLightbox` 슬라이드 생성(지금 `li.append(img);` 한 줄을 바꾼다):
+
+```js
+      const shield = document.createElement('span');   // spec 4-10-2: long presses land here, not on the photo
+      shield.className = 'photo-shield';
+      shield.setAttribute('aria-hidden', 'true');
+      li.append(img, shield);
 ```
 
 #### 4-10-3. 페이지 확대 차단
@@ -1890,7 +2032,7 @@ html {
 | **Must** | 3-2 string-lights 전구 호흡 (점등 시퀀스 제외) + 화면 밖 일시정지 |
 | **Must** | 4-1 갤러리 캐러셀: 2:3 프레임(세로 cover, 가로 14·15 contain + surface 매트), peek 16px, transform 트랙(`--g-i`·`--g-dx`), 스와이프(8px 축 판정, 50px 또는 0.3px/ms, 양 끝 정지·저항 0.3, 350ms), `touch-action: pan-y`(2026-10-17 사진 보호: `pinch-zoom` 제거), 이전/다음 버튼(`aria-disabled`) + "n / 15" 카운터, ←/→, click 억제, 접근성 구조(group·roledescription·inert·`.g-status` 낭독·포커스 이동), lightbox 같은 번호로 열기·닫으면 lightbox 번호로 동기화·포커스 복귀, `srcset`/`sizes` + 로딩 창(index −1 ~ +2), JS 꺼짐 scroll-snap 폴백 (2026-10-10 갤러리 캐러셀로 변경) |
 | **Must** | 4-2 lightbox: 스와이프(판정식 `swipeTarget`을 캐러셀과 공유), 확대 없음(핀치·더블탭·휠·키보드 확대와 팬 삭제, 두 번째 손가락은 제스처 취소), 키보드(←/→/Esc), `showModal` 포커스 트랩, 캐러셀 현재 슬라이드로 포커스 복귀, 스크롤 잠금, 캐러셀 `currentSrc`→원본 교체·±1 로딩, 보케 정지 (2026-10-10 갤러리 캐러셀로 변경) (2026-10-17 사진 보호: 핀치 줌 1~3·더블탭·팬 clamp → 확대 없음) |
-| **Must** | 4-10 사진 보호 (2026-10-17 사진 보호): 모든 img의 저장 메뉴·끌기·선택 차단(CSS `img` 규칙 + `document` 위임 `contextmenu`·`dragstart`), 글자 선택 유지, viewport meta `maximum-scale=1, user-scalable=no`, `html { touch-action: manipulation }`, WebKit `gesturestart`·`gesturechange` 차단, `ctrl + wheel` 차단. 작업 목록은 12-1 |
+| **Must** | 4-10 사진 보호 (2026-10-17 사진 보호): 모든 img의 저장 메뉴·끌기·선택 차단(CSS `img` 규칙 + `document` 위임 `contextmenu`·`dragstart`), 글자 선택 유지, viewport meta `maximum-scale=1, user-scalable=no`, `html { touch-action: manipulation }`, WebKit `gesturestart`·`gesturechange` 차단, `ctrl + wheel` 차단. 작업 목록은 12-1. (2026-10-22 카카오톡 저장 차단) 사진 투명 덮개 `.photo-shield`(hero `.hero__frame` 감싸기 + `role="img"`, 캐러셀 15, lightbox 런타임 15), 사진 img `pointer-events: none`, 판정 선택자에 `.photo-shield` 추가. 작업 목록은 13-1 |
 | **Must** | 4-3 BGM 토글: 자동재생 없음, `preload="none"`, 꺼짐/켜짐 아이콘, `aria-pressed`, 탭 숨김 시 일시정지, 재생 실패 복구 |
 | **Must** | 4-4 복사 피드백(계좌·주소·링크 공용): 버튼 라벨 전환 + 토스트 + `role="status"` 낭독 + execCommand·Selection 폴백 |
 | **Must** | 4-5 D-day 한국 시간 계산과 표기 분기 |
@@ -1922,6 +2064,7 @@ html {
 - 보케 캔버스 메모리는 3개 합계 DPR 2에서 14MB 이하(실측 10.8~13.7MB), 보케 스크립트는 프레임당 1ms 이하(4x throttle 실측 최대 0.7ms). 자세한 값은 1-8 (2026-10-12 보케 B안).
 - scroll 이벤트 리스너는 스크롤 큐 1개뿐(passive, 1회 후 해제). 나머지는 전부 IntersectionObserver·ResizeObserver.
 - (2026-10-17 사진 보호) 확대 차단이 더하는 non-passive 리스너는 `window`의 `wheel`(`ctrlKey`일 때만 `preventDefault`)과 WebKit `gesturestart`·`gesturechange`뿐이다. `wheel` 때문에 데스크톱 휠 스크롤이 메인 스레드를 한 번 거치지만 처리는 비교 한 번이다. `touchstart`·`touchmove`에는 non-passive 리스너를 두지 않으므로 모바일 스크롤 경로는 바뀌지 않는다. `contextmenu`·`dragstart` 위임 리스너는 스크롤과 무관하다.
+- (2026-10-22 카카오톡 저장 차단) 사진 덮개는 아무것도 그리지 않는 `position: absolute` 빈 요소 31개(hero 1, 캐러셀 15, lightbox 15)다. 리스너·모션이 없고 합성 레이어를 요구하는 속성(`transform`, `will-change`, `opacity` 애니메이션)도 없다. 사진 img의 `pointer-events: none`은 hit test 대상을 줄일 뿐이다. 프레임 예산과 메모리는 그대로다.
 - `will-change`는 lightbox·캐러셀 드래그 중 각 트랙에만 잠깐. 그 밖에는 쓰지 않는다. (2026-10-10 갤러리 캐러셀로 변경: 캐러셀 트랙 추가. 캐러셀은 무한 루프가 아니라 위 표에 넣지 않는다)
 - 목표: Lighthouse Mobile Performance 90 이상, LCP 2.5초 이하(hero 227KB preload), CLS 0.05 이하, INP 200ms 이하, 보케 구간 스크롤 중 60fps 유지(DevTools 4x throttle에서 드롭 프레임 5% 이하).
 
@@ -1961,6 +2104,7 @@ html {
 - [ ] 캐러셀 시각: 사진 위에 화살표·글자·오버레이 없음, 이웃 사진 흐리게·축소 없음, 가로 사진 14·15 잘림 없음(contain), 이전/다음 버튼 터치 영역 44x44 (2026-10-10 갤러리 캐러셀로 변경)
 - [ ] viewport meta에 `maximum-scale=1, user-scalable=no` 있음. Lighthouse·axe `meta-viewport` 실패는 사용자 수용 예외(WCAG 1.4.4)로 기록한다 (2026-10-17 사진 보호: "없음" → "있음")
 - [ ] 사진 보호와 확대 차단이 12-2 기준을 모두 통과한다. 글자는 길게 눌러 선택·복사할 수 있다 (2026-10-17 사진 보호)
+- [ ] 사진 덮개 `.photo-shield` 31개(hero 1, 캐러셀 15, lightbox 15)가 접근성 트리에 없고, hero 사진 설명은 `.hero__frame[role="img"]`의 이름으로 한 번만 읽힌다. 덮개는 보이지 않는 빈 요소라 "사진 위 오버레이 없음" 항목에 해당하지 않는다. 13-2 기준을 모두 통과한다 (2026-10-22 카카오톡 저장 차단)
 - [ ] 복사 성공·실패가 `role="status"` 영역으로 낭독된다(시각 토스트는 `aria-hidden`)
 - [ ] 모든 아이콘 버튼 `aria-label`, 터치 영역 44x44 이상
 - [ ] 장식 SVG·캔버스 모두 `aria-hidden="true"`
@@ -2068,9 +2212,85 @@ QA 스킬 6.4의 "갤러리 lightbox 핀치 줌 → max scale 3, 더블탭 토�
 
 | 위험 | 확인 | 결과가 나쁘면 |
 |---|---|---|
-| 카카오톡 인앱 브라우저(iOS·Android)가 앱 자체의 길게 누르기 메뉴("이미지 저장" 등)를 띄운다 | C3 | 페이지의 `contextmenu`·`-webkit-touch-callout`은 앱 메뉴를 막지 못한다. 대안은 사진 위에 투명 덮개(`::after`, `position: absolute; inset: 0`)를 얹어 길게 누른 대상이 img가 아니게 하는 것이다. `.g-open`, `.lb-slide`에는 바로 얹을 수 있고 hero는 img를 감싸는 요소가 필요하다. 채택하면 이 명세를 다시 고쳐 정한다 |
+| 카카오톡 인앱 브라우저(iOS·Android)가 앱 자체의 길게 누르기 메뉴("이미지 저장" 등)를 띄운다 | C3 | **채택(2026-10-22)**. 사용자가 2026-10-22 실제 휴대폰에서 이 위험을 확인했다(OS 모름). 페이지의 `contextmenu`·`-webkit-touch-callout`은 앱 메뉴를 막지 못한다. 그래서 사진 위에 투명 덮개를 얹어 길게 누른 대상이 img가 아니게 한다. 덮개는 `::after`가 아니라 실제 빈 요소 `.photo-shield`이고, 사진 img에 `pointer-events: none`을 더하며, hero는 `.hero__frame`으로 감싼다. 결정과 근거는 4-10-2 "투명 덮개", 작업과 검사는 13장, 덮개로도 남으면 13-3 (2026-10-22 카카오톡 저장 차단) |
 | 카카오톡 Android 인앱(WebView)이 viewport meta를 따르지 않아 핀치가 된다 | C1 | `html`의 `touch-action`을 `pan-x pan-y`로 바꾼다(4-10-3 "쓰지 않는 방법"). Chromium의 강제 확대 설정도 무력화될 수 있으므로 바꾸기 전에 사용자에게 알린다 |
 | iOS(버전 또는 인앱)가 `gesturestart` 차단을 무시해 핀치가 된다 | C1 | `document`에 `touchmove`(`passive: false`) 리스너를 더해 `e.touches.length > 1`이면 `preventDefault()`하고, 보케 구간 스크롤이 60fps를 지키는지 실기기에서 다시 잰다(8장) |
-| iOS 16 이상의 피사체 들어올리기·라이브 텍스트가 사진 길게 누르기로 동작한다 | C3 | 위 투명 덮개 대안과 같다 |
+| iOS 16 이상의 피사체 들어올리기·라이브 텍스트가 사진 길게 누르기로 동작한다 | C3 | **채택(2026-10-22)**. 위 투명 덮개가 맡는다. WebKit의 이미지 분석은 `-webkit-touch-callout`을 보지 않고 누른 지점의 맨 위 노드가 `<img>`인지만 보므로 2026-10-17 차단으로는 막히지 않는다. 덮개를 누르면 그 노드가 `<img>`가 아니다(4-10-2 근거 표 3). 실기기 확인은 13-2 C1 (2026-10-22 카카오톡 저장 차단) |
 | Android OS 기능(Circle to Search, 스마트 셀렉트)과 스크린샷 | — | 웹이 막을 수 없다(4-10-1) |
 | 하객이 Chrome·Samsung Internet 강제 확대 설정을 켜 두었다 | — | 확대된다. 의도한 동작이다(4-10-3 "막지 않는 것") |
+
+---
+
+## 13. 2026-10-22 카카오톡 저장 차단 변경 요약 (2026-10-22 카카오톡 저장 차단: 신설)
+
+결정과 근거는 4-10-2 "투명 덮개", 캐러셀은 4-1-4·4-1-8, lightbox는 4-2다. 이 장은 frontend-developer 작업 목록, QA 기준, 덮개로도 막지 못할 때의 다음 대안을 모은다. 줄 번호는 지금 파일 기준이라 편집하면서 바뀐다.
+
+### 13-1. frontend-developer 작업 목록
+
+| # | 우선순위 | 파일 · 위치 | 내용 | 기준 |
+|---|---|---|---|---|
+| 1 | Must | index.html 74-76행 hero `<img>` | `<div class="hero__frame" role="img" aria-label="{지금 hero img alt 문장}">`로 감싼다. img는 `alt=""`로 바꾸고 바로 뒤에 `<span class="photo-shield" aria-hidden="true"></span>`. img의 나머지 속성(`class`, `src`, `width`, `height`, `fetchpriority`, `decoding`, `data-bokeh-exclude`)은 그대로 | 4-10-2 "hero 감싸기", 참고 HTML |
+| 2 | Must | index.html 212-226행 캐러셀 슬라이드 15개 | 각 `.g-open` 안 `<img …>` 바로 뒤에 `<span class="photo-shield" aria-hidden="true"></span>` | 4-10-2, 4-1-8 |
+| 3 | Must | style.css 111-116행 `img` 규칙 바로 아래 | 덮개 블록 추가: `.hero__frame, .g-open, .lb-slide { position: relative; }`, `.photo-shield { position: absolute; inset: 0; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }`, `.hero__photo, .g-open img, .lb-img { pointer-events: none; }` | 4-10-2 참고 CSS |
+| 4 | Must | style.css 387-391행 `.hero__photo`, 453행 `@media (max-height: 640px)` 안 | `.hero__frame { width: 100%; margin: 28px 0; }`를 새로 두고 `.hero__photo`에서 `margin`을 지운다. 미디어 쿼리의 `.hero__photo { margin: 18px 0; }`는 `.hero__frame { margin: 18px 0; }`로 | 4-10-2 "hero 감싸기" |
+| 5 | Must | script.js 129-135행 `initPhotoGuard` | 판정 선택자 `'img, .g-open'` → `'img, .g-open, .photo-shield'`. 주석 한 줄 | 4-10-2 참고 JS |
+| 6 | Must | script.js 922행 `initLightbox` 슬라이드 생성 | `li.append(img);` → 덮개 span을 만들어 `li.append(img, shield);` | 4-10-2 참고 JS, 4-2 |
+| 7 | Should | `_workspace/05_frontend-developer_summary.md` | 사진 보호 설명에 덮개·`pointer-events: none`·hero 감싸기를 더하고, 1-3 속성 표가 가리키는 index.html 줄 번호를 고친다 | — |
+
+**건드리지 않는 것**: 4-10-2의 `img` 규칙 네 줄, `contextmenu`·`dragstart` 위임 리스너(선택자만 넓힌다), 갤러리·lightbox img의 `draggable="false"`, `.g-viewport`의 `dragstart` 리스너, hero `<link rel="preload" … fetchpriority="high">`, `.js .hero__photo` 페이드 규칙, `initHero`·`initBokeh`의 `.hero__photo` 선택자, img의 `data-bokeh-exclude`, `initPhotoFade`의 `.g-open img` 선택자, lightbox `tap(p)`의 좌표 판정, 4-1-11의 캐러셀 CSS 블록, closing wreath `<img>`, 카카오 지도.
+
+**하지 않는 것**: 덮개에 배경·테두리·`opacity`·`z-index`·`pointer-events`·`transition`·`animation`·`tabindex`·`role`을 주지 않는다. `::before`·`::after`로 대신하지 않는다. 사진을 `<a>`로 감싸지 않는다(4-10-2 근거 표 아래). 전역 `img { pointer-events: none }`, 전역 `user-select: none`을 쓰지 않는다.
+
+### 13-2. QA 검증 기준
+
+**A. 정적 확인** (worktree 루트에서):
+
+| # | 명령 | 기대 결과 |
+|---|---|---|
+| A1 | `grep -c 'class="photo-shield" aria-hidden="true"' index.html` | `16` (hero 1 + 캐러셀 15) |
+| A2 | `grep -c '<img' index.html` | `17` (그대로: hero 1, 캐러셀 15, wreath 1) |
+| A3 | `grep -n -A4 'class="hero__frame"' index.html` | 1곳. `role="img"`와 `aria-label`이 있고 그 문장이 HEAD의 hero img `alt`와 같다. 안쪽 hero `<img>`는 `alt=""`이고 `fetchpriority="high"`, `data-bokeh-exclude`, `width="1600" height="1066"`이 그대로다. 그 뒤에 덮개 span |
+| A4 | `grep -n 'photo-shield' script.js` | 2곳: `initPhotoGuard`의 `closest('img, .g-open, .photo-shield')`, `initLightbox`의 `className = 'photo-shield'` |
+| A5 | `grep -n "closest('img, .g-open')" script.js` | 출력 없음 |
+| A6 | `grep -n -A6 '^\.photo-shield' style.css` | `position: absolute`, `inset: 0`, `-webkit-touch-callout: none`, `-webkit-user-select: none`, `user-select: none`만. `background`, `opacity`, `z-index`, `pointer-events`, `transition`, `animation`, `content`가 없다 |
+| A7 | `grep -c 'pointer-events: none' style.css` | `7` (지금 6 + 사진 규칙 `.hero__photo, .g-open img, .lb-img` 1) |
+| A8 | `grep -n -A4 '^\.hero__photo' style.css` / `grep -n 'hero__frame' style.css` | `.hero__photo`에 `margin`이 없다 / `position: relative` 묶음, `margin: 28px 0`인 규칙, `@media (max-height: 640px)` 안 `margin: 18px 0` 세 곳 |
+| A9 | `grep -n -e '::after' -e '::before' style.css \| grep -e g-open -e lb-slide -e hero__frame` | 출력 없음(덮개는 실제 요소다) |
+
+**B. 브라우저 자동 확인** (Playwright Chromium, 390 x 664, `isMobile: true`, `hasTouch: true`, DPR 3. B6은 375 x 548 DPR 2도. B9만 WebKit):
+
+| # | 방법 | 통과 기준 |
+|---|---|---|
+| B1 | 점 4곳에서 `document.elementFromPoint(x, y)`와 `document.elementsFromPoint(x, y)`: hero 사진 가운데(로드 2.5초 뒤), 갤러리로 스크롤한 뒤 현재 슬라이드 가운데, lightbox를 1번으로 연 뒤 사진 가운데, 같은 lightbox의 사진 바깥 빈 무대 (2026-10-22 QA 13차: 1번은 세로 사진이 무대 높이를 채워 위쪽 빈 무대가 없으므로 옆 여백에서 잰다. 위쪽 빈 무대는 가로 사진 15번에서 잰다) | `elementFromPoint`가 `.photo-shield`이고 `elementsFromPoint` 목록에 `IMG`가 없다 |
+| B2 | 같은 점에서 CDP `DOM.getNodeForLocation({ x, y })` → `DOM.describeNode` | `SPAN`이고 class가 `photo-shield`. Android WebView `getHitTestResult()`가 쓰는 Blink hit test와 같은 경로다 |
+| B3 | 이웃 peek 가운데(현재 프레임 오른쪽 끝에서 16px 바깥. 간격 8px 다음부터 peek 16px)에서 `elementFromPoint` | `.g-track` (지금과 같다. 2026-10-22 QA 13차: 트랙이 뷰포트 전체 폭에 걸쳐 있어 비현재 슬라이드를 건너뛴 hit test가 트랙에 닿는다. 이미지가 아니고 `pointerup`은 `.g-viewport`로 올라가 이웃 탭 판정이 그대로다) |
+| B4 | `new MouseEvent('contextmenu', { bubbles: true, cancelable: true })`와 `new DragEvent('dragstart', { bubbles: true, cancelable: true })`를 hero 덮개, 현재 캐러셀 덮개, lightbox 현재 슬라이드 덮개에 dispatch | 모두 `defaultPrevented === true`. 12-2 B4·B5·B6도 다시 돌려 같은 결과 |
+| B5 | 덮개 상자와 스타일 | 상자(각 변 ±0.5px): hero 덮개 = `.hero__frame` = `.hero__photo`, 캐러셀 덮개 = 그 `.g-open`, lightbox 덮개 = 그 `.lb-slide`. 덮개 `getComputedStyle`: `position` `absolute`, `backgroundColor` `rgba(0, 0, 0, 0)`, `opacity` `1`. `pointerEvents`: hero·현재 슬라이드·lightbox 덮개는 `auto`, 비현재 슬라이드 덮개는 `none`. 사진 img 31개는 `none` |
+| B6 | 레이아웃·LCP 회귀: 변경 전 HEAD 사본과 새 사본을 같은 창 크기(390 x 664 DPR 3, 375 x 548 DPR 2)로 열어 비교 | `.hero__photo`, `.hero__bottom`, `.scroll-cue`의 `getBoundingClientRect()` top·height가 같다(±0.5px). `document.documentElement.scrollHeight`가 같다. `largest-contentful-paint` 항목의 `element`가 `img.hero__photo`. CLS 0.05 이하. `hero.jpg` 요청 1회, CDP `Network.requestWillBeSent`의 `initialPriority`가 HEAD와 같다 |
+| B7 | 보케 회피 회귀: 10장 "보케 상한·회피 자동 확인" 1·5 | 그대로 통과. `document.querySelectorAll('[data-bokeh] [data-bokeh-exclude]').length === 12` |
+| B8 | 접근성 트리: CDP `Accessibility.getFullAXTree` | `.photo-shield`에 해당하는 무시되지 않은(ignored 아닌) 노드가 없다. hero는 role `image`, 이름이 HEAD hero alt 문장인 노드 1개(`.hero__frame`)이고 그 안의 img는 트리에 없거나 ignored다. `.g-open` 버튼 이름 15개가 그대로다. Playwright `page.getByRole('img', { name: heroAlt })`가 1개 |
+| B9 | Playwright WebKit(`devices['iPhone 13']`): B1과 같은 점, 덮개의 `getComputedStyle(el).webkitTouchCallout` | `elementFromPoint`가 `.photo-shield`, `webkitTouchCallout`이 `none` |
+| B10 | 포커스 링: Tab으로 현재 슬라이드 버튼에 포커스하고 1초 뒤 스크린샷(`scale: 'css'`). 프레임 바깥 3px 지점 4곳(위·아래·왼쪽·오른쪽 변의 가운데) 픽셀 | 4곳 모두 accent `#8E5558`에 가깝다(채널마다 ±24). 덮개 상자가 `.g-open` 상자 안에 있다 |
+| B11 | 동작 회귀: 4-1-12 "QA 확인값" 전부, 12-2 B11·B12 | 지금과 같이 통과(세로로 쓸면 페이지 스크롤, 스와이프·이웃 탭으로 이동, 현재 슬라이드 탭으로 lightbox 열림, 4번에서 열어 7번까지 넘기고 닫으면 "7 / 15"와 7번 버튼 포커스, 끌어 닫기, 사진 위 탭은 그대로·빈 무대 탭은 닫힘) |
+| B12 | `prefers-reduced-motion: reduce`로 B1·B5 | 같은 결과(덮개에는 모션이 없다) |
+
+**C. 실기기 수동 확인** (자동화로 대신할 수 없다. 필수: iPhone 카카오톡 인앱, Android 카카오톡 인앱. 가능하면 iPhone Safari, Android Chrome, Samsung Internet. 카카오톡 채팅방에 배포 주소를 보내 링크로 연다):
+
+| # | 동작 | 통과 기준 |
+|---|---|---|
+| C1 | 2초 길게 누르기: hero 사진, 캐러셀 현재 슬라이드, 이웃 peek, 가로 사진 14번의 위아래 매트, lightbox 사진, lightbox 사진 위쪽 빈 무대 | 아무 메뉴도 뜨지 않는다. 카카오톡 앱 자체 목록("이미지 저장", "공유" 등), iOS 저장·공유·복사 메뉴와 미리보기, 피사체가 떠오르는 효과와 "복사"·"공유", 라이브 텍스트 선택 핸들, 시각 검색 아이콘 모두 없다. 사진이 파랗게 선택되지 않는다 |
+| C2 | C1 직후 같은 곳을 한 번 탭 | 현재 슬라이드는 lightbox가 열린다. hero, lightbox 사진 위는 아무 일이 없다. lightbox 빈 무대는 닫힌다(지금과 같다) |
+| C3 | 12-2 C4·C5·C6 다시 | 지금과 같다(사진 끌기 안 됨, 계좌번호 길게 눌러 선택·복사됨, 스크롤·스와이프·lightbox 제스처·빠른 연타 그대로) |
+| C4 | VoiceOver(iPhone)·TalkBack(Android)을 켜고 손가락으로 hero 사진 위를 쓸기 / 갤러리 사진 위를 쓸기 / 옆으로 쓸어 hero부터 갤러리까지 순서대로 이동 | hero 설명 문장을 읽는다 / "사진 n / 15 크게 보기: …"를 읽는다 / 이름 없는 빈 항목에서 멈추지 않고 hero 설명은 한 번만 읽는다 |
+| C5 | C1이 실패하면 기록 | 기기, OS 버전, 카카오톡 버전, 실패한 사진, 뜬 메뉴의 모양(카카오톡 자체 목록 / iOS 메뉴 / 피사체 들어올리기) 스크린샷. 13-3 대안을 고르는 입력이다 |
+
+### 13-3. 덮개로도 막지 못할 때의 다음 대안
+
+덮개는 엔진에 "누른 지점이 `<img>`인가"를 묻는 경로(4-10-2 근거 표 1~3)와 `elementFromPoint()`·`elementsFromPoint()`로 누른 요소를 찾는 앱 스크립트를 막는다. C1이 실패하면 앱이 이 밖의 방법(누른 요소의 조상 안에서 `img` 찾기, 페이지의 모든 `img`나 배경 이미지 읽기, 내려받은 리소스 캐시 읽기 등)을 쓴다는 뜻이다. 아래는 먼저 할 일부터 비용 순서다. 2·3은 사진 31개의 구조를 바꾸므로 이 명세(4-1, 4-2, 4-10, 2-1)를 다시 정한 뒤 진행한다.
+
+| # | 대안 | 더 막는 것 | 비용 | 그래도 남는 경로 |
+|---|---|---|---|---|
+| 1 | **진단 페이지로 앱의 판정 방식 확인 (먼저 할 일)** | 대안을 고르는 근거가 생긴다 | 배포 주소 아래 임시 HTML 1개. 같은 사진 1장을 6가지로 둔다: 맨 img / 지금 img 규칙 / + 덮개 / + 덮개 + `pointer-events: none`(이 명세) / CSS 배경 / canvas. C1이 실패한 기기에서 하나씩 길게 눌러 어느 것이 막히는지 보고 지운다. 반나절 | — |
+| 2 | 사진을 CSS `background-image`로 (`<div role="img" aria-label>`) | 엔진 판정(Blink `HasImageSourceURL`, WebKit `RenderImage` 모두 해당 없음), `img` 태그를 찾는 스크립트(조상 안 `img` 찾기 포함) | 사진 31개 마크업을 바꾼다. `srcset`·`sizes` → `image-set()`(화면 밀도 기준만, 폭 기준 선택 불가). `loading="lazy"` → 캐러셀 로딩 창(4-1-7)이 JS로 배경을 넣는다. JS 꺼짐 폴백(4-1-9)은 15장을 처음부터 모두 받거나 사진 없이 보인다. hero `decode()` 페이드, `initPhotoFade`, lightbox `load()`의 `currentSrc`·`complete`·`naturalWidth` 판정을 `new Image()` 미리 받기로 다시 쓴다. `object-fit` → `background-size`. alt → `aria-label`. LCP는 Chrome이 배경 이미지도 후보로 잡아 유지된다 | 계산된 `background-image`를 읽는 스크립트, 리소스 캐시, 스크린샷 |
+| 3 | 사진을 `<canvas>`에 그리기 | 2와 같은 엔진 판정. 페이지 DOM에 사진 URL이 남지 않는다 | 가장 크다. 화면 밀도에 맞춘 다시 그리기(회전·크기 변경), 메모리(390px 화면 DPR 3에서 캐러셀 프레임 1장 약 6.3MB, lightbox 1장 약 7MB → 로딩 창 밖 캔버스를 비워야 한다). canvas는 LCP 후보가 아니어서 LCP가 글자로 바뀐다. JS 꺼짐이면 사진이 없다(`<noscript>` img를 두면 그 경로가 다시 열린다). alt → `role="img"` + `aria-label`, 페이드·로딩 표시를 다시 만든다. Chrome 자체 우클릭·길게 누르기 메뉴는 canvas를 이미지로 보고 "이미지 저장"을 띄우므로(`context_menu_controller.cc`) `contextmenu` 취소는 계속 필요하다 | 리소스 캐시, 개발자 도구, 스크린샷 |
+| 4 | 페이지로는 막을 수 없음을 받아들이고 저장본의 가치를 낮추기 | — | 사용자 결정이 필요하다. lightbox 원본(긴 변 1600px)을 줄이면 확대해 보는 화질이 떨어진다. 워터마크는 컨셉의 "사진 위 글자 금지"와 충돌한다 | 스크린샷(4-10-1) |

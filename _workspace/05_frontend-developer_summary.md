@@ -11,6 +11,7 @@
 - 갱신: 2026-10-17, 사진 보호(사진 저장 메뉴 차단 + 페이지·lightbox의 모든 확대 제거)를 반영했다(18장). 2장 lightbox 행, 3장 4-1·4-2 행과 4-10 행(신설), Nice-to-have의 키·휠 줌 행, 4장의 줌 관련 행과 `showModal` 폴백 행, 7장 라이트박스 행 주석, 8장 배포 가이드 5번을 고쳤다.
 - 갱신: 2026-10-17, 갤러리 사진을 이전 파일 번호 05 03 04 01 06~15 02 순서로 재배치하고 파일 이름을 새 순서대로 바꿨다(19장). 2장 표 아래 갤러리 문단, 3장 Must 4-1 행, 4장 갤러리 순서 행을 고쳤다.
 - 갱신: 2026-10-21, 오시는 길의 네이버 지도·카카오맵 버튼을 검색 결과 대신 예식장 장소 페이지로 연결했다(20장). 6장 표에 지도 버튼 링크 행을 더했다.
+- 갱신: 2026-10-22, 카카오톡 인앱 브라우저에서 사진을 길게 눌러 저장할 수 있던 경로를 사진 투명 덮개로 막았다(21장). 3장 1-3 행의 index.html 줄 번호, 3장 4-10 행, 8장 배포 가이드 5번을 고쳤다.
 - 입력: `00_user-input.md`, `01_concept-director_concept-sheet.md`, `02_copy-writer_copy.md`, `03_image-artist_manifest.md`, `04_motion-designer_motion-spec.md`
 - 산출물: `index.html`(454줄), `style.css`(1,099줄), `script.js`(1,442줄). 줄 수와 3장의 `파일:줄`은 캐러셀 반영 후 기준이다. 어제의 "Warm Paper & Ink" 파일을 전부 새로 썼다.
 - 이전 컨셉 자산(`jo--*`, `op1789048062-*`, `divider-hairline.svg`, `og-thumbnail.jpg`, `monogram-iy.svg`, `floral-*`, `gallery-placeholder-*`, `hero-illustration.png`)은 세 파일 어디에서도 참조하지 않는다(grep 0건). 파일 자체는 지우지 않았다.
@@ -59,7 +60,7 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | `html.js` 게이트 | `<head>` 첫 인라인 스크립트 | index.html:5 |
 | reduced-motion CSS·JS 분기 | CSS 블록 + `@media (no-preference)` 안에 루프 배치, JS `matchMedia` + 런타임 `change` 처리(새로고침 없음). 캐러셀은 토큰만 따라가고 JS 분기 없음 | style.css:1026-1099, script.js:1430 |
 | 1 보케 B안(2026-10-13 교체, 15장): 구간 3곳(hero·calendar·closing), 구간당 8·합산 12/16, 흰 심 `#FFFCF8` + glow 후광 7단 스프라이트(지름 0.1px 단위 캐시, 화면 DPR로 렌더), 페이드 1.2s·반짝임 2.4~4.8s, 궤적 상자 겹침 방지(`BOX_GAP` 10), 30fps, 캔버스 DPR `min(dpr, 2)`, 직전 자리만 지우기 | 구현. 1-7 참고 코드를 글자 단위로 그대로 옮겼다(`BOKEH` 포함) | script.js:110-520 |
-| 1-3 글자 회피: `data-bokeh-exclude="text"`는 텍스트 노드 줄 상자(공백·`.sr-only` 제외), 값 없음은 요소 상자, hero만 BGM 토글의 스크롤 0 자리, 사방 `EXCLUDE_MARGIN` 8 | 구현. HTML 속성 12개(`"text"` 6: `.hero__top`, `.hero__bottom`, calendar `.section-head`, `.calendar__when`, `.dday`, `.closing__thanks` / 값 없음 6: `.hero__photo`, `.scroll-cue`, `.lights`, `.cal`, closing `.sprig`, `.monogram`). wreath `<img>`에는 없다 | script.js:258-276, 315; index.html:66, 72, 74, 79, 136, 139, 156, 157, 175, 388, 407, 412 |
+| 1-3 글자 회피: `data-bokeh-exclude="text"`는 텍스트 노드 줄 상자(공백·`.sr-only` 제외), 값 없음은 요소 상자, hero만 BGM 토글의 스크롤 0 자리, 사방 `EXCLUDE_MARGIN` 8 | 구현. HTML 속성 12개(`"text"` 6: `.hero__top`, `.hero__bottom`, calendar `.section-head`, `.calendar__when`, `.dday`, `.closing__thanks` / 값 없음 6: `.hero__photo`, `.scroll-cue`, `.lights`, `.cal`, closing `.sprig`, `.monogram`). wreath `<img>`에는 없다. hero `.hero__photo`의 속성은 2026-10-22 감싸는 요소 `.hero__frame`이 생긴 뒤에도 img에 그대로 있다(21장) | script.js:258-276, 315; index.html:69, 76, 79, 84, 141, 144, 161, 162, 180, 429, 448, 453 (2026-10-22 기준) |
 | 1-4 정지 조건: 구간 이탈(600ms 페이드 후 정지), 탭 숨김, 라이트박스 | `pauses` Set(`'hidden'`, `'lightbox'`) | script.js:283, 379, 392, 449 |
 | 1-5 pre-seed, hero 첫 등장 1200ms, ResizeObserver 150ms 디바운스(폭 변화·높이 40px 초과면 재배치, 아니면 `dropBlocked`), fonts.ready·사진 load·구간 안 transform `transitionend`(100ms 디바운스) 재측정 | 구현. window resize 이벤트는 쓰지 않음 | script.js:321, 353, 423-447 |
 | 1-6 reduced 정지 불빛 7개(hero만, `mulberry32(5)` 고정 시드, 최대 21회 시도, 밝기 0.85), calendar·closing 캔버스 숨김, 런타임 전환 | 구현 | script.js:134, 340, 455-475 |
@@ -71,7 +72,7 @@ RSVP 섹션은 없다(사용자 지정). 갤러리 순서는 사용자 요청(20
 | 3-2 전구 호흡(주기 표 그대로) + 화면 밖·라이트박스 일시정지 | 구현 | style.css:493-499, 1040-1048, script.js:565 |
 | 4-1 갤러리 캐러셀: 2:3 프레임(세로 cover, 가로 14·15 contain + surface 매트, 2026-10-17 재배치 뒤 번호, 19장), peek 16px, transform 트랙(`--g-i`·`--g-dx`), 스와이프(8px 축 판정, 50px 또는 0.3px/ms, 양 끝 정지·저항 0.3, 350ms), `touch-action: pan-y`(2026-10-17 `pinch-zoom` 제거, 18장), 가로로 판정된 뒤에만 포인터 캡처, 이전/다음 버튼 `aria-disabled` + "n / 15" 카운터, ←/→(포커스가 캐러셀 안일 때만), click 억제, `role="group"`·`aria-roledescription`·비현재 14장 `inert`+`aria-hidden`·`.g-status` 낭독·←/→ 시 포커스 이동, lightbox 같은 번호로 열기·닫으면 동기화·포커스 복귀, `srcset`/`sizes` + 로딩 창(index −1 ~ +2를 `eager`로, IO `rootMargin: 100% 0px`), JS 꺼짐 scroll-snap 폴백, `inert` 미지원 브라우저는 `tabindex="-1"` | 구현. 명세 4-1-11 CSS·4-1-12 JS를 옮겼고 차이는 4장 | index.html:208-238, style.css:559-669, script.js:22-23, 607-769 |
 | 4-2 lightbox: `showModal` 포커스 트랩, 스와이프(판정은 캐러셀과 같은 `swipeTarget`), 확대 없음(2026-10-17, 18장: 핀치·더블탭·`ctrl + wheel`·`+`/`=`/`-`/`0` 키 확대와 팬 삭제, 두 번째 손가락이 닿으면 진행 중인 스와이프·끌어 닫기를 되돌리고 손을 다 뗄 때까지 입력 무시, 사진 밖 탭은 바로 닫기·사진 위 탭은 동작 없음), ←/→/Esc, 스크롤 잠금, 슬라이드 목록을 캐러셀 `.g-open`의 `data-full`·`data-w`·`data-h`·img alt로 생성, 현재 장은 캐러셀 img `currentSrc`로 시작해 원본으로 교체(절대 URL 비교, 캐러셀이 아직 못 받았으면 처음부터 원본), ±1 원본, 닫기 시작과 `close` 두 곳에서 캐러셀을 lightbox 번호로 맞춤(애니메이션·낭독 없음), 그 뒤 캐러셀 현재 슬라이드 버튼으로 포커스, 보케 정지 | 구현 | script.js:17-21(`LB`), 719-726(`swipeTarget`), 893-1151 (2026-10-17 기준) |
-| 4-10 사진 보호 (2026-10-17, 18장): 모든 img의 저장 메뉴·끌기·선택 차단(CSS `img` 규칙 + `document` 위임 `contextmenu`·`dragstart`, 판정 `closest('img, .g-open')`), 글자 선택 유지, viewport meta `maximum-scale=1, user-scalable=no`, `html { touch-action: manipulation }`, WebKit `gesturestart`·`gesturechange` 차단, `window`의 `ctrl + wheel` 차단, 캐러셀 `touch-action: pan-y` | 구현. 4-10-2·4-10-3 참고 코드를 그대로 옮겼다 | index.html:6; style.css:89-93, 110-116, 627; script.js:115-135(`initZoomGuard`, `initPhotoGuard`), 1938-1939 |
+| 4-10 사진 보호 (2026-10-17, 18장): 모든 img의 저장 메뉴·끌기·선택 차단(CSS `img` 규칙 + `document` 위임 `contextmenu`·`dragstart`, 판정 `closest('img, .g-open, .photo-shield')`), 글자 선택 유지, viewport meta `maximum-scale=1, user-scalable=no`, `html { touch-action: manipulation }`, WebKit `gesturestart`·`gesturechange` 차단, `window`의 `ctrl + wheel` 차단, 캐러셀 `touch-action: pan-y`. (2026-10-22, 21장) 사진 투명 덮개 `.photo-shield` 31개(hero 1: img를 `.hero__frame[role="img"]`로 감싸고 img `alt=""` / 캐러셀 15 / lightbox가 런타임에 만드는 15), 사진 img `pointer-events: none`, 판정 선택자에 `.photo-shield` 추가 | 구현. 4-10-2·4-10-3 참고 코드를 그대로 옮겼다 | index.html:6, 74-78, 214-228; style.css:89-93, 110-131, 402-409, 471, 645; script.js:115-136(`initZoomGuard`, `initPhotoGuard`), 923-926, 1942-1943 (2026-10-22 기준) |
 | 4-3 BGM: 자동재생 없음, `preload="none"`, 꺼짐(사선 음표)/켜짐 아이콘, `aria-pressed`, `aria-busy`, 탭 숨김 일시정지·복귀, 재생 실패 복구 | 구현 | index.html:39-60, script.js:1166 |
 | 4-4 복사(계좌·주소·링크): 라벨 전환 1600ms, 토스트 1800ms, `role="status"` 낭독(50ms 비웠다 다시), clipboard → execCommand → Selection 폴백, 진동 12ms | 구현 | script.js:82-104, 1248-1308 |
 | 4-5 D-day 한국 시간 계산, D-N / D-DAY / 숨김 분기, visibilitychange 갱신, 카운트업 없음 | 구현 | script.js:585 |
@@ -195,7 +196,7 @@ placeholder(`[[TODO:...]]`)는 모두 채워졌고(2026-10-11), placeholder를 �
 2. GitHub Pages: 저장소 루트를 그대로 배포한다. `.nojekyll`이 있으므로 Jekyll 처리 없이 정적 파일로 나간다.
 3. 카카오 공유를 쓰면 카카오 디벨로퍼스 앱의 [플랫폼 > Web]에 배포 도메인을 등록한다. SDK 로드나 공유가 실패하면 버튼은 링크 복사로 동작한다. 오시는 길 지도는 같은 앱에서 카카오맵 사용 설정도 켜야 나온다. 둘 중 하나라도 빠지면 지도 상자만 숨겨진다(12장).
 4. 카카오톡 미리보기 캐시: 공유 미리보기가 예전 이미지로 보이면 카카오 공유 디버거에서 URL 캐시를 초기화한다(og 이미지는 새 파일명 `og-garden.jpg`를 쓴다).
-5. 배포 후 휴대폰에서 확인할 것: 첫 화면(날짜·사진·이름·장소), BGM 토글, 갤러리 캐러셀 스와이프(가로로 넘김, 세로로는 페이지 스크롤)와 이전/다음 버튼, 라이트박스 스와이프·끌어 닫기와 닫은 뒤 캐러셀 번호, 사진 보호(2026-10-17: 본문·캐러셀·lightbox에서 핀치·더블탭해도 확대되지 않음, 사진을 길게 눌러도 저장 메뉴가 뜨지 않음, 계좌번호 글자는 길게 눌러 선택·복사됨. 모션 명세 12-2 C 표), 계좌 복사, 방명록 글 1건 남기기·목록 표시·삭제(2026-10-13부터 실제 시트에 쌓이고 알림 메일이 간다), 카카오 공유 미리보기.
+5. 배포 후 휴대폰에서 확인할 것: 첫 화면(날짜·사진·이름·장소), BGM 토글, 갤러리 캐러셀 스와이프(가로로 넘김, 세로로는 페이지 스크롤)와 이전/다음 버튼, 라이트박스 스와이프·끌어 닫기와 닫은 뒤 캐러셀 번호, 사진 보호(2026-10-17: 본문·캐러셀·lightbox에서 핀치·더블탭해도 확대되지 않음, 사진을 길게 눌러도 저장 메뉴가 뜨지 않음, 계좌번호 글자는 길게 눌러 선택·복사됨. 모션 명세 12-2 C 표. 2026-10-22: 카카오톡 채팅방에서 링크로 연 청첩장에서 hero·캐러셀·lightbox 사진을 2초 길게 눌러도 카카오톡 자체 메뉴("이미지 저장" 등)와 iOS 메뉴·피사체 들어올리기가 뜨지 않음, 모션 명세 13-2 C 표), 계좌 복사, 방명록 글 1건 남기기·목록 표시·삭제(2026-10-13부터 실제 시트에 쌓이고 알림 메일이 간다), 카카오 공유 미리보기.
 6. 쓰지 않는 예전 자산(`images/divider-hairline.svg`, `images/monogram-iy.svg`, `images/og-thumbnail.*`, `images/floral-*.png`, `images/gallery-placeholder-*.png`, `images/hero-illustration.png`, `images/photos/thumb/hero.jpg`)은 페이지에서 참조하지 않는다. 지울지는 사용자가 정한다.
 
 ## 9. 사용자 카피 수정 반영 (2026-10-10)
@@ -958,3 +959,70 @@ User-Agent는 iPhone Safari 18.5와 Android 14 Chrome 141이다. 두 User-Agent�
 - 카카오맵 앱이 있는 휴대폰에서 앱 연결 페이지를 거쳐 앱이 예식장 장소 화면으로 열리는지 본다. 안 열리면 위 알아 둘 점의 공개 형식으로 되돌린다.
 - 앱이 없는 휴대폰에서 두 버튼 모두 예식장 정보가 보이는지 본다.
 - 위 세 가지를 Safari·Chrome과 카카오톡 인앱 브라우저(카카오톡 공유로 연 청첩장)에서 각각 본다.
+
+## 21. 카카오톡 저장 차단: 사진 투명 덮개 (2026-10-22)
+
+사용자 요청: "사진 저장 못하게 막아줘". 사용자가 실제 휴대폰의 카카오톡 인앱 브라우저에서 사진을 길게 눌러 저장할 수 있음을 확인했다(iOS인지 Android인지는 모름). 2026-10-17 차단(img CSS 규칙, `contextmenu`·`dragstart` 취소)은 카카오톡 앱이 직접 띄우는 메뉴를 막지 못한다. 모션 명세 13-1 작업 목록 7개(Must 6 + Should 1)를 모두 반영했다. 세부는 명세 4-10-2 "투명 덮개"·"hero 감싸기"·참고 코드, 4-1-8, 4-2를 따랐다.
+
+### 바꾼 범위
+
+| 파일 | 바꾼 것 |
+|---|---|
+| index.html | hero img(74-78행)를 `<div class="hero__frame" role="img" aria-label="{이전 img alt 문장 그대로}">`로 감싸고 img는 `alt=""`, img 바로 뒤에 `<span class="photo-shield" aria-hidden="true"></span>`(13-1 #1). img의 `class`·`src`·`width`·`height`·`fetchpriority`·`decoding`·`data-bokeh-exclude`와 `<head>`의 preload는 그대로다. 캐러셀 슬라이드 15개(214-228행)의 `.g-open` 안 img 바로 뒤에 같은 span(#2) |
+| style.css | `img` 규칙 바로 아래(117-131행) 덮개 블록: `.hero__frame, .g-open, .lb-slide { position: relative; }`, `.photo-shield { position: absolute; inset: 0; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }`, `.hero__photo, .g-open img, .lb-img { pointer-events: none; }`(#3). `.hero__frame { width: 100%; margin: 28px 0; }`(402행)을 새로 두고 `.hero__photo`에서 `margin`을 지웠다. `@media (max-height: 640px)`의 `.hero__photo { margin: 18px 0; }` → `.hero__frame { margin: 18px 0; }`(471행)(#4) |
+| script.js | `initPhotoGuard` 판정 선택자 `'img, .g-open'` → `'img, .g-open, .photo-shield'`과 주석 한 줄(129-132행, #5). `initLightbox`가 슬라이드마다 `.lb-img` 뒤에 덮개 span을 만든다. `li.append(img)` → `li.append(img, shield)`(923-926행, #6) |
+| 이 문서 | 3장 1-3 행의 index.html 줄 번호, 3장 4-10 행, 8장 배포 가이드 5번(#7, Should) |
+
+건드리지 않은 것(13-1 "건드리지 않는 것" 그대로): `img` 규칙 네 줄, 위임 리스너(선택자만 넓혔다), 갤러리·lightbox img의 `draggable="false"`, `.g-viewport`의 `dragstart` 리스너, hero preload, `.js .hero__photo` 페이드 규칙, `initHero`·`initBokeh`의 `.hero__photo` 선택자, `data-bokeh-exclude`, `initPhotoFade` 선택자, lightbox `tap(p)`, 4-1-11 캐러셀 CSS 블록, closing wreath `<img>`, 카카오 지도. 덮개에는 배경·`opacity`·`z-index`·`pointer-events`·모션·`tabindex`·`role`을 주지 않았고 `::before`·`::after`를 쓰지 않았다. 전역 `img { pointer-events: none }`과 전역 `user-select: none`은 넣지 않았다.
+
+### 동작
+
+- **사진 위 hit test:** hero 1, 캐러셀 15, lightbox 15장의 사진 위를 누르면 맨 위 노드가 img가 아니라 빈 span `.photo-shield`다. img는 `pointer-events: none`이라 `elementsFromPoint()` 목록에도 나오지 않는다. 인앱 브라우저 앱이 엔진에 "누른 지점이 이미지인가"를 묻는 경로(Android WebView `getHitTestResult()`, iOS 이미지 분석)와 `elementFromPoint()`로 누른 요소를 찾는 앱 스크립트가 이미지를 찾지 못하게 하려는 것이다(명세 4-10-2 근거 표 1~4).
+- **우클릭·길게 누르기·끌기:** 이제 덮개가 받는다. 판정에 `.photo-shield`를 더해서 조상에 `img`도 `.g-open`도 없는 hero·lightbox 덮개에서도 취소된다.
+- **화면:** 그대로다. 덮개는 아무것도 그리지 않고, hero의 세로 여백을 감싸는 요소로 옮겨서 감싸는 요소 상자가 사진 상자와 같다.
+- **탭·스와이프·포커스·스크린리더:** 그대로다. 덮개는 `pointer-events`를 따로 갖지 않아 비현재 슬라이드의 `none`·`inert`를 따른다. hero는 감싸는 요소가 이름 있는 이미지로 한 번 읽히고 덮개는 접근성 트리에 없다.
+- **JS 꺼짐:** hero·캐러셀 덮개와 img `pointer-events: none`은 HTML·CSS라 그대로 동작한다.
+
+### 확인 (Playwright 1.63 headless Chromium 1243, 390 x 664, `isMobile`, `hasTouch`, DPR 3, 외부 요청 차단)
+
+같은 시험을 작업 트리(:8853)와 `HEAD` 사본(:8854)에 함께 돌려, 시험이 변경 전후를 구별하는지 확인했다.
+
+정적 확인(명세 13-2 A1~A9)은 모두 기대 결과와 같다. A1 `16`, A2 `17`, A3 1곳(`role="img"`, `aria-label`이 `HEAD`의 hero alt와 같음, 안쪽 img `alt=""`·`fetchpriority="high"`·`data-bokeh-exclude`·`width="1600" height="1066"`, 그 뒤 덮개 span), A4 코드 2곳(`closest('img, .g-open, .photo-shield')`, `className = 'photo-shield'`) + 명세 참고 JS에 있는 주석 한 줄이 함께 잡혀 3줄, A5 출력 없음, A6 다섯 속성만, A7 `7`(`HEAD` 6), A8 `.hero__photo`에 `margin` 없음 / `.hero__frame` 세 곳, A9 출력 없음.
+
+| 명세 13-2 | 작업 트리 | `HEAD` 사본 |
+|---|---|---|
+| B1 `elementFromPoint` / `elementsFromPoint` | 5곳 모두 `SPAN.photo-shield`, 목록에 IMG 없음: hero 사진 가운데, 캐러셀 현재 슬라이드 가운데, lightbox 1번 사진 가운데, lightbox 1번 빈 무대, lightbox 15번 사진 위 빈 무대. 1번은 세로 사진이 무대 높이를 채워 위쪽 빈 무대가 없으므로 옆 여백(x = 7)에서 쟀다 | 사진 3곳 IMG(목록에도 IMG), 빈 무대 2곳 `LI.lb-slide` |
+| B2 CDP `DOM.getNodeForLocation` | 같은 5곳 `SPAN.photo-shield` | IMG / `LI.lb-slide` |
+| B3 이웃 peek 가운데 | `DIV.g-track` | `DIV.g-track` |
+| B4 합성 `contextmenu`·`dragstart` | hero·캐러셀·lightbox 덮개 모두 취소. 12-2 B4~B6도 같다(hero img, 캐러셀 img·버튼, 런타임 `.lb-img` 취소 / `.hero__names`, 계좌번호, 방명록 입력칸 취소 안 됨 / hero img `dragstart` 취소, 이름 글자 `dragstart` 취소 안 됨) | 덮개가 없어 같은 자리에 빈 span을 넣어 쟀다. hero·lightbox는 취소 안 됨, 캐러셀(`.g-open` 안)은 취소. 12-2 항목은 같다 |
+| 실제 입력 우클릭(마우스) | hero·캐러셀·lightbox 사진 가운데: 대상 `SPAN.photo-shield`, 취소됨 | 대상 IMG, 취소됨 |
+| B5 덮개 상자·스타일 | hero 덮개 = `.hero__frame` = `.hero__photo`, 캐러셀 15/15가 각 `.g-open`, lightbox 15/15가 각 `.lb-slide`와 같다. `absolute`, `rgba(0, 0, 0, 0)`, opacity 1, z-index auto. `pointer-events`: hero·현재 슬라이드·lightbox 15개 `auto`, 비현재 슬라이드 14개 `none`. 사진 img 31개 모두 `none` | 덮개 없음, 사진 img에 `auto`가 섞여 있다 |
+| B6 레이아웃·LCP | 390 x 664 DPR 3과 375 x 548 DPR 2 모두 `.hero`, `.hero__top`, `.hero__photo`, `.hero__bottom`, `.scroll-cue` 상자가 `HEAD`와 소수 둘째 자리까지 같다(390: 사진 top 187.08·높이 259.83, `.hero__bottom` top 474.91, `.scroll-cue` top 588.91 / 375: 사진 top 147.08·높이 249.84, `.hero__bottom` top 414.92, `.scroll-cue` 숨김). `.hero__frame` 상자 = 사진 상자. `scrollHeight` 7172 / 6968로 같다. LCP 마지막 항목 `IMG.hero__photo`, CLS 0, `hero.jpg` 요청 1회, `initialPriority` `High`(`HEAD`도 `High`). reduced-motion 첫 화면 스크린샷이 `HEAD`와 픽셀 단위로 같다(1170 x 1992, 750 x 1096 모두 다른 픽셀 0) | 비교 기준 |
+| B7 보케 | 10장 1번: hero·calendar·closing 각 40샘플 `living` ≤ 8, 구간 ≤ 8, `excludeHits` 0, `pairHits` 0, `minExcludeGap` 15.1 / 13.6 / 13.9, `running`은 그 구간 하나. 5번(reduce): `still` 7, `running` `[]`, `excludeHits` 0, `minExcludeGap` 13.2, calendar·closing 캔버스 `display: none`, hero 캔버스 opacity 1. `[data-bokeh] [data-bokeh-exclude]` 12 | hero `minExcludeGap` 13.3, 나머지 같음 |
+| B8 접근성 트리 | 덮개 31개에 해당하는 AX 노드 0(ignored 포함). hero 이름 노드 1개, role `image`, 노드는 `.hero__frame`. 안쪽 img는 ignored. `getByRole('img', { name: heroAlt })` 1. 슬라이드 버튼 이름 15개가 `HEAD`와 같다 | hero 이름 노드는 img |
+| B10 포커스 링 | Shift+Tab으로 현재 슬라이드 버튼(`:focus-visible`). 프레임 바깥 3px 네 곳 모두 (142, 85, 88) = `#8E5558`. 덮개 상자가 버튼 상자 안 | 같음 |
+| B11 동작 | 가로 스와이프 1 → 2 → 1. 세로로 쓸면 scrollY 2562 → 2793, 번호 그대로. 오른쪽 이웃 탭 → 2, 왼쪽 이웃 탭 → 1(lightbox 안 열림). 프레임 342 x 513, 간격 8, peek 16. 다음 14번 → "15", `aria-disabled="true"`, 포커스 다음 버튼. 현재 슬라이드 탭(click 대상 `SPAN.photo-shield`) → lightbox "4 / 15" → 스와이프 3번 "7 / 15" → 닫기 → 캐러셀 7, 7번 버튼 포커스. 다시 열어 8로 넘긴 뒤 끌어 닫기 → 8, 8번 포커스. 15번 사진 위 탭 → 열린 채, 14로 넘긴 뒤 사진 위 빈 무대 탭 → 닫힘, 14, 14번 포커스 | 같음(click 대상 IMG) |
+| B12 reduced-motion | B1·B4·B5 같은 결과, 현재 슬라이드 탭으로 lightbox 열림 | `HEAD` 값 그대로 |
+| JS 꺼짐 | Blink hit test: hero·캐러셀 1번 `SPAN.photo-shield`, hero 상자 같음 | IMG |
+| 콘솔 | 페이지 오류 0. 콘솔 오류는 막은 외부 요청(Google Fonts, jsDelivr, 카카오맵 SDK) 3건뿐 | 같음 |
+
+### 확인하지 못한 것
+
+- **카카오톡 실기기(명세 13-2 C1~C5):** 하지 않았다. 카카오톡이 어느 경로로 자체 메뉴를 띄우는지는 공개 자료가 없어, 이 변경이 카카오톡 메뉴를 실제로 막는지는 iPhone·Android 카카오톡에서 직접 길게 눌러 봐야만 알 수 있다. 메뉴가 남으면 기기, OS 버전, 카카오톡 버전, 메뉴 모양을 기록해 명세 13-3 대안을 고른다.
+- **B9(WebKit):** Playwright WebKit 2359를 scratchpad에 내려받았지만, 이 기기에 GTK4·GStreamer 등 시스템 라이브러리가 없어 실행되지 않는다(root 권한의 `install-deps`가 필요하다). WebKit hit test와 덮개의 `webkitTouchCallout`은 재지 못했다.
+- **길게 누르기 입력:** headless Chromium은 CDP 터치 1.2초 누름과 `Input.synthesizeTapGesture`(1.5초)로 `contextmenu`를 만들지 않았다(`HEAD`도 같음). 터치 1.2초 누름은 탭이 되어 click 대상만 확인했다(작업 트리 덮개, `HEAD` IMG). 실제 입력은 마우스 우클릭으로만 확인했다.
+
+### 알아 둘 점
+
+- 명세 13-2 B3의 기대값은 `.g-viewport`이지만 실제 맨 위 요소는 `.g-track`이다. 트랙이 뷰포트 전체 폭에 걸쳐 있어 `HEAD`도 같다. 이미지가 아니고 `pointerup`이 `.g-viewport`로 올라가 이웃 탭 판정이 그대로다.
+- 4-1-12 QA 확인값 "hero에 머무는 동안 갤러리 사진 요청 0건": 이 시험 조건(DPR 3, 로드 2.5초 뒤)에서는 작업 트리와 `HEAD` 모두 hero에서 01·02를 요청했다. 이번 변경 전부터 같은 결과라 손대지 않았다. 갤러리 근처에서는 01·02·03만 요청한다.
+- reduced-motion에서 `__bokeh.stats().zones`의 hero 값은 로드마다 5~8로 바뀐다(`HEAD`도 같음). 움직이지 않는 구간에 남은 입자 칸을 세는 값이라서이고, 10장 5번 기준(`still` 7 등)은 매번 같다.
+- hero 주석의 "no overlay"는 보이는 효과를 말하므로 그대로 두었다(명세 4-10-2 "보이지 않는다").
+
+### 시험 스크립트 (scratchpad, 저장소에 넣지 않음)
+
+- `shield/shield-check.cjs`: 위 표의 B1~B8, B10~B12와 실제 입력 우클릭. 작업 트리와 `HEAD` 사본에 같이 돈다. 원자료 `shield/out/results.json`, 스크린샷 `shield/out/hero390-*.png`, `hero375-*.png`, `focus-*.png`
+- `shield/extra-check.cjs`: 슬라이드 버튼 이름 15개, 길게 누르기 제스처
+- `shield/nojs-check.cjs`: JS 꺼짐 hit test
+- `shield/reduced-zones.cjs`: reduced-motion `stats()` 4회 반복
+- `shield/run.sh`: 작업 트리(:8853)와 `HEAD` 사본(`shield/base`, :8854)을 서빙하고 끝나면 내린다

@@ -114,6 +114,21 @@ img {
   -webkit-user-select: none;
   user-select: none;             /* the image only; text stays selectable for the copy-failed fallback (4-4) */
 }
+/* Photo shield (spec 4-10-2): in-app browsers ask the engine whether the pressed node is an <img>.
+   An empty element on top makes the answer "no"; the photos themselves skip hit testing. */
+.hero__frame,
+.g-open,
+.lb-slide { position: relative; }
+.photo-shield {
+  position: absolute;
+  inset: 0;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.hero__photo,
+.g-open img,
+.lb-img { pointer-events: none; }   /* also keeps them out of elementsFromPoint() */
 button, input, textarea { font: inherit; color: inherit; }
 a { color: inherit; }
 
@@ -384,10 +399,13 @@ html.lb-open { overflow: hidden; }
   letter-spacing: 0.2em;
 }
 
+.hero__frame { /* box = photo box: the margins live here, so the shield covers the photo only */
+  width: 100%;
+  margin: 28px 0;
+}
 .hero__photo { /* original 3:2 framing: no crop, no scale, no overlay, no filter */
   width: 100%;
   height: auto;
-  margin: 28px 0;
 }
 
 .hero__names {
@@ -450,7 +468,7 @@ html.lb-open { overflow: hidden; }
   .hero { padding-top: max(28px, calc(env(safe-area-inset-top) + 20px)); }
   .hero__date { margin-top: 8px; font-size: 28px; line-height: 34px; }
   .hero__time { margin-top: 4px; }
-  .hero__photo { margin: 18px 0; }
+  .hero__frame { margin: 18px 0; }
   .hero__names { line-height: 34px; }
   .hero__when { margin-top: 8px; line-height: 22px; }
   .hero__where { line-height: 20px; }
