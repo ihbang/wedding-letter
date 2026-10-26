@@ -755,6 +755,19 @@ html:not(.js) .venue__map { display: none; }
   overflow-wrap: anywhere;
   text-wrap: pretty;
 }
+.venue__line8 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #E6186C;
+  color: #fff;
+  font: 700 12px/1 var(--font-ko-sans);
+  vertical-align: -3px;
+}
 
 /* ===== 7. Notice: shared .section / .section-head only; the message uses the base paragraph style ===== */
 
@@ -795,7 +808,6 @@ html:not(.js) .venue__map { display: none; }
 .account__card[open] .account__chevron { transform: rotate(180deg); }
 .account__body {
   margin: 0 20px;
-  padding: 16px 0 20px;
   border-top: 1px solid var(--color-line);
 }
 /* Fade on ::details-content: content inside a closed <details> is not restyled there, so an animation
@@ -806,18 +818,66 @@ html:not(.js) .venue__map { display: none; }
 }
 @keyframes account-open { from { opacity: 0; } to { opacity: 1; } }
 .account__number {
-  font: 500 15px/1.5 var(--font-ko-sans);
-  word-break: break-all;
+  display: block;
+  margin-top: 4px;
+  font: 400 14px/1.5 var(--font-ko-sans);
   overflow-wrap: anywhere;
 }
 .account__holder {
-  margin-top: 2px;
-  color: var(--color-muted);
-  font: 400 14px/1.5 var(--font-ko-sans);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 15px/1.5 var(--font-ko-sans);
 }
-.account__card .copy-btn {
+.account__entry {
+  display: block;
   width: 100%;
-  margin-top: 16px;
+  min-height: 70px;
+  padding: 14px 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.account__entry + .account__entry { border-top: 1px solid var(--color-line); }
+.account__copy-icon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--color-accent);
+}
+.account__copy-icon::before,
+.account__copy-icon::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 1.4px solid currentColor;
+  border-radius: 2px;
+}
+.account__copy-icon::before { top: 1px; left: 4px; }
+.account__copy-icon::after { top: 4px; left: 1px; background: var(--color-surface); }
+.account__entry.is-copied .account__copy-icon,
+.account__entry.is-failed .account__copy-icon { color: var(--color-sage-deep); }
+.account__entry.is-copied .account__copy-icon::before,
+.account__entry.is-failed .account__copy-icon::before { content: none; }
+.account__entry.is-copied .account__copy-icon::after,
+.account__entry.is-failed .account__copy-icon::after {
+  content: '✓';
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  border: 0;
+  background: transparent;
+  font: 700 15px/1 var(--font-ko-sans);
+}
+.account__entry.is-failed .account__copy-icon { color: var(--color-accent); }
+.account__entry.is-failed .account__copy-icon::after { content: '!'; }
+@media (hover: hover) and (pointer: fine) {
+  .account__entry:hover { color: var(--color-accent); }
 }
 
 /* ===== 9. Guestbook: form + public list (design 08, motion spec 4-8, 4-8-1) ===== */
